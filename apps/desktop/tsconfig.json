@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "./out/types",
+    "jsx": "react-jsx",
+    "types": ["vite/client", "node"],
+    "paths": {
+      "@videoforge/shared": ["../../packages/shared/src/index.ts"],
+      "@videoforge/shared/*": ["../../packages/shared/src/*"],
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*", "electron/**/*", "e2e/**/*"],
+  "references": [{ "path": "../../packages/shared" }]
+}

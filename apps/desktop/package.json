@@ -1,0 +1,48 @@
+{
+  "name": "@videoforge/desktop",
+  "version": "0.0.1",
+  "private": true,
+  "description": "VideoForge — Electron desktop app (Intel 16GB Monterey 최적화)",
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev --watch",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "start": "electron-vite preview",
+    "dist:mac:local": "pnpm build && electron-builder --mac --publish never",
+    "dist:mac:universal": "pnpm build && electron-builder --mac --config electron-builder.universal.yml --publish never",
+    "dist:mac": "pnpm dist:mac:local",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
+    "clean:cache": "rimraf node_modules/.vite out dist release"
+  },
+  "dependencies": {
+    "@videoforge/shared": "workspace:*",
+    "fs-extra": "11.2.0",
+    "pino": "9.5.0",
+    "ulid": "2.3.0",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.48.1",
+    "@types/fs-extra": "11.0.4",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "@vitejs/plugin-react": "4.3.3",
+    "autoprefixer": "10.4.20",
+    "electron": "33.0.2",
+    "electron-builder": "25.1.8",
+    "electron-vite": "2.3.0",
+    "pino-pretty": "11.3.0",
+    "postcss": "8.4.47",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "rimraf": "6.0.1",
+    "tailwindcss": "3.4.14",
+    "vite": "5.4.10",
+    "vite-tsconfig-paths": "5.0.1",
+    "vitest": "2.1.4"
+  }
+}

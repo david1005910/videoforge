@@ -1,0 +1,18 @@
+# ============================================================================
+# UNIVERSAL2 BUILD — CI 전용 권장
+# 로컬 (Intel 16GB)에서 실행 시 25~40분 + 발열 심함. CI에 위임.
+#
+# Usage:
+#   electron-builder --mac --config electron-builder.universal.yml
+#
+# 또는 GitHub Actions에서 자동 (.github/workflows/ci.yml의 dist 잡)
+# ============================================================================
+
+extends: ./electron-builder.yml
+
+mac:
+  target:
+    - target: dmg
+      arch: [universal]
+    - target: zip
+      arch: [universal]

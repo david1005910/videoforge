@@ -1,0 +1,145 @@
+name: CI
+
+# Intel 16GB Monterey 환경 우선 검증.
+# Universal2 distribution 빌드는 macOS 14 (Apple Silicon) 러너에서만 수행.
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # ============================================================
+  # TEST — Intel x64 우선 (사용자 실제 환경과 일치)
+  # ============================================================
+  test:
+    name: Test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        # Intel 사용자 환경 매칭은 macos-13 (x64), Apple Silicon 검증은 macos-14
+        os: [macos-13, macos-14]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: E2E tests
+        run: pnpm test:e2e
+        env:
+          CI: true
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.os }}
+          path: apps/desktop/playwright-report/
+          retention-days: 7
+
+  # ============================================================
+  # DIST x64 — Intel 빌드 (사용자 본인 환경용 산출물)
+  # ============================================================
+  dist-intel:
+    name: Build x64 DMG (Intel)
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: macos-13
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build x64 DMG
+        run: pnpm --filter @videoforge/desktop dist:mac:local
+        env:
+          # Phase 9 코드 사이닝 활성화 시 주석 해제
+          # APPLE_ID: ${{ secrets.APPLE_ID }}
+          # APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          # CSC_LINK: ${{ secrets.APPLE_CERT_P12_BASE64 }}
+          # CSC_KEY_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Intel artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: VideoForge-mac-x64
+          path: |
+            apps/desktop/release/*.dmg
+            apps/desktop/release/*.zip
+          retention-days: 14
+
+  # ============================================================
+  # DIST UNIVERSAL — Apple Silicon 러너에서만 universal2 빌드
+  # 다른 사용자(Apple Silicon Mac 보유자)에게 배포할 때만 필요
+  # ============================================================
+  dist-universal:
+    name: Build Universal2 DMG (배포용)
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: macos-14   # Apple Silicon 러너 — universal2 빌드는 여기서만
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build Universal2 DMG
+        run: pnpm --filter @videoforge/desktop dist:mac:universal
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Universal artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: VideoForge-mac-universal2
+          path: |
+            apps/desktop/release/*.dmg
+            apps/desktop/release/*.zip
+          retention-days: 14

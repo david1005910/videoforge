@@ -1,0 +1,68 @@
+appId: com.videoforge.app
+productName: VideoForge
+copyright: Copyright © 2026
+
+# ============================================================================
+# DEFAULT CONFIG — Intel x64 only (로컬 개발자 환경: Intel 16GB Monterey)
+# Universal2 빌드는 electron-builder.universal.yml 사용 (CI 전용 권장)
+# ============================================================================
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - 'out/**/*'
+  - 'package.json'
+  - '!**/*.{md,map}'
+  - '!**/{.DS_Store,Thumbs.db}'
+
+asar: true
+asarUnpack:
+  - 'node_modules/sharp/**'
+  - 'node_modules/@img/**'
+  - 'node_modules/ffmpeg-static/**'
+  - 'node_modules/ffprobe-static/**'
+
+extraResources:
+  - from: 'resources/ffmpeg'
+    to: 'ffmpeg'
+    filter: ['**/*']
+  - from: 'resources/fonts'
+    to: 'fonts'
+    filter: ['**/*']
+
+mac:
+  category: public.app-category.video
+  icon: build/icon.icns
+  # Intel 노트북에서 빌드 시간 단축 — x64 단일 아키
+  target:
+    - target: dmg
+      arch: [x64]
+    - target: zip
+      arch: [x64]
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  # Monterey 12.0 이상 타겟 (사용자 환경)
+  minimumSystemVersion: '11.0.0'
+  extendInfo:
+    NSMicrophoneUsageDescription: '음성 인식 및 자막 생성에 사용됩니다.'
+    NSCameraUsageDescription: '썸네일 캡처에 사용됩니다.'
+    NSDocumentsFolderUsageDescription: '프로젝트 파일을 저장하기 위해 필요합니다.'
+    NSDownloadsFolderUsageDescription: '내보낸 영상을 저장하기 위해 필요합니다.'
+    LSMinimumSystemVersion: '11.0.0'
+
+dmg:
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+# Notarization 자리예약 — Phase 9에서 활성화
+# notarize:
+#   teamId: ${env.APPLE_TEAM_ID}

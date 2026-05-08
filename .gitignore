@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+out/
+dist/
+build/
+*.tsbuildinfo
+
+# Electron-builder
+release/
+*.dmg
+*.zip
+*.app
+
+# Editor / OS
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+
+# Logs
+*.log
+logs/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Test
+coverage/
+playwright-report/
+test-results/
+
+# Cache
+.cache/
+.eslintcache
+.parcel-cache/
+
+# macOS app-specific
+*.icloud
+
+# Apple signing artifacts (security)
+*.p12
+*.provisionprofile
+build/entitlements.local.*
