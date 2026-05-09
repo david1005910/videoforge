@@ -5,7 +5,10 @@ import { resolve } from 'node:path';
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin(), tsconfigPaths()],
+    plugins: [
+      externalizeDepsPlugin({ exclude: ['@videoforge/shared'] }), // ← exclude 추가
+      tsconfigPaths(),
+    ],
     build: {
       lib: {
         entry: resolve(__dirname, 'electron/main/index.ts'),
@@ -22,7 +25,10 @@ export default defineConfig({
     },
   },
   preload: {
-    plugins: [externalizeDepsPlugin(), tsconfigPaths()],
+    plugins: [
+      externalizeDepsPlugin({ exclude: ['@videoforge/shared'] }), // ← exclude 추가
+      tsconfigPaths(),
+    ],
     build: {
       lib: {
         entry: resolve(__dirname, 'electron/preload/index.ts'),

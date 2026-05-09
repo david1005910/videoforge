@@ -116,7 +116,12 @@ export const FileSaveTempRequest = z.object({
   base64Data: z.string().min(1),
   mimeType: z.string(),
   /** 사용 후 자동 삭제 시간 (분) */
-  ttlMinutes: z.number().int().min(1).max(60 * 24).default(60),
+  ttlMinutes: z
+    .number()
+    .int()
+    .min(1)
+    .max(60 * 24)
+    .default(60),
 });
 export type FileSaveTempRequest = z.infer<typeof FileSaveTempRequest>;
 
@@ -178,6 +183,31 @@ export const ClipboardWriteRequest = z.object({
   text: z.string().max(1_000_000),
 });
 export type ClipboardWriteRequest = z.infer<typeof ClipboardWriteRequest>;
+
+/* ========================================================================
+ * Keychain (safeStorage)
+ * ======================================================================== */
+
+export const KeychainGetRequest = z.object({
+  key: z.string().min(1).max(100),
+});
+export type KeychainGetRequest = z.infer<typeof KeychainGetRequest>;
+
+export const KeychainGetResponse = z.object({
+  value: z.string().nullable(),
+});
+export type KeychainGetResponse = z.infer<typeof KeychainGetResponse>;
+
+export const KeychainSetRequest = z.object({
+  key: z.string().min(1).max(100),
+  value: z.string().min(1).max(10_000),
+});
+export type KeychainSetRequest = z.infer<typeof KeychainSetRequest>;
+
+export const KeychainDeleteRequest = z.object({
+  key: z.string().min(1).max(100),
+});
+export type KeychainDeleteRequest = z.infer<typeof KeychainDeleteRequest>;
 
 /* ========================================================================
  * System

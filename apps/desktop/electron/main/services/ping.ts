@@ -8,27 +8,23 @@ import { registerHandler } from '../ipc-router';
  * Renderer가 보낸 message를 echo로 돌려보내서 IPC가 정상 동작하는지 확인.
  */
 export function registerAppHandlers(): void {
-  registerHandler(
-    Channels.App.Ping,
-    AppSchemas.PingRequest,
-    async (input): Promise<PingResponse> => {
-      return {
-        echo: input.message,
-        receivedAt: new Date().toISOString(),
-        pid: process.pid,
-      };
-    },
-  );
+  registerHandler(Channels.App.Ping, AppSchemas.PingRequest, (input): Promise<PingResponse> => {
+    return Promise.resolve({
+      echo: input.message,
+      receivedAt: new Date().toISOString(),
+      pid: process.pid,
+    });
+  });
 
   registerHandler(
     Channels.App.GetVersion,
     AppSchemas.PingRequest.partial(), // 빈 객체도 허용
-    async (): Promise<VersionResponse> => {
+    (): Promise<VersionResponse> => {
       const arch = process.arch;
       if (arch !== 'arm64' && arch !== 'x64') {
         throw new Error(`Unsupported arch: ${arch}`);
       }
-      return {
+      return Promise.resolve({
         app: app.getVersion(),
         electron: process.versions.electron ?? 'unknown',
         node: process.versions.node,
@@ -36,7 +32,7 @@ export function registerAppHandlers(): void {
         v8: process.versions.v8,
         platform: 'darwin',
         arch,
-      };
+      });
     },
   );
 }

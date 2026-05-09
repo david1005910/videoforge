@@ -13,6 +13,9 @@ export * from './ipc-channels';
 // 도메인 모델
 export * from './domain/project';
 
+// ASS 자막 생성기
+export * from './ass-generator';
+
 // 공통 빌딩 블록
 export * from './schemas/common';
 
@@ -33,9 +36,12 @@ export * as ChatRemoteSchemas from './schemas/chat-and-remote';
 export type { PingRequest, PingResponse, VersionResponse } from './schemas/app';
 export type {
   ProjectSaveRequest,
+  ProjectSaveResponse,
   ProjectLoadRequest,
   ProjectListRequest,
   ProjectListResponse,
+  ProjectDeleteRequest,
+  ProjectDeleteResponse,
 } from './schemas/project';
 export type {
   TtsEdgeRequest,
@@ -60,30 +66,61 @@ export type {
   VideoEditResponse,
   VideoProgressEvent,
 } from './schemas/video';
-export type {
-  AudioMergeRequest,
-  AudioMergeMultiRequest,
-  AudioTrackSpec,
-} from './schemas/audio';
+export type { AudioMergeRequest, AudioMergeMultiRequest, AudioTrackSpec } from './schemas/audio';
 export type {
   GrokTask,
   GrokGenerateRequest,
+  GrokGenerateResponse,
   GrokBatchRequest,
+  GrokBatchResponse,
+  GrokCancelRequest,
+  GrokLoginResponse,
+  GrokStatusResponse,
   GrokVideoReadyEvent,
   GrokProgressEvent,
 } from './schemas/grok';
 export type {
+  WhiskRefKind,
+  WhiskUploadRefRequest,
+  WhiskUploadRefResponse,
   WhiskGenerateRequest,
   WhiskGenerateResponse,
+  ImagefxLoginResponse,
   ImagefxGenerateRequest,
   ImagefxGenerateResponse,
 } from './schemas/imagegen';
 export type {
   ChatMessage,
   ChatCsRequest,
+  ChatCsResponse,
   ChatDnaRequest,
+  ChatDnaResponse,
   ChatThumbnailRequest,
   ChatThumbnailResponse,
   DnaScriptScene,
   UpdateStatusEvent,
+  UpdateStatusResponse,
 } from './schemas/chat-and-remote';
+export type {
+  FontInfo,
+  FontsListResponse,
+  FontsUploadResponse,
+  FontsDeleteRequest,
+  SfxCategory,
+  SfxItem,
+  SfxListRequest,
+  SfxListResponse,
+  SfxUploadResponse,
+  SfxDeleteRequest,
+} from './schemas/assets';
+export type {
+  DialogSelectFolderResponse,
+  DialogConfirmResponse,
+  FileSaveToDiskResponse,
+  FileReadBase64Response,
+  FileDownloadLocalResponse,
+  FileSaveImageResponse,
+  FileSaveTempResponse,
+  WindowCountResponse,
+  KeychainGetResponse,
+} from './schemas/utility';

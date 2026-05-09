@@ -19,11 +19,24 @@
     "clean:cache": "rimraf node_modules/.vite out dist release"
   },
   "dependencies": {
+    "@bbc/stt-align-node": "^1.4.3",
+    "@tanstack/react-router": "^1.169.2",
     "@videoforge/shared": "workspace:*",
+    "electron-updater": "^6.8.3",
+    "ffmpeg-static": "^5.3.0",
+    "ffprobe-static": "^3.1.0",
     "fs-extra": "11.2.0",
+    "libass-wasm": "^4.1.0",
+    "lucide-react": "^1.14.0",
+    "node-edge-tts": "^1.2.10",
     "pino": "9.5.0",
+    "puppeteer-core": "^24.43.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "ulid": "2.3.0",
-    "zod": "3.23.8"
+    "wavesurfer.js": "^7.12.6",
+    "zod": "3.23.8",
+    "zustand": "^5.0.13"
   },
   "devDependencies": {
     "@playwright/test": "1.48.1",

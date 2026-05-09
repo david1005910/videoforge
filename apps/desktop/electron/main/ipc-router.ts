@@ -13,7 +13,7 @@ export class UserFacingError extends Error {
   constructor(
     message: string,
     public hint?: string,
-    public code: string = 'USER',
+    public code = 'USER',
   ) {
     super(message);
     this.name = 'UserFacingError';
@@ -24,8 +24,6 @@ interface HandlerContext {
   senderId: number;
   event: IpcMainInvokeEvent;
 }
-
-type Handler<I, O> = (input: I, ctx: HandlerContext) => Promise<O>;
 
 /**
  * 타입 안전 IPC 핸들러 등록 헬퍼.
@@ -39,10 +37,10 @@ type Handler<I, O> = (input: I, ctx: HandlerContext) => Promise<O>;
  *   return ttsEdge(req);
  * });
  */
-export function registerHandler<I, O>(
+export function registerHandler<S extends z.ZodTypeAny, O>(
   channel: ChannelName,
-  inputSchema: z.ZodType<I>,
-  handler: Handler<I, O>,
+  inputSchema: S,
+  handler: (input: z.output<S>, ctx: HandlerContext) => Promise<O>,
 ): void {
   if (registered.has(channel)) {
     throw new Error(`IPC channel "${channel}" already registered`);
@@ -54,21 +52,15 @@ export function registerHandler<I, O>(
     const senderId = event.sender.id;
 
     try {
-      const input = inputSchema.parse(raw);
+      const input = inputSchema.parse(raw) as z.output<S>;
       const data = await handler(input, { senderId, event });
-      logger.info(
-        { ch: channel, ms: Date.now() - start, sender: senderId },
-        'ipc.ok',
-      );
+      logger.info({ ch: channel, ms: Date.now() - start, sender: senderId }, 'ipc.ok');
       return { ok: true, data };
     } catch (err) {
       const elapsed = Date.now() - start;
 
       if (err instanceof z.ZodError) {
-        logger.warn(
-          { ch: channel, ms: elapsed, issues: err.issues },
-          'ipc.validation',
-        );
+        logger.warn({ ch: channel, ms: elapsed, issues: err.issues }, 'ipc.validation');
         return {
           ok: false,
           error: {
@@ -81,14 +73,12 @@ export function registerHandler<I, O>(
 
       if (err instanceof UserFacingError) {
         logger.warn({ ch: channel, ms: elapsed, msg: err.message }, 'ipc.user-error');
-        return {
-          ok: false,
-          error: {
-            code: err.code,
-            message: err.message,
-            hint: err.hint,
-          },
+        const error: { code: string; message: string; hint?: string } = {
+          code: err.code,
+          message: err.message,
         };
+        if (err.hint) error.hint = err.hint;
+        return { ok: false as const, error };
       }
 
       logger.error({ ch: channel, ms: elapsed, err }, 'ipc.error');

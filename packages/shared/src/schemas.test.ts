@@ -6,8 +6,8 @@ import {
   VideoSchemas,
   GrokSchemas,
   AudioSchemas,
-} from '../index';
-import { Project } from '../domain/project';
+} from './index';
+import { Project } from './domain/project';
 
 describe('Project domain', () => {
   it('parses minimal valid project', () => {
@@ -101,7 +101,10 @@ describe('STT schemas', () => {
       start: 0,
       end: 1.5,
       text: '안녕하세요',
-      words: [{ word: '안녕', start: 0, end: 0.5 }, { word: '하세요', start: 0.5, end: 1.5 }],
+      words: [
+        { word: '안녕', start: 0, end: 0.5 },
+        { word: '하세요', start: 0.5, end: 1.5 },
+      ],
     });
     expect(seg.words).toHaveLength(2);
   });

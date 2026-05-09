@@ -52,6 +52,11 @@ export const Channels = {
     Gemini: 'tts:gemini',
     OnProgress: 'tts:onProgress',
   },
+  Keychain: {
+    Get: 'keychain:get',
+    Set: 'keychain:set',
+    Delete: 'keychain:delete',
+  },
   Stt: {
     Transcribe: 'stt:transcribe',
     Align: 'stt:align',
@@ -141,13 +146,14 @@ export const Channels = {
 /**
  * 모든 채널명 union 타입 — 라우터 등록 검증에 사용.
  */
-type ExtractValues<T> = T extends Record<string, infer V>
-  ? V extends string
-    ? V
-    : V extends Record<string, unknown>
-      ? ExtractValues<V>
-      : never
-  : never;
+type ExtractValues<T> =
+  T extends Record<string, infer V>
+    ? V extends string
+      ? V
+      : V extends Record<string, unknown>
+        ? ExtractValues<V>
+        : never
+    : never;
 
 export type ChannelName = ExtractValues<typeof Channels>;
 
@@ -162,7 +168,7 @@ export interface IpcSuccess<T> {
 export interface IpcFailure {
   ok: false;
   error: {
-    code: 'VALIDATION' | 'USER' | 'NOT_IMPLEMENTED' | 'UNKNOWN' | string;
+    code: string;
     message: string;
     hint?: string;
   };

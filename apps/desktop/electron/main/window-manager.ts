@@ -23,7 +23,7 @@ export function createWindow(opts: CreateWindowOptions = {}): BrowserWindow {
       preload: path.join(__dirname, '../preload/index.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: true,
+      sandbox: false, // workspace 패키지(@videoforge/shared) preload 번들 import 위해 필수
       webSecurity: true,
       devTools: !app.isPackaged,
     },
@@ -55,15 +55,14 @@ export function createWindow(opts: CreateWindowOptions = {}): BrowserWindow {
   });
 
   // dev 모드: vite dev server / prod: 번들된 html
-  if (process.env['ELECTRON_RENDERER_URL']) {
-    void win.loadURL(
-      process.env['ELECTRON_RENDERER_URL'] + (opts.initialRoute ?? ''),
-    );
+  if (process.env.ELECTRON_RENDERER_URL) {
+    void win.loadURL(process.env.ELECTRON_RENDERER_URL + (opts.initialRoute ?? ''));
     win.webContents.openDevTools({ mode: 'detach' });
   } else {
-    void win.loadFile(path.join(__dirname, '../renderer/index.html'), {
-      hash: opts.initialRoute?.replace(/^#/, ''),
-    });
+    const loadOpts: Electron.LoadFileOptions = {};
+    const hash = opts.initialRoute?.replace(/^#/, '');
+    if (hash) loadOpts.hash = hash;
+    void win.loadFile(path.join(__dirname, '../renderer/index.html'), loadOpts);
   }
 
   windows.add(win);

@@ -1,6 +1,24 @@
 import { app, Menu, type MenuItemConstructorOptions } from 'electron';
 import { createWindow } from './window-manager';
 import { registerAppHandlers } from './services/ping';
+import { registerProjectHandlers } from './services/project';
+import { registerDialogHandlers } from './services/dialog';
+import { registerFileHandlers } from './services/file';
+import { registerShellHandlers } from './services/shell';
+import { registerWindowHandlers } from './services/window';
+import { registerTtsHandlers } from './services/tts';
+import { registerKeychainHandlers } from './services/keychain';
+import { registerSttHandlers } from './services/stt';
+import { registerVideoHandlers } from './services/video';
+import { registerAudioHandlers } from './services/audio';
+import { registerAssetsHandlers } from './services/assets';
+import { registerGrokHandlers } from './services/grok';
+import { registerWhiskHandlers } from './services/whisk';
+import { registerImagefxHandlers } from './services/imagefx';
+import { registerChatHandlers } from './services/chat';
+import { registerUpdateHandlers } from './services/update';
+import { loadPreferences } from './services/settings';
+import { setProjectsDir, getProjectsDir } from './services/project/storage';
 import { logger } from './logger';
 
 /**
@@ -96,27 +114,72 @@ function buildMenu(): void {
           : ([{ role: 'close' }] satisfies MenuItemConstructorOptions[])),
       ],
     },
+    {
+      role: 'help',
+      submenu: [
+        {
+          label: 'VideoForge GitHub',
+          click: () => {
+            void import('electron').then(({ shell }) =>
+              shell.openExternal('https://github.com/user/videoforge'),
+            );
+          },
+        },
+      ],
+    },
   ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
-app.whenReady().then(() => {
+void app.whenReady().then(async () => {
   logger.info(
     { electron: process.versions.electron, node: process.versions.node, arch: process.arch },
     'app.ready',
   );
 
+  // 설정 로드 → 프로젝트 폴더 경로 적용
+  // E2E 테스트용 env override 지원
+  const envProjectsDir = process.env.VIDEOFORGE_PROJECTS_DIR;
+  if (envProjectsDir) {
+    setProjectsDir(envProjectsDir);
+  } else {
+    const prefs = await loadPreferences();
+    if (prefs.projectsDir) {
+      setProjectsDir(prefs.projectsDir);
+    }
+  }
+  logger.info({ projectsDir: getProjectsDir() }, 'projects.dir');
+
+  // IPC 핸들러 등록
   registerAppHandlers();
+  registerProjectHandlers();
+  registerDialogHandlers();
+  registerFileHandlers();
+  registerShellHandlers();
+  registerWindowHandlers();
+  registerTtsHandlers();
+  registerKeychainHandlers();
+  registerSttHandlers();
+  registerVideoHandlers();
+  registerAudioHandlers();
+  registerAssetsHandlers();
+  registerGrokHandlers();
+  registerWhiskHandlers();
+  registerImagefxHandlers();
+  registerChatHandlers();
+  registerUpdateHandlers();
+
   buildMenu();
   createWindow();
 
   app.on('activate', () => {
     // macOS: dock 아이콘 클릭 시 창 없으면 새로 생성
     if (process.platform === 'darwin') {
-      const { BrowserWindow } = require('electron') as typeof import('electron');
-      if (BrowserWindow.getAllWindows().length === 0) {
-        createWindow();
-      }
+      void import('electron').then(({ BrowserWindow }) => {
+        if (BrowserWindow.getAllWindows().length === 0) {
+          createWindow();
+        }
+      });
     }
   });
 });

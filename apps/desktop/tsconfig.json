@@ -11,6 +11,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "electron/**/*", "e2e/**/*"],
-  "references": [{ "path": "../../packages/shared" }]
+  "include": ["src/**/*", "electron/**/*", "e2e/**/*"]
 }
