@@ -80,7 +80,7 @@ videoforge/
 │   ├── electron/knowledge/    # AI chat system prompts (cs.md, dna-script.md, thumbnail.md)
 │   ├── src/                   # Renderer (React + Tailwind + Zustand)
 │   │   ├── routes/            # 11 page components + router.tsx
-│   │   ├── i18n/              # ko.ts / en.ts (87 keys each)
+│   │   ├── i18n/              # ko.ts / en.ts (101 keys each)
 │   │   └── lib/api.ts         # Renderer IPC wrapper (unwrap + zod-validate)
 │   ├── e2e/                   # Playwright E2E + mock servers
 │   ├── build/                 # icon.icns (macOS app icon)
@@ -167,9 +167,25 @@ Grok, Whisk, ImageFX use `puppeteer-core` + `puppeteer-extra` + stealth plugin. 
 ### i18n
 
 - Translation files: `apps/desktop/src/i18n/ko.ts` (Korean) + `en.ts` (English)
-- 87 keys across 8 categories: app, projects, wizard, editor, tts, scene/script/inspector, subtitle, assets, common
+- 101 keys across 9 categories: app, projects, wizard, editor, tts, scene/script/inspector, subtitle, assets, whisper, common
 - Usage: `const t = useT()` hook → `t('key.name')` in components
 - All user-facing strings must go through i18n — no hardcoded Korean/English in `.tsx` files
+
+### Whisper Local STT (Phase 12)
+
+Local speech-to-text via whisper.cpp, opt-in alternative to cloud providers (OpenAI/Gemini).
+
+- **Binary**: whisper.cpp v1.7.3 pre-built macOS x64 from GitHub releases
+- **Models**: 12 GGML models from HuggingFace `ggerganov/whisper.cpp`
+- **Default model**: `ggml-large-v3-turbo-q5_0` (547MB, best quality/size for Intel)
+- **Storage**: `~/Library/Application Support/VideoForge/whisper/` (models + binary)
+- **Thread limit**: `min(cpuCount - 2, 4)` to avoid thermal throttle
+- **Audio**: Non-WAV auto-converted to 16kHz mono PCM via ffmpeg-static
+- **IPC channels**: `stt:whisper:models`, `stt:whisper:download`, `stt:whisper:delete`
+- **Key files**:
+  - `apps/desktop/electron/main/services/stt/whisper-model.ts` — model catalog, download, delete
+  - `apps/desktop/electron/main/services/stt/whisper-local.ts` — child_process wrapper, JSON parsing
+  - `packages/shared/src/schemas/stt.ts` — `WhisperModelId` enum, model management schemas
 
 ## Code Style
 
@@ -184,7 +200,7 @@ Grok, Whisk, ImageFX use `puppeteer-core` + `puppeteer-extra` + stealth plugin. 
 
 ## Testing
 
-- **Unit tests** (Vitest): 57 tests — 17 shared + 40 desktop (`electron/**/*.test.ts`)
+- **Unit tests** (Vitest): 65 tests — 17 shared + 48 desktop (`electron/**/*.test.ts`)
 - **E2E tests** (Playwright Electron): 3 app specs (`smoke`, `project-lifecycle`, `tts`)
 - **E2E mock servers** (Playwright + express): 3 mock specs (`grok-mock`, `imagegen-mock`, `chat-mock`)
 - **Performance budget**: `pnpm perf:budget` — 13 checks (deps, LoC, typecheck speed, test speed, i18n coverage, large files)
@@ -193,14 +209,14 @@ Grok, Whisk, ImageFX use `puppeteer-core` + `puppeteer-extra` + stealth plugin. 
 
 ## Performance Budget (current baseline)
 
-| Metric       | Current       | Limit      |
-| ------------ | ------------- | ---------- |
-| Typecheck    | 14-17s        | 30s        |
-| All tests    | 9-11s         | 30s        |
-| Total LoC    | ~10,900       | —          |
-| Shared deps  | 1             | 10         |
-| Desktop deps | 18            | 40         |
-| i18n keys    | 87 ko / 87 en | must match |
+| Metric       | Current         | Limit      |
+| ------------ | --------------- | ---------- |
+| Typecheck    | 14-17s          | 30s        |
+| All tests    | 9-11s           | 30s        |
+| Total LoC    | ~11,600         | —          |
+| Shared deps  | 1               | 10         |
+| Desktop deps | 17              | 40         |
+| i18n keys    | 101 ko / 101 en | must match |
 
 Run `pnpm perf:budget` after significant changes to check for regressions.
 
@@ -208,7 +224,6 @@ Run `pnpm perf:budget` after significant changes to check for regressions.
 
 - `pnpm dist:mac:universal` locally — 30min+, 7GB+ RAM
 - Apple Silicon assumptions (`process.arch === 'arm64'`)
-- AVX2-dependent libraries (whisper.cpp etc. Phase 12+ only)
 - ffmpeg concurrency > 1 (queue manager bypass)
 - H.265 encoding as default
 - Puppeteer bundled Chromium download (use system Chrome)
@@ -225,22 +240,29 @@ Run `pnpm perf:budget` after significant changes to check for regressions.
 
 ## Current Phase
 
-**All code-implementable phases (0-11) complete.** Every task in `docs/tasks.md` is implemented, including:
+**Phases 0-11 complete. Phase 12 (Local Whisper) in progress.**
 
-- P5-05 (bundled fonts), P6-12/13 (Grok mock E2E), P7-08 (ImageGen mock E2E)
-- P8-04/07/08 (chat history, thumbnail analysis, chat mock E2E)
-- P9-01 (app icon), P9-08 (accessibility), P9-09/10 (onboarding, error report)
-- P10-03/04 (auto-update toggle, release-please)
-- P11-03/04/05 (perf budget, i18n UX review, user manual)
+### Completed Phase 12 work:
 
-**Remaining (non-code)**:
+- P12 whisper-local STT provider (schemas, service, IPC, tests)
+- 3 new IPC channels (`stt:whisper:models/download/delete`)
+- Model catalog (12 GGML models) + HuggingFace download
+- whisper.cpp binary download from GitHub releases
+- 14 new i18n keys, 8 unit tests
+
+### Phase 12 remaining:
+
+- Settings UI for model download/selection (Whisper section)
+- SubtitlePanel UI: whisper-local option in provider dropdown
+- Binary download IPC (currently exported but no dedicated channel)
+- E2E test for whisper-local flow (mock whisper output)
+
+### Remaining (non-code):
 
 - P9-04: Apple Developer ID (external account setup)
 - P9-05: CI Notarization (depends on P9-04)
 - P10-05: CI notarized DMG upload (depends on P9-04/05)
 - P11-01/02/06: Beta recruitment, bug fixes, 1.0.0 release
-
-Phase 12 items (local Whisper, Bridge extension, mobile companion) are future v1.1+ scope.
 
 **Repository**: `https://github.com/david1005910/videoforge.git`
 
@@ -262,7 +284,7 @@ feat(P1-04): IPC project:save / project:load / project:list / project:delete
 
 ## Active ADRs
 
-- **ADR-001 STT**: Cloud (OpenAI) default, local (whisper.cpp) Phase 12+. Intel AVX2 uncertainty → Cloud strongly recommended.
+- **ADR-001 STT**: Cloud (OpenAI) default, local (whisper.cpp) opt-in. Phase 12 backend implemented — whisper-local provider dispatches to whisper.cpp child process.
 - **ADR-002 Automation**: Puppeteer standalone, Bridge Phase 12+. Whisk/ImageFX via separate Google account.
 - **ADR-003 Project Location**: `~/Documents/VideoForge/Projects/` default, user-configurable.
 - **ADR-004 Font**: Noto Sans KR Regular + Bold bundled (OFL). Located at `apps/desktop/resources/fonts/`.
