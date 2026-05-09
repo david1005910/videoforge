@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] — 2026-05-10
+
+### Added
+
+#### Phase 12 — Local Whisper STT
+
+- whisper.cpp child_process wrapper for local speech-to-text
+- 12 GGML model catalog with HuggingFace download
+- whisper.cpp binary download from GitHub releases (macOS x64)
+- 4 new IPC channels: `stt:whisper:models/download/delete/binaryDownload`
+- Settings UI: Whisper section with binary status, model list, download/delete
+- SubtitlePanel: whisper-local provider option in STT dropdown
+- Auto WAV conversion via ffmpeg-static (16kHz mono PCM)
+- Thread count auto-tuning (capped at 4 for Intel thermal management)
+- Mock server + 4 E2E tests for whisper flow
+- 14 new i18n keys (Korean + English), 9 unit tests
+
+### Technical Stats
+
+- **Source files**: 117 (17 shared + 66 main + 34 renderer)
+- **Lines of code**: ~11,700
+- **Unit tests**: 66 (17 shared + 49 desktop)
+- **E2E tests**: 10 specs (3 app + 4 mock server)
+- **i18n keys**: 101 (Korean + English)
+- **IPC channels**: 54+
+
+---
+
 ## [0.1.0] — 2026-05-10
 
 ### Added
