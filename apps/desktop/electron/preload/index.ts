@@ -145,6 +145,9 @@ const api = {
     dna: (payload: unknown) => invoke(Channels.Chat.Dna, payload),
     dnaClear: () => invoke(Channels.Chat.DnaClear),
     thumbnail: (payload: unknown) => invoke(Channels.Chat.Thumbnail, payload),
+    historyLoad: (payload: unknown) => invoke(Channels.Chat.HistoryLoad, payload),
+    historySave: (payload: unknown) => invoke(Channels.Chat.HistorySave, payload),
+    historyClear: (payload: unknown) => invoke(Channels.Chat.HistoryClear, payload),
   },
 
   // === STT (Phase 3 — P3-05) ===

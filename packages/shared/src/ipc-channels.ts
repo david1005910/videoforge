@@ -118,6 +118,9 @@ export const Channels = {
     Dna: 'chat:dna',
     DnaClear: 'chat:dnaClear',
     Thumbnail: 'chat:thumbnail',
+    HistoryLoad: 'chat:history:load',
+    HistorySave: 'chat:history:save',
+    HistoryClear: 'chat:history:clear',
   },
   Update: {
     On: 'update:on',

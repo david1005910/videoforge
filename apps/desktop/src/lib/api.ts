@@ -344,6 +344,22 @@ export const api = {
       const resp = await window.electronAPI.chat.thumbnail(req);
       return ChatRemoteSchemas.ChatThumbnailResponse.parse(unwrap(resp));
     },
+    async historyLoad(projectId: string, mode: string) {
+      const resp = await window.electronAPI.chat.historyLoad({ projectId, mode });
+      return unwrap(resp) as { messages: { role: string; content: string }[] };
+    },
+    async historySave(
+      projectId: string,
+      mode: string,
+      messages: { role: string; content: string }[],
+    ) {
+      const resp = await window.electronAPI.chat.historySave({ projectId, mode, messages });
+      unwrap(resp);
+    },
+    async historyClear(projectId: string, mode: string) {
+      const resp = await window.electronAPI.chat.historyClear({ projectId, mode });
+      unwrap(resp);
+    },
   },
 
   diagnostics: {
