@@ -82,7 +82,7 @@ export function TtsPage(): JSX.Element {
 
       <main className="flex-1 overflow-auto p-8">
         <div className="mx-auto max-w-3xl space-y-6">
-          <h1 className="text-2xl font-bold">TTS 합성</h1>
+          <h1 className="text-2xl font-bold">{t('tts.title')}</h1>
 
           {/* Provider 선택 */}
           <div className="flex gap-2">
@@ -110,7 +110,7 @@ export function TtsPage(): JSX.Element {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="tts-voice" className="mb-1 block text-sm text-zinc-400">
-                보이스
+                {t('tts.voice')}
               </label>
               <select
                 id="tts-voice"
@@ -128,7 +128,7 @@ export function TtsPage(): JSX.Element {
             </div>
             <div>
               <label htmlFor="tts-speed" className="mb-1 block text-sm text-zinc-400">
-                속도: {speed.toFixed(1)}x
+                {t('tts.speed')}: {speed.toFixed(1)}x
               </label>
               <input
                 id="tts-speed"
@@ -146,7 +146,7 @@ export function TtsPage(): JSX.Element {
           {/* 텍스트 입력 */}
           <div>
             <label htmlFor="tts-text" className="mb-1 block text-sm text-zinc-400">
-              텍스트
+              {t('tts.text')}
             </label>
             <textarea
               id="tts-text"
@@ -154,7 +154,7 @@ export function TtsPage(): JSX.Element {
               onChange={(e) => setText(e.target.value)}
               rows={6}
               className="focus:border-accent w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm focus:outline-none"
-              placeholder="합성할 텍스트를 입력하세요..."
+              placeholder={t('tts.text.placeholder')}
             />
             <div className="mt-1 text-right text-xs text-zinc-600">
               {text.length.toLocaleString()} / 50,000
@@ -169,7 +169,7 @@ export function TtsPage(): JSX.Element {
             className="bg-accent hover:bg-accent-600 flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-medium text-white transition disabled:opacity-50"
           >
             <Volume2 size={16} />
-            {isGenerating ? '합성 중...' : '합성하기'}
+            {isGenerating ? t('tts.generating') : t('tts.generate')}
           </button>
 
           {/* 에러 */}
@@ -184,11 +184,11 @@ export function TtsPage(): JSX.Element {
             <div className="space-y-3 rounded-lg border border-zinc-700 bg-zinc-900/50 p-4">
               <div className="flex items-center justify-between">
                 <div className="text-sm">
-                  <span className="text-zinc-400">Duration:</span>{' '}
+                  <span className="text-zinc-400">{t('tts.duration')}:</span>{' '}
                   <span className="font-mono">{formatDuration(result.durationMs)}</span>
                   {result.cached && (
                     <span className="ml-2 rounded bg-blue-900/40 px-1.5 py-0.5 text-xs text-blue-300">
-                      cached
+                      {t('tts.cached')}
                     </span>
                   )}
                 </div>
@@ -199,7 +199,7 @@ export function TtsPage(): JSX.Element {
                     className="flex items-center gap-1 rounded-md border border-zinc-700 px-3 py-1.5 text-sm transition hover:bg-zinc-800"
                   >
                     {isPlaying ? <Square size={14} /> : <Play size={14} />}
-                    {isPlaying ? '정지' : '재생'}
+                    {isPlaying ? t('tts.stop') : t('tts.play')}
                   </button>
                   <button
                     type="button"
@@ -207,7 +207,7 @@ export function TtsPage(): JSX.Element {
                     className="flex items-center gap-1 rounded-md border border-zinc-700 px-3 py-1.5 text-sm transition hover:bg-zinc-800"
                   >
                     <Download size={14} />
-                    저장
+                    {t('tts.save')}
                   </button>
                 </div>
               </div>

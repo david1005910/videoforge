@@ -1,4 +1,5 @@
 import { Image, Volume2, Subtitles, Film, FileText } from 'lucide-react';
+import { useT } from '../../i18n';
 import type { Scene } from '@videoforge/shared';
 
 interface Props {
@@ -35,10 +36,12 @@ function AssetBadge({
 }
 
 export function Inspector({ scene }: Props): JSX.Element {
+  const t = useT();
+
   if (!scene) {
     return (
       <div className="flex h-full w-64 items-center justify-center border-l border-zinc-800 bg-zinc-950">
-        <p className="text-xs text-zinc-600">씬을 선택하세요</p>
+        <p className="text-xs text-zinc-600">{t('scene.select')}</p>
       </div>
     );
   }
@@ -48,39 +51,49 @@ export function Inspector({ scene }: Props): JSX.Element {
       {/* 헤더 */}
       <div className="border-b border-zinc-800 px-4 py-2">
         <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-          인스펙터
+          {t('inspector.title')}
         </span>
-        <p className="mt-0.5 text-sm text-zinc-300">씬 #{scene.index + 1}</p>
+        <p className="mt-0.5 text-sm text-zinc-300">
+          {t('scene.header')} #{scene.index + 1}
+        </p>
       </div>
 
       <div className="scrollbar-thin flex-1 overflow-y-auto p-4">
         {/* 에셋 상태 */}
         <div className="space-y-2">
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
-            에셋
+            {t('inspector.assets')}
           </h3>
           <AssetBadge
-            label="이미지"
+            label={t('inspector.images')}
             icon={Image}
             hasAsset={scene.generatedImages.length > 0}
             count={scene.generatedImages.length}
           />
           <AssetBadge
-            label="영상 클립"
+            label={t('inspector.videoClips')}
             icon={Film}
             hasAsset={scene.generatedClips.length > 0}
             count={scene.generatedClips.length}
           />
-          <AssetBadge label="나레이션" icon={Volume2} hasAsset={!!scene.narrationAudio} />
-          <AssetBadge label="자막 (ASS)" icon={Subtitles} hasAsset={!!scene.subtitleAss} />
-          <AssetBadge label="최종 클립" icon={Film} hasAsset={!!scene.finalClip} />
+          <AssetBadge
+            label={t('inspector.narration')}
+            icon={Volume2}
+            hasAsset={!!scene.narrationAudio}
+          />
+          <AssetBadge
+            label={t('inspector.subtitleAss')}
+            icon={Subtitles}
+            hasAsset={!!scene.subtitleAss}
+          />
+          <AssetBadge label={t('inspector.finalClip')} icon={Film} hasAsset={!!scene.finalClip} />
         </div>
 
         {/* 프롬프트 */}
         {(scene.prompts.whisk ?? scene.prompts.imagefx ?? scene.prompts.grok) && (
           <div className="mt-6 space-y-2">
             <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
-              프롬프트
+              {t('inspector.prompts')}
             </h3>
             {scene.prompts.whisk && (
               <div className="rounded-lg border border-zinc-800 p-2">
@@ -101,7 +114,7 @@ export function Inspector({ scene }: Props): JSX.Element {
         {scene.notes && (
           <div className="mt-6">
             <h3 className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-zinc-600">
-              <FileText size={12} /> 노트
+              <FileText size={12} /> {t('inspector.notes')}
             </h3>
             <p className="text-xs text-zinc-400">{scene.notes}</p>
           </div>

@@ -23,6 +23,7 @@
     "clean": "rimraf '**/out' '**/dist' '**/build' '**/release' '**/*.tsbuildinfo'",
     "clean:cache": "pnpm --filter @videoforge/desktop clean:cache",
     "kill:dev": "pkill -f electron; pkill -f vite; echo 'killed dev processes'",
+    "perf:budget": "bash scripts/perf-budget.sh",
     "prepare": "husky"
   },
   "devDependencies": {

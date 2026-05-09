@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Subtitles, RefreshCw } from 'lucide-react';
 import { api } from '../../lib/api';
+import { useT } from '../../i18n';
 import { SubtitlePreview } from '../../components/SubtitlePreview';
 import { buildAss, DEFAULT_STYLE, HBAS_STYLE } from '@videoforge/shared';
 import type { Scene, AlignedWord } from '@videoforge/shared';
@@ -19,6 +20,7 @@ type StylePreset = 'default' | 'hbas';
  * STT → Align → ASS 생성 워크플로우 + 단어 단위 타임 조정.
  */
 export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: Props): JSX.Element {
+  const t = useT();
   const [words, setWords] = useState<AlignedWord[]>([]);
   const [assContent, setAssContent] = useState('');
   const [stylePreset, setStylePreset] = useState<StylePreset>('default');
@@ -29,13 +31,13 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
   const handleGenerateSubtitle = useCallback(async () => {
     if (!scene) return;
     if (!scene.narrationAudio) {
-      setError('나레이션 오디오가 없습니다. 먼저 TTS를 생성하세요.');
+      setError(t('subtitle.noAudio'));
       return;
     }
 
     const script = scene.scriptKo ?? scene.scriptOriginal ?? '';
     if (!script.trim()) {
-      setError('스크립트가 비어있습니다.');
+      setError(t('subtitle.emptyScript'));
       return;
     }
 
@@ -107,7 +109,7 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
   if (!scene) {
     return (
       <div className="flex items-center justify-center p-8 text-sm text-zinc-600">
-        씬을 선택하세요
+        {t('scene.select')}
       </div>
     );
   }
@@ -130,8 +132,8 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
           onChange={(e) => handleStyleChange(e.target.value as StylePreset)}
           className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs"
         >
-          <option value="default">기본 스타일</option>
-          <option value="hbas">HBAS 스타일</option>
+          <option value="default">{t('subtitle.defaultStyle')}</option>
+          <option value="hbas">{t('subtitle.hbasStyle')}</option>
         </select>
 
         <button
@@ -145,7 +147,7 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
           ) : (
             <Subtitles size={12} />
           )}
-          {isProcessing ? '생성 중...' : '자막 생성'}
+          {isProcessing ? t('subtitle.generating') : t('subtitle.generate')}
         </button>
       </div>
 
@@ -165,9 +167,9 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
             <thead className="sticky top-0 bg-zinc-900">
               <tr className="text-zinc-500">
                 <th className="px-2 py-1 text-left">#</th>
-                <th className="px-2 py-1 text-left">단어</th>
-                <th className="px-2 py-1 text-right">시작 (ms)</th>
-                <th className="px-2 py-1 text-right">끝 (ms)</th>
+                <th className="px-2 py-1 text-left">{t('subtitle.word')}</th>
+                <th className="px-2 py-1 text-right">{t('subtitle.startMs')}</th>
+                <th className="px-2 py-1 text-right">{t('subtitle.endMs')}</th>
               </tr>
             </thead>
             <tbody>

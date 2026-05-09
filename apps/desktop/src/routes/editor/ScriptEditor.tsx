@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Volume2, Sparkles } from 'lucide-react';
+import { useT } from '../../i18n';
 import type { Scene } from '@videoforge/shared';
 
 interface Props {
@@ -15,11 +16,11 @@ export function ScriptEditor({
   onScriptChange,
   onNotesChange,
 }: Props): JSX.Element {
+  const t = useT();
   const [scriptKo, setScriptKo] = useState('');
   const [scriptOriginal, setScriptOriginal] = useState('');
   const [notes, setNotes] = useState('');
 
-  // 씬 전환 시 로컬 상태 동기화
   useEffect(() => {
     setScriptKo(scene?.scriptKo ?? '');
     setScriptOriginal(scene?.scriptOriginal ?? '');
@@ -43,30 +44,35 @@ export function ScriptEditor({
       <div className="flex flex-1 items-center justify-center">
         <div className="text-center">
           <Sparkles size={32} className="mx-auto mb-3 text-zinc-700" />
-          <p className="text-sm text-zinc-500">씬을 선택하거나 추가하세요</p>
-          <p className="mt-1 text-xs text-zinc-700">좌측 패널에서 씬을 관리할 수 있습니다</p>
+          <p className="text-sm text-zinc-500">{t('scene.selectOrAdd')}</p>
+          <p className="mt-1 text-xs text-zinc-700">{t('scene.manageHint')}</p>
         </div>
       </div>
     );
   }
 
   const isKorean = projectLanguage === 'ko';
-  const primaryLabel = isKorean ? '스크립트 (한국어)' : '스크립트 (원문)';
-  const secondaryLabel = isKorean ? '스크립트 (원문/번역)' : '스크립트 (한국어)';
+  const primaryLabel = isKorean ? t('script.koLabel') : t('script.originalLabel');
+  const secondaryLabel = isKorean ? t('script.koFromOriginal') : t('script.originalFromKo');
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* 씬 헤더 */}
       <div className="flex items-center gap-3 border-b border-zinc-800 px-6 py-3">
-        <h2 className="text-sm font-medium text-zinc-300">씬 #{scene.index + 1}</h2>
+        <h2 className="text-sm font-medium text-zinc-300">
+          {t('scene.header')} #{scene.index + 1}
+        </h2>
         <div className="flex gap-1">
           {scene.narrationAudio && (
             <span className="flex items-center gap-1 rounded bg-blue-900/30 px-1.5 py-0.5 text-[10px] text-blue-400">
-              <Volume2 size={10} /> 나레이션
+              <Volume2 size={10} /> {t('scene.narration')}
             </span>
           )}
         </div>
-        <span className="ml-auto text-xs text-zinc-600">{scriptKo.length.toLocaleString()}자</span>
+        <span className="ml-auto text-xs text-zinc-600">
+          {scriptKo.length.toLocaleString()}
+          {t('scene.charCount')}
+        </span>
       </div>
 
       {/* 스크립트 편집 영역 */}
@@ -89,7 +95,7 @@ export function ScriptEditor({
               onBlur={isKorean ? handleScriptKoBlur : handleScriptOriginalBlur}
               rows={8}
               className="w-full resize-y rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm leading-relaxed text-zinc-200 placeholder-zinc-600 focus:border-zinc-600 focus:outline-none"
-              placeholder="나레이션 스크립트를 입력하세요..."
+              placeholder={t('script.placeholder')}
             />
           </div>
 
@@ -110,7 +116,7 @@ export function ScriptEditor({
               onBlur={isKorean ? handleScriptOriginalBlur : handleScriptKoBlur}
               rows={4}
               className="w-full resize-y rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm leading-relaxed text-zinc-200 placeholder-zinc-600 focus:border-zinc-600 focus:outline-none"
-              placeholder="번역 또는 원문..."
+              placeholder={t('script.secondaryPlaceholder')}
             />
           </div>
 
@@ -120,7 +126,7 @@ export function ScriptEditor({
               htmlFor="script-notes"
               className="mb-1.5 block text-xs font-medium text-zinc-500"
             >
-              노트
+              {t('script.notes')}
             </label>
             <textarea
               id="script-notes"
@@ -129,7 +135,7 @@ export function ScriptEditor({
               onBlur={handleNotesBlur}
               rows={3}
               className="w-full resize-y rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-xs leading-relaxed text-zinc-300 placeholder-zinc-700 focus:border-zinc-600 focus:outline-none"
-              placeholder="연출 메모, 참고사항..."
+              placeholder={t('script.notesPlaceholder')}
             />
           </div>
         </div>

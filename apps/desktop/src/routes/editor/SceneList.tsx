@@ -1,4 +1,5 @@
 import { Plus, Trash2, GripVertical, Image, Volume2, Subtitles } from 'lucide-react';
+import { useT } from '../../i18n';
 import type { Scene } from '@videoforge/shared';
 
 interface Props {
@@ -11,18 +12,20 @@ interface Props {
 }
 
 export function SceneList({ scenes, selectedId, onSelect, onAdd, onDelete }: Props): JSX.Element {
+  const t = useT();
+
   return (
     <div className="flex h-full w-60 flex-col border-r border-zinc-800 bg-zinc-950">
       {/* 헤더 */}
       <div className="flex items-center justify-between border-b border-zinc-800 px-3 py-2">
         <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-          씬 ({scenes.length})
+          {t('scene.scenes')} ({scenes.length})
         </span>
         <button
           type="button"
           onClick={onAdd}
           className="rounded-md p-1 text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-300"
-          title="씬 추가"
+          title={t('scene.add')}
         >
           <Plus size={14} />
         </button>
@@ -32,10 +35,10 @@ export function SceneList({ scenes, selectedId, onSelect, onAdd, onDelete }: Pro
       <div className="scrollbar-thin flex-1 overflow-y-auto">
         {scenes.length === 0 ? (
           <div className="px-3 py-8 text-center text-xs text-zinc-600">
-            씬이 없습니다.
+            {t('scene.empty')}
             <br />
             <button type="button" onClick={onAdd} className="text-accent mt-2 hover:underline">
-              + 첫 씬 추가
+              {t('scene.addFirst')}
             </button>
           </div>
         ) : (
@@ -52,7 +55,6 @@ export function SceneList({ scenes, selectedId, onSelect, onAdd, onDelete }: Pro
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1">
                   <span className="text-xs font-medium text-zinc-400">#{scene.index + 1}</span>
-                  {/* 에셋 상태 아이콘 */}
                   <div className="flex gap-0.5">
                     {scene.generatedImages.length > 0 && (
                       <Image size={10} className="text-emerald-600" />
@@ -62,7 +64,7 @@ export function SceneList({ scenes, selectedId, onSelect, onAdd, onDelete }: Pro
                   </div>
                 </div>
                 <p className="mt-0.5 truncate text-xs text-zinc-500">
-                  {scene.scriptKo ?? scene.scriptOriginal ?? '(스크립트 없음)'}
+                  {scene.scriptKo ?? scene.scriptOriginal ?? t('scene.noScript')}
                 </p>
               </div>
               <button
@@ -72,7 +74,7 @@ export function SceneList({ scenes, selectedId, onSelect, onAdd, onDelete }: Pro
                   onDelete(scene.id);
                 }}
                 className="shrink-0 rounded p-0.5 text-zinc-700 opacity-0 transition hover:text-red-400 group-hover:opacity-100"
-                title="삭제"
+                title={t('scene.delete')}
               >
                 <Trash2 size={12} />
               </button>

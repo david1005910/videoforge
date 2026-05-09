@@ -1,37 +1,39 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../lib/api';
+import { useT } from '../i18n';
 import type { FontInfo, SfxItem, SfxCategory } from '@videoforge/shared';
 
-const SFX_CATEGORIES: { value: SfxCategory | ''; label: string }[] = [
-  { value: '', label: '전체' },
-  { value: 'whoosh', label: 'Whoosh' },
-  { value: 'impact', label: 'Impact' },
-  { value: 'click', label: 'Click' },
-  { value: 'transition', label: 'Transition' },
-  { value: 'ambient', label: 'Ambient' },
-  { value: 'notification', label: 'Notification' },
-  { value: 'other', label: 'Other' },
+const SFX_CATEGORY_VALUES: (SfxCategory | '')[] = [
+  '',
+  'whoosh',
+  'impact',
+  'click',
+  'transition',
+  'ambient',
+  'notification',
+  'other',
 ];
 
 export function AssetsPage() {
+  const t = useT();
   const [tab, setTab] = useState<'fonts' | 'sfx'>('fonts');
 
   return (
     <div className="flex h-full flex-col bg-zinc-950 text-zinc-100">
       <header className="flex items-center gap-4 border-b border-zinc-800 px-6 py-3">
-        <h1 className="text-lg font-semibold">Asset Library</h1>
+        <h1 className="text-lg font-semibold">{t('assets.title')}</h1>
         <div className="flex gap-1 rounded-lg bg-zinc-900 p-1">
           <button
             className={`rounded-md px-3 py-1 text-sm ${tab === 'fonts' ? 'bg-violet-600 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
             onClick={() => setTab('fonts')}
           >
-            Fonts
+            {t('assets.fonts')}
           </button>
           <button
             className={`rounded-md px-3 py-1 text-sm ${tab === 'sfx' ? 'bg-violet-600 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
             onClick={() => setTab('sfx')}
           >
-            SFX
+            {t('assets.sfx')}
           </button>
         </div>
       </header>
@@ -43,6 +45,7 @@ export function AssetsPage() {
 }
 
 function FontsPanel() {
+  const t = useT();
   const [fonts, setFonts] = useState<FontInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -80,17 +83,19 @@ function FontsPanel() {
     }
   };
 
-  if (loading) return <p className="text-zinc-500">Loading fonts…</p>;
+  if (loading) return <p className="text-zinc-500">{t('assets.loadingFonts')}</p>;
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-sm text-zinc-400">{fonts.length} fonts</p>
+        <p className="text-sm text-zinc-400">
+          {fonts.length} {t('assets.fontsCount')}
+        </p>
         <button
           onClick={handleUpload}
           className="rounded-md bg-violet-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-500"
         >
-          + Upload Font
+          {t('assets.uploadFont')}
         </button>
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -111,7 +116,7 @@ function FontsPanel() {
                 onClick={() => handleDelete(f)}
                 className="ml-2 shrink-0 text-xs text-red-400 hover:text-red-300"
               >
-                Delete
+                {t('assets.delete')}
               </button>
             )}
           </div>
@@ -122,10 +127,22 @@ function FontsPanel() {
 }
 
 function SfxPanel() {
+  const t = useT();
   const [items, setItems] = useState<SfxItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState<SfxCategory | ''>('');
   const [query, setQuery] = useState('');
+
+  const categoryLabels: Record<string, string> = {
+    '': t('assets.all'),
+    whoosh: 'Whoosh',
+    impact: 'Impact',
+    click: 'Click',
+    transition: 'Transition',
+    ambient: 'Ambient',
+    notification: 'Notification',
+    other: 'Other',
+  };
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -179,32 +196,34 @@ function SfxPanel() {
           onChange={(e) => setCategory(e.target.value as SfxCategory | '')}
           className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-200"
         >
-          {SFX_CATEGORIES.map((c) => (
-            <option key={c.value} value={c.value}>
-              {c.label}
+          {SFX_CATEGORY_VALUES.map((c) => (
+            <option key={c} value={c}>
+              {categoryLabels[c]}
             </option>
           ))}
         </select>
         <input
           type="text"
-          placeholder="Search…"
+          placeholder={t('assets.search')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 placeholder:text-zinc-600"
         />
         <div className="flex-1" />
-        <p className="text-sm text-zinc-400">{items.length} items</p>
+        <p className="text-sm text-zinc-400">
+          {items.length} {t('assets.itemsCount')}
+        </p>
         <button
           onClick={handleUpload}
           className="rounded-md bg-violet-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-500"
         >
-          + Upload SFX
+          {t('assets.uploadSfx')}
         </button>
       </div>
       {loading ? (
-        <p className="text-zinc-500">Loading SFX…</p>
+        <p className="text-zinc-500">{t('assets.loadingSfx')}</p>
       ) : items.length === 0 ? (
-        <p className="text-zinc-500">No SFX found. Upload audio files to get started.</p>
+        <p className="text-zinc-500">{t('assets.noSfx')}</p>
       ) : (
         <div className="space-y-2">
           {items.map((item) => (
@@ -223,7 +242,7 @@ function SfxPanel() {
                   onClick={() => handleDelete(item)}
                   className="text-xs text-red-400 hover:text-red-300"
                 >
-                  Delete
+                  {t('assets.delete')}
                 </button>
               )}
             </div>
