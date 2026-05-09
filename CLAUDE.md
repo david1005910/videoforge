@@ -28,6 +28,7 @@ These 7 docs are the final authority. **Read relevant sections before writing co
 - `docs/implement.md` — Code patterns
 - `docs/decisions.md` — ADR 5 items (ADR-005 Intel env policy)
 - `docs/ENVIRONMENT.md` — Intel 16GB Monterey decisions
+- `docs/user-manual.md` — End-user guide (Korean)
 
 ## Common Commands
 
@@ -41,6 +42,7 @@ pnpm lint:fix             # ESLint --fix
 pnpm format               # Prettier --write
 pnpm build                # Production bundle
 pnpm dist:mac:local       # Local x64 DMG (8-12 min)
+pnpm perf:budget          # Performance budget check (deps, LoC, speed)
 pnpm kill:dev             # Kill zombie electron/vite processes
 pnpm clean:cache          # Clear vite/out/dist caches
 ```
@@ -78,8 +80,10 @@ videoforge/
 │   ├── electron/knowledge/    # AI chat system prompts (cs.md, dna-script.md, thumbnail.md)
 │   ├── src/                   # Renderer (React + Tailwind + Zustand)
 │   │   ├── routes/            # 11 page components + router.tsx
+│   │   ├── i18n/              # ko.ts / en.ts (87 keys each)
 │   │   └── lib/api.ts         # Renderer IPC wrapper (unwrap + zod-validate)
 │   ├── e2e/                   # Playwright E2E + mock servers
+│   ├── build/                 # icon.icns (macOS app icon)
 │   ├── resources/fonts/       # Bundled Noto Sans KR (OFL)
 │   ├── electron-builder.yml          # x64 (local)
 │   └── electron-builder.universal.yml # universal2 (CI)
@@ -89,7 +93,10 @@ videoforge/
 │       ├── schemas/           # Zod schemas per domain
 │       ├── domain/            # Domain models (Project, etc.)
 │       └── index.ts           # Re-exports with namespace pattern
-└── docs/                      # spec-kit + guides
+├── scripts/
+│   └── perf-budget.sh         # Performance budget checker
+├── docs/                      # spec-kit + guides + user manual
+└── .github/workflows/         # CI + release-please
 ```
 
 ### Service Domains (18)
@@ -157,6 +164,13 @@ Grok, Whisk, ImageFX use `puppeteer-core` + `puppeteer-extra` + stealth plugin. 
 - Headless: false (automation sites require visible browser)
 - E2E testing via express mock servers (`e2e/*-mock-server.ts`)
 
+### i18n
+
+- Translation files: `apps/desktop/src/i18n/ko.ts` (Korean) + `en.ts` (English)
+- 87 keys across 8 categories: app, projects, wizard, editor, tts, scene/script/inspector, subtitle, assets, common
+- Usage: `const t = useT()` hook → `t('key.name')` in components
+- All user-facing strings must go through i18n — no hardcoded Korean/English in `.tsx` files
+
 ## Code Style
 
 - Files: `kebab-case.ts`, components: `PascalCase.tsx`
@@ -173,8 +187,22 @@ Grok, Whisk, ImageFX use `puppeteer-core` + `puppeteer-extra` + stealth plugin. 
 - **Unit tests** (Vitest): 57 tests — 17 shared + 40 desktop (`electron/**/*.test.ts`)
 - **E2E tests** (Playwright Electron): 3 app specs (`smoke`, `project-lifecycle`, `tts`)
 - **E2E mock servers** (Playwright + express): 3 mock specs (`grok-mock`, `imagegen-mock`, `chat-mock`)
+- **Performance budget**: `pnpm perf:budget` — 13 checks (deps, LoC, typecheck speed, test speed, i18n coverage, large files)
 - Service functions must be IPC-independent and unit-testable
 - Font tests mock `app.isPackaged = true` to avoid scanning real `resources/fonts/`
+
+## Performance Budget (current baseline)
+
+| Metric       | Current       | Limit      |
+| ------------ | ------------- | ---------- |
+| Typecheck    | 14-17s        | 30s        |
+| All tests    | 9-11s         | 30s        |
+| Total LoC    | ~10,900       | —          |
+| Shared deps  | 1             | 10         |
+| Desktop deps | 18            | 40         |
+| i18n keys    | 87 ko / 87 en | must match |
+
+Run `pnpm perf:budget` after significant changes to check for regressions.
 
 ## Don't Do This
 
@@ -193,10 +221,26 @@ Grok, Whisk, ImageFX use `puppeteer-core` + `puppeteer-extra` + stealth plugin. 
 - Assigning `undefined` to optional properties (use conditional object construction)
 - Using `waitForTimeout` on Puppeteer Page (removed in newer versions; use `setTimeout` + `Promise`)
 - Using `.then()` chains (use `async/await`; prefix fire-and-forget promises with `void`)
+- Hardcoded Korean/English strings in `.tsx` — use `t('key')` via i18n
 
 ## Current Phase
 
-**All phases (0-11) complete.** Every task in `docs/tasks.md` is implemented, including all previously skipped items (P5-05, P6-12/13, P7-08, P8-04/07/08, P9-09/10, P10-03). Phase 12 items (local Whisper, Bridge extension, mobile companion) are future v1.1+ scope.
+**All code-implementable phases (0-11) complete.** Every task in `docs/tasks.md` is implemented, including:
+
+- P5-05 (bundled fonts), P6-12/13 (Grok mock E2E), P7-08 (ImageGen mock E2E)
+- P8-04/07/08 (chat history, thumbnail analysis, chat mock E2E)
+- P9-01 (app icon), P9-08 (accessibility), P9-09/10 (onboarding, error report)
+- P10-03/04 (auto-update toggle, release-please)
+- P11-03/04/05 (perf budget, i18n UX review, user manual)
+
+**Remaining (non-code)**:
+
+- P9-04: Apple Developer ID (external account setup)
+- P9-05: CI Notarization (depends on P9-04)
+- P10-05: CI notarized DMG upload (depends on P9-04/05)
+- P11-01/02/06: Beta recruitment, bug fixes, 1.0.0 release
+
+Phase 12 items (local Whisper, Bridge extension, mobile companion) are future v1.1+ scope.
 
 **Repository**: `https://github.com/david1005910/videoforge.git`
 
@@ -213,7 +257,8 @@ feat(P1-04): IPC project:save / project:load / project:list / project:delete
 3. Read `docs/implement.md` for patterns (especially §2 IPC, §3 Service layer)
 4. Check `packages/shared/SCHEMAS.md` for schema conflicts
 5. Implement → `pnpm test` + `pnpm typecheck` must pass
-6. PR description uses 7-step checklist (`docs/implement.md` §15)
+6. Run `pnpm perf:budget` after significant changes
+7. PR description uses 7-step checklist (`docs/implement.md` §15)
 
 ## Active ADRs
 
