@@ -101,6 +101,22 @@ export const ko = {
   'assets.search': '검색…',
   'assets.delete': '삭제',
 
+  // Whisper Local (Phase 12)
+  'whisper.title': 'Whisper (로컬)',
+  'whisper.binaryStatus': '바이너리 상태',
+  'whisper.binaryReady': '설치됨',
+  'whisper.binaryNotReady': '미설치',
+  'whisper.downloadBinary': '바이너리 다운로드',
+  'whisper.models': '모델 관리',
+  'whisper.download': '다운로드',
+  'whisper.downloading': '다운로드 중...',
+  'whisper.delete': '삭제',
+  'whisper.downloaded': '다운로드됨',
+  'whisper.notDownloaded': '미설치',
+  'whisper.recommended': '권장',
+  'whisper.selectModel': '모델 선택',
+  'whisper.noModels': '다운로드된 모델이 없습니다.',
+
   // Common
   'common.cancel': '취소',
   'common.confirm': '확인',

@@ -45,7 +45,7 @@ export type AlignedWord = z.infer<typeof AlignedWord>;
 export const SttTranscribeRequest = z.object({
   audioPath: FilePath,
   language: LanguageCode,
-  provider: z.enum(['openai', 'gemini']).default('openai'),
+  provider: z.enum(['openai', 'gemini', 'whisper-local']).default('openai'),
   apiKey: z.string().optional(),
   /** 모델 (예: whisper-1, gpt-4o-transcribe) */
   model: z.string().optional(),
@@ -103,6 +103,73 @@ export type SttGetTokenResponse = z.infer<typeof SttGetTokenResponse>;
  * stt:onProgress
  */
 export const SttProgressEvent = ProgressEvent.extend({
-  phase: z.enum(['upload', 'transcribe', 'align']),
+  phase: z.enum(['upload', 'transcribe', 'align', 'download']),
 });
 export type SttProgressEvent = z.infer<typeof SttProgressEvent>;
+
+// ─── Whisper Local Model Management ────────────────────────────────
+
+export const WhisperModelId = z.enum([
+  'ggml-tiny',
+  'ggml-tiny.en',
+  'ggml-base',
+  'ggml-base.en',
+  'ggml-small',
+  'ggml-small.en',
+  'ggml-medium',
+  'ggml-medium.en',
+  'ggml-large-v3',
+  'ggml-large-v3-turbo',
+  'ggml-large-v3-turbo-q5_0',
+  'ggml-large-v3-turbo-q8_0',
+]);
+export type WhisperModelId = z.infer<typeof WhisperModelId>;
+
+export const WhisperModelInfo = z.object({
+  id: WhisperModelId,
+  label: z.string(),
+  sizeMB: z.number(),
+  downloaded: z.boolean(),
+  filePath: FilePath.optional(),
+});
+export type WhisperModelInfo = z.infer<typeof WhisperModelInfo>;
+
+/**
+ * stt:whisper:models — list available and downloaded models
+ */
+export const WhisperModelsRequest = z.object({});
+export type WhisperModelsRequest = z.infer<typeof WhisperModelsRequest>;
+
+export const WhisperModelsResponse = z.object({
+  models: z.array(WhisperModelInfo),
+  binaryReady: z.boolean(),
+});
+export type WhisperModelsResponse = z.infer<typeof WhisperModelsResponse>;
+
+/**
+ * stt:whisper:download — download a whisper model (or binary)
+ */
+export const WhisperDownloadRequest = z.object({
+  modelId: WhisperModelId,
+  taskId: TaskId.optional(),
+});
+export type WhisperDownloadRequest = z.infer<typeof WhisperDownloadRequest>;
+
+export const WhisperDownloadResponse = z.object({
+  modelId: WhisperModelId,
+  filePath: FilePath,
+  sizeMB: z.number(),
+});
+export type WhisperDownloadResponse = z.infer<typeof WhisperDownloadResponse>;
+
+/**
+ * stt:whisper:delete — remove a downloaded model
+ */
+export const WhisperDeleteRequest = z.object({
+  modelId: WhisperModelId,
+});
+export type WhisperDeleteRequest = z.infer<typeof WhisperDeleteRequest>;
+
+export const WhisperDeleteResponse = z.object({
+  deleted: z.boolean(),
+});

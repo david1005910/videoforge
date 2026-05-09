@@ -59,6 +59,13 @@ export type {
   SttSegment,
   AlignedWord,
   SttProgressEvent,
+  WhisperModelId,
+  WhisperModelInfo,
+  WhisperModelsRequest,
+  WhisperModelsResponse,
+  WhisperDownloadRequest,
+  WhisperDownloadResponse,
+  WhisperDeleteRequest,
 } from './schemas/stt';
 export type {
   PipelineStep,

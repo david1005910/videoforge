@@ -150,11 +150,14 @@ const api = {
     historyClear: (payload: unknown) => invoke(Channels.Chat.HistoryClear, payload),
   },
 
-  // === STT (Phase 3 — P3-05) ===
+  // === STT (Phase 3 — P3-05, Phase 12 — Whisper Local) ===
   stt: {
     transcribe: (payload: unknown) => invoke(Channels.Stt.Transcribe, payload),
     align: (payload: unknown) => invoke(Channels.Stt.Align, payload),
     onProgress: (cb: (payload: unknown) => void) => onEvent(Channels.Stt.OnProgress, cb),
+    whisperModels: () => invoke(Channels.Stt.WhisperModels),
+    whisperDownload: (payload: unknown) => invoke(Channels.Stt.WhisperDownload, payload),
+    whisperDelete: (payload: unknown) => invoke(Channels.Stt.WhisperDelete, payload),
   },
 
   // === Diagnostics (Phase 9 — P9-10) ===

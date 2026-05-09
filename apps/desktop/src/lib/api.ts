@@ -28,6 +28,10 @@ import {
   type SttTranscribeResponse,
   type SttAlignRequest,
   type SttAlignResponse,
+  type WhisperModelsResponse,
+  type WhisperDownloadRequest,
+  type WhisperDownloadResponse,
+  type WhisperDeleteRequest,
   type VideoEditRequest,
   type VideoEditResponse,
   type AudioMergeRequest,
@@ -234,6 +238,18 @@ export const api = {
     },
     onProgress(cb: (payload: unknown) => void): () => void {
       return window.electronAPI.stt.onProgress(cb);
+    },
+    async whisperModels(): Promise<WhisperModelsResponse> {
+      const resp = await window.electronAPI.stt.whisperModels();
+      return SttSchemas.WhisperModelsResponse.parse(unwrap(resp));
+    },
+    async whisperDownload(req: WhisperDownloadRequest): Promise<WhisperDownloadResponse> {
+      const resp = await window.electronAPI.stt.whisperDownload(req);
+      return SttSchemas.WhisperDownloadResponse.parse(unwrap(resp));
+    },
+    async whisperDelete(req: WhisperDeleteRequest): Promise<void> {
+      const resp = await window.electronAPI.stt.whisperDelete(req);
+      unwrap(resp);
     },
   },
 

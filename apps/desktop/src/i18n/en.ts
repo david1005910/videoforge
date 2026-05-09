@@ -103,6 +103,22 @@ export const en: Record<keyof typeof ko, string> = {
   'assets.search': 'Search…',
   'assets.delete': 'Delete',
 
+  // Whisper Local (Phase 12)
+  'whisper.title': 'Whisper (Local)',
+  'whisper.binaryStatus': 'Binary Status',
+  'whisper.binaryReady': 'Installed',
+  'whisper.binaryNotReady': 'Not installed',
+  'whisper.downloadBinary': 'Download Binary',
+  'whisper.models': 'Model Management',
+  'whisper.download': 'Download',
+  'whisper.downloading': 'Downloading...',
+  'whisper.delete': 'Delete',
+  'whisper.downloaded': 'Downloaded',
+  'whisper.notDownloaded': 'Not installed',
+  'whisper.recommended': 'Recommended',
+  'whisper.selectModel': 'Select Model',
+  'whisper.noModels': 'No models downloaded.',
+
   // Common
   'common.cancel': 'Cancel',
   'common.confirm': 'OK',

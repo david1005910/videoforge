@@ -62,6 +62,9 @@ export const Channels = {
     Align: 'stt:align',
     GetToken: 'stt:getToken',
     OnProgress: 'stt:onProgress',
+    WhisperModels: 'stt:whisper:models',
+    WhisperDownload: 'stt:whisper:download',
+    WhisperDelete: 'stt:whisper:delete',
   },
   Audio: {
     Merge: 'audio:merge',
