@@ -55,9 +55,6 @@ importers:
       '@tanstack/react-router':
         specifier: ^1.169.2
         version: 1.169.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@videoforge/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       electron-updater:
         specifier: ^6.8.3
         version: 6.8.3
@@ -119,6 +116,9 @@ importers:
       '@types/react-dom':
         specifier: 18.3.1
         version: 18.3.1
+      '@videoforge/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@vitejs/plugin-react':
         specifier: 4.3.3
         version: 4.3.3(vite@5.4.10(@types/node@20.16.0)(terser@5.47.1))
