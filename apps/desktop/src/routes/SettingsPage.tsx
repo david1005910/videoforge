@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
+import { useUiStore } from '../stores/ui-store';
 
 /**
  * Settings page with API key management, auto-update toggle (P10-03),
- * and error report export (P9-10).
+ * accessibility/font size (P9-08), and error report export (P9-10).
  */
 export function SettingsPage() {
   const [apiKey, setApiKey] = useState('');
@@ -11,6 +12,8 @@ export function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [autoUpdate, setAutoUpdate] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const fontScale = useUiStore((s) => s.fontScale);
+  const setFontScale = useUiStore((s) => s.setFontScale);
 
   useEffect(() => {
     void api.keychain.get('auto-update-enabled').then((val) => {
@@ -70,9 +73,12 @@ export function SettingsPage() {
           <h2 className="mb-3 text-sm font-medium text-zinc-400">API Keys</h2>
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-xs text-zinc-500">Gemini API Key</label>
+              <label htmlFor="gemini-key" className="mb-1 block text-xs text-zinc-500">
+                Gemini API Key
+              </label>
               <div className="flex gap-2">
                 <input
+                  id="gemini-key"
                   type="password"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
@@ -109,11 +115,43 @@ export function SettingsPage() {
               className={`relative h-6 w-11 rounded-full transition-colors ${autoUpdate ? 'bg-violet-600' : 'bg-zinc-700'}`}
               role="switch"
               aria-checked={autoUpdate}
+              aria-label="Auto-check for updates"
             >
               <span
                 className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${autoUpdate ? 'translate-x-5' : 'translate-x-0'}`}
               />
             </button>
+          </div>
+        </section>
+
+        {/* Accessibility (P9-08) */}
+        <section>
+          <h2 className="mb-3 text-sm font-medium text-zinc-400">Accessibility</h2>
+          <div className="space-y-3">
+            <div>
+              <label className="mb-2 block text-xs text-zinc-500">Font Size</label>
+              <div className="flex gap-2" role="radiogroup" aria-label="Font size">
+                {(['small', 'normal', 'large'] as const).map((scale) => (
+                  <button
+                    key={scale}
+                    onClick={() => setFontScale(scale)}
+                    role="radio"
+                    aria-checked={fontScale === scale}
+                    className={`flex-1 rounded-lg border px-3 py-2 text-center text-sm capitalize ${
+                      fontScale === scale
+                        ? 'border-violet-500 bg-violet-500/10 text-violet-300'
+                        : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-600'
+                    }`}
+                  >
+                    {scale}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="text-xs text-zinc-600">
+              Keyboard navigation: Use Tab/Shift+Tab to move between controls, Enter/Space to
+              activate.
+            </p>
           </div>
         </section>
 

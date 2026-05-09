@@ -8,6 +8,8 @@ import { useT } from '../../i18n';
 import { SceneList } from './SceneList';
 import { ScriptEditor } from './ScriptEditor';
 import { Inspector } from './Inspector';
+import { Timeline } from './Timeline';
+import { ExportDialog } from './ExportDialog';
 import type { Project, Scene } from '@videoforge/shared';
 
 export function EditorPage(): JSX.Element {
@@ -16,6 +18,7 @@ export function EditorPage(): JSX.Element {
   const { projectId } = useParams({ from: '/editor/$projectId' });
   const { currentProject, setCurrentProject } = useProjectStore();
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
+  const [showExport, setShowExport] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -169,6 +172,13 @@ export function EditorPage(): JSX.Element {
         <span className="ml-auto text-[10px] text-zinc-700">
           {currentProject.scenes.length} {t('projects.scenes')}
         </span>
+        <button
+          type="button"
+          onClick={() => setShowExport(true)}
+          className="titlebar-no-drag ml-2 rounded-md bg-violet-600 px-2.5 py-1 text-[10px] font-medium text-white hover:bg-violet-500"
+        >
+          Export
+        </button>
       </div>
 
       {/* 3-패널 에디터 */}
@@ -189,6 +199,19 @@ export function EditorPage(): JSX.Element {
         />
         <Inspector scene={selectedScene} />
       </main>
+
+      {/* P4-13: Timeline */}
+      <Timeline
+        scenes={currentProject.scenes}
+        selectedId={selectedSceneId}
+        onSelect={setSelectedSceneId}
+        onReorder={handleReorder}
+      />
+
+      {/* P4-15: Export Dialog */}
+      {showExport && (
+        <ExportDialog projectTitle={currentProject.title} onClose={() => setShowExport(false)} />
+      )}
     </div>
   );
 }
