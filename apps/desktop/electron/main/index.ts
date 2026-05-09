@@ -17,6 +17,7 @@ import { registerWhiskHandlers } from './services/whisk';
 import { registerImagefxHandlers } from './services/imagefx';
 import { registerChatHandlers } from './services/chat';
 import { registerUpdateHandlers } from './services/update';
+import { registerDiagnosticsHandlers } from './services/diagnostics';
 import { loadPreferences } from './services/settings';
 import { setProjectsDir, getProjectsDir } from './services/project/storage';
 import { logger } from './logger';
@@ -168,6 +169,7 @@ void app.whenReady().then(async () => {
   registerImagefxHandlers();
   registerChatHandlers();
   registerUpdateHandlers();
+  registerDiagnosticsHandlers();
 
   buildMenu();
   createWindow();

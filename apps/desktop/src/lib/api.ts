@@ -346,6 +346,13 @@ export const api = {
     },
   },
 
+  diagnostics: {
+    async errorReport(outputDir: string): Promise<{ reportPath: string }> {
+      const resp = await window.electronAPI.diagnostics.errorReport({ outputDir });
+      return unwrap(resp) as { reportPath: string };
+    },
+  },
+
   update: {
     async status(): Promise<UpdateStatusResponse> {
       const resp = await window.electronAPI.update.status();

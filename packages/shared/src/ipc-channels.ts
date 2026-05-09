@@ -131,6 +131,9 @@ export const Channels = {
     StopFind: 'page:stopFind',
     OnFound: 'page:onFound',
   },
+  Diagnostics: {
+    ErrorReport: 'diagnostics:errorReport',
+  },
   Drag: {
     Start: 'drag:start',
   },

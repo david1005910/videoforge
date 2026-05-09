@@ -1,28 +1,32 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 
-// Mock electron
-vi.mock('electron', () => ({
-  app: {
-    getPath: () => testUserData,
-    isPackaged: false,
-  },
-  dialog: {
-    showOpenDialog: vi.fn(),
-  },
-}));
-
 let testUserData: string;
+let testResourcesPath: string;
 
 beforeEach(() => {
   testUserData = fs.mkdtempSync(path.join(os.tmpdir(), 'vf-fonts-'));
+  testResourcesPath = path.join(testUserData, '__resources__');
+  // Ensure process.resourcesPath exists for isPackaged=true
+  Object.defineProperty(process, 'resourcesPath', {
+    value: testResourcesPath,
+    writable: true,
+    configurable: true,
+  });
+  vi.resetModules();
+  vi.mock('electron', () => ({
+    app: {
+      getPath: () => testUserData,
+      isPackaged: true,
+    },
+    dialog: { showOpenDialog: vi.fn() },
+  }));
 });
 
-afterEach(() => {
-  fs.rmSync(testUserData, { recursive: true, force: true });
-});
+// Temp dirs are cleaned up by the OS — avoiding rmSync prevents
+// ENOENT from lazy module-level references to the deleted path.
 
 describe('fonts service', () => {
   it('listFonts returns empty when no fonts exist', async () => {
@@ -36,12 +40,6 @@ describe('fonts service', () => {
     fs.mkdirSync(fontsDir, { recursive: true });
     fs.writeFileSync(path.join(fontsDir, 'TestFont.ttf'), 'fake-font-data');
 
-    // Re-import to pick up new testUserData
-    vi.resetModules();
-    vi.mock('electron', () => ({
-      app: { getPath: () => testUserData, isPackaged: false },
-      dialog: { showOpenDialog: vi.fn() },
-    }));
     const { listFonts } = await import('./fonts');
     const res = await listFonts();
     expect(res.fonts.length).toBe(1);
@@ -56,11 +54,6 @@ describe('fonts service', () => {
     fs.mkdirSync(fontsDir, { recursive: true });
     fs.writeFileSync(path.join(fontsDir, 'MyFont.otf'), 'fake');
 
-    vi.resetModules();
-    vi.mock('electron', () => ({
-      app: { getPath: () => testUserData, isPackaged: false },
-      dialog: { showOpenDialog: vi.fn() },
-    }));
     const { deleteFont, listFonts } = await import('./fonts');
     await deleteFont({ postscriptName: 'MyFont' });
 
@@ -73,11 +66,6 @@ describe('fonts service', () => {
     fs.mkdirSync(fontsDir, { recursive: true });
     fs.writeFileSync(path.join(fontsDir, 'NotoSansKR-Regular.ttf'), 'fake');
 
-    vi.resetModules();
-    vi.mock('electron', () => ({
-      app: { getPath: () => testUserData, isPackaged: false },
-      dialog: { showOpenDialog: vi.fn() },
-    }));
     const { listFonts } = await import('./fonts');
     const res = await listFonts();
     const font = res.fonts[0]!;

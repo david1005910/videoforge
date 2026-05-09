@@ -14,6 +14,8 @@ import { ImageGenPage } from './ImageGenPage';
 import { ChatPage } from './ChatPage';
 import { AboutPage } from './AboutPage';
 import { SettingsPage } from './SettingsPage';
+import { OnboardingPage } from './OnboardingPage';
+import { ThumbnailAnalysisPage } from './ThumbnailAnalysisPage';
 
 const rootRoute = createRootRoute({
   component: () => <Outlet />,
@@ -73,6 +75,18 @@ const settingsRoute = createRoute({
   component: SettingsPage,
 });
 
+const onboardingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/onboarding',
+  component: OnboardingPage,
+});
+
+const thumbnailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/thumbnail',
+  component: ThumbnailAnalysisPage,
+});
+
 const routeTree = rootRoute.addChildren([
   projectsRoute,
   editorRoute,
@@ -83,6 +97,8 @@ const routeTree = rootRoute.addChildren([
   chatRoute,
   aboutRoute,
   settingsRoute,
+  onboardingRoute,
+  thumbnailRoute,
 ]);
 
 // Electron file:// 에서는 hash history 사용

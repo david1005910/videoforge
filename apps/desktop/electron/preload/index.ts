@@ -154,6 +154,11 @@ const api = {
     onProgress: (cb: (payload: unknown) => void) => onEvent(Channels.Stt.OnProgress, cb),
   },
 
+  // === Diagnostics (Phase 9 — P9-10) ===
+  diagnostics: {
+    errorReport: (payload: unknown) => invoke(Channels.Diagnostics.ErrorReport, payload),
+  },
+
   // === Update (Phase 10 — P10-02) ===
   update: {
     status: () => invoke(Channels.Update.Status),
