@@ -316,4 +316,4 @@
 
 ---
 
-_VideoForge v0.0.1 — Built for the HBAS YouTube channel._
+_VideoForge v0.1.0 — Built for the HBAS YouTube channel._

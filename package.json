@@ -1,6 +1,6 @@
 {
   "name": "videoforge",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "license": "MIT",
   "description": "macOS-native AI video creation studio (Intel 16GB Monterey 최적화)",
