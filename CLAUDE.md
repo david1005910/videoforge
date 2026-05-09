@@ -181,7 +181,7 @@ Local speech-to-text via whisper.cpp, opt-in alternative to cloud providers (Ope
 - **Storage**: `~/Library/Application Support/VideoForge/whisper/` (models + binary)
 - **Thread limit**: `min(cpuCount - 2, 4)` to avoid thermal throttle
 - **Audio**: Non-WAV auto-converted to 16kHz mono PCM via ffmpeg-static
-- **IPC channels**: `stt:whisper:models`, `stt:whisper:download`, `stt:whisper:delete`
+- **IPC channels**: `stt:whisper:models`, `stt:whisper:download`, `stt:whisper:delete`, `stt:whisper:binaryDownload`
 - **Key files**:
   - `apps/desktop/electron/main/services/stt/whisper-model.ts` — model catalog, download, delete
   - `apps/desktop/electron/main/services/stt/whisper-local.ts` — child_process wrapper, JSON parsing
@@ -200,7 +200,7 @@ Local speech-to-text via whisper.cpp, opt-in alternative to cloud providers (Ope
 
 ## Testing
 
-- **Unit tests** (Vitest): 65 tests — 17 shared + 48 desktop (`electron/**/*.test.ts`)
+- **Unit tests** (Vitest): 66 tests — 17 shared + 49 desktop (`electron/**/*.test.ts`)
 - **E2E tests** (Playwright Electron): 3 app specs (`smoke`, `project-lifecycle`, `tts`)
 - **E2E mock servers** (Playwright + express): 3 mock specs (`grok-mock`, `imagegen-mock`, `chat-mock`)
 - **Performance budget**: `pnpm perf:budget` — 13 checks (deps, LoC, typecheck speed, test speed, i18n coverage, large files)
@@ -213,7 +213,7 @@ Local speech-to-text via whisper.cpp, opt-in alternative to cloud providers (Ope
 | ------------ | --------------- | ---------- |
 | Typecheck    | 14-17s          | 30s        |
 | All tests    | 9-11s           | 30s        |
-| Total LoC    | ~11,600         | —          |
+| Total LoC    | ~11,700         | —          |
 | Shared deps  | 1               | 10         |
 | Desktop deps | 17              | 40         |
 | i18n keys    | 101 ko / 101 en | must match |
@@ -242,19 +242,18 @@ Run `pnpm perf:budget` after significant changes to check for regressions.
 
 **Phases 0-11 complete. Phase 12 (Local Whisper) in progress.**
 
-### Completed Phase 12 work:
+### Phase 12 completed:
 
-- P12 whisper-local STT provider (schemas, service, IPC, tests)
-- 3 new IPC channels (`stt:whisper:models/download/delete`)
+- whisper-local STT provider (schemas, service, IPC, child_process wrapper)
+- 4 IPC channels (`stt:whisper:models/download/delete/binaryDownload`)
 - Model catalog (12 GGML models) + HuggingFace download
 - whisper.cpp binary download from GitHub releases
-- 14 new i18n keys, 8 unit tests
+- Settings UI: Whisper section (binary status, model list, download/delete)
+- SubtitlePanel: whisper-local option in provider dropdown
+- 14 i18n keys, 9 unit tests
 
-### Phase 12 remaining:
+### Phase 12 optional remaining:
 
-- Settings UI for model download/selection (Whisper section)
-- SubtitlePanel UI: whisper-local option in provider dropdown
-- Binary download IPC (currently exported but no dedicated channel)
 - E2E test for whisper-local flow (mock whisper output)
 
 ### Remaining (non-code):
@@ -284,7 +283,7 @@ feat(P1-04): IPC project:save / project:load / project:list / project:delete
 
 ## Active ADRs
 
-- **ADR-001 STT**: Cloud (OpenAI) default, local (whisper.cpp) opt-in. Phase 12 backend implemented — whisper-local provider dispatches to whisper.cpp child process.
+- **ADR-001 STT**: Cloud (OpenAI) default, local (whisper.cpp) opt-in. Phase 12 complete — backend + Settings UI + SubtitlePanel integration.
 - **ADR-002 Automation**: Puppeteer standalone, Bridge Phase 12+. Whisk/ImageFX via separate Google account.
 - **ADR-003 Project Location**: `~/Documents/VideoForge/Projects/` default, user-configurable.
 - **ADR-004 Font**: Noto Sans KR Regular + Bold bundled (OFL). Located at `apps/desktop/resources/fonts/`.
