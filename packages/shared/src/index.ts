@@ -66,6 +66,7 @@ export type {
   WhisperDownloadRequest,
   WhisperDownloadResponse,
   WhisperDeleteRequest,
+  WhisperBinaryDownloadResponse,
 } from './schemas/stt';
 export type {
   PipelineStep,

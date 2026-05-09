@@ -109,6 +109,13 @@ describe('whisper-local schemas', () => {
     expect(req.modelId).toBe('ggml-tiny');
   });
 
+  it('validates WhisperBinaryDownloadResponse', () => {
+    const resp = SttSchemas.WhisperBinaryDownloadResponse.parse({
+      binPath: '/tmp/whisper/whisper-cpp',
+    });
+    expect(resp.binPath).toBe('/tmp/whisper/whisper-cpp');
+  });
+
   it('SttProgressEvent includes download phase', () => {
     const event = SttSchemas.SttProgressEvent.parse({
       taskId: '01HKQM2X3Y4Z5A6B7C8D9E0F1G',

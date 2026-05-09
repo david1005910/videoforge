@@ -32,8 +32,6 @@ export function registerSttHandlers(): void {
   );
 
   registerHandler(Channels.Stt.WhisperDownload, SttSchemas.WhisperDownloadRequest, async (req) => {
-    // If modelId is 'ggml-tiny' and binary isn't ready, download binary first
-    // But actually we handle binary download separately via a special check
     return downloadModel(req.modelId, (percent) => {
       logger.debug({ modelId: req.modelId, percent }, 'whisper.download.progress');
     });
@@ -42,6 +40,15 @@ export function registerSttHandlers(): void {
   registerHandler(Channels.Stt.WhisperDelete, SttSchemas.WhisperDeleteRequest, async (req) =>
     deleteModel(req.modelId),
   );
-}
 
-export { downloadBinary };
+  registerHandler(
+    Channels.Stt.WhisperBinaryDownload,
+    SttSchemas.WhisperBinaryDownloadRequest,
+    async () => {
+      const binPath = await downloadBinary((percent) => {
+        logger.debug({ percent }, 'whisper.binary.download.progress');
+      });
+      return { binPath };
+    },
+  );
+}

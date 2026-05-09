@@ -173,3 +173,14 @@ export type WhisperDeleteRequest = z.infer<typeof WhisperDeleteRequest>;
 export const WhisperDeleteResponse = z.object({
   deleted: z.boolean(),
 });
+
+/**
+ * stt:whisper:binaryDownload — download whisper.cpp binary
+ */
+export const WhisperBinaryDownloadRequest = z.object({});
+export type WhisperBinaryDownloadRequest = z.infer<typeof WhisperBinaryDownloadRequest>;
+
+export const WhisperBinaryDownloadResponse = z.object({
+  binPath: FilePath,
+});
+export type WhisperBinaryDownloadResponse = z.infer<typeof WhisperBinaryDownloadResponse>;

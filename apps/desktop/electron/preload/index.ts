@@ -158,6 +158,7 @@ const api = {
     whisperModels: () => invoke(Channels.Stt.WhisperModels),
     whisperDownload: (payload: unknown) => invoke(Channels.Stt.WhisperDownload, payload),
     whisperDelete: (payload: unknown) => invoke(Channels.Stt.WhisperDelete, payload),
+    whisperBinaryDownload: () => invoke(Channels.Stt.WhisperBinaryDownload),
   },
 
   // === Diagnostics (Phase 9 — P9-10) ===

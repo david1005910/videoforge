@@ -1,12 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { api } from '../lib/api';
 import { useUiStore } from '../stores/ui-store';
+import { useT } from '../i18n';
+import type { WhisperModelInfo } from '@videoforge/shared';
 
 /**
  * Settings page with API key management, auto-update toggle (P10-03),
- * accessibility/font size (P9-08), and error report export (P9-10).
+ * Whisper model management (P12), accessibility/font size (P9-08),
+ * and error report export (P9-10).
  */
 export function SettingsPage() {
+  const t = useT();
   const [apiKey, setApiKey] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -15,10 +19,27 @@ export function SettingsPage() {
   const fontScale = useUiStore((s) => s.fontScale);
   const setFontScale = useUiStore((s) => s.setFontScale);
 
+  // Whisper state
+  const [whisperModels, setWhisperModels] = useState<WhisperModelInfo[]>([]);
+  const [binaryReady, setBinaryReady] = useState(false);
+  const [downloadingBinary, setDownloadingBinary] = useState(false);
+  const [downloadingModel, setDownloadingModel] = useState<string | null>(null);
+
   useEffect(() => {
     void api.keychain.get('auto-update-enabled').then((val) => {
       setAutoUpdate(val === 'true');
     });
+    void loadWhisperModels();
+  }, []);
+
+  const loadWhisperModels = useCallback(async () => {
+    try {
+      const result = await api.stt.whisperModels();
+      setWhisperModels(result.models);
+      setBinaryReady(result.binaryReady);
+    } catch (err) {
+      console.error('whisperModels failed', err);
+    }
   }, []);
 
   const handleSaveApiKey = async () => {
@@ -43,6 +64,39 @@ export function SettingsPage() {
     } catch (err) {
       console.error('auto-update toggle failed', err);
       setAutoUpdate(!newVal);
+    }
+  };
+
+  const handleDownloadBinary = async () => {
+    setDownloadingBinary(true);
+    try {
+      await api.stt.whisperBinaryDownload();
+      setBinaryReady(true);
+    } catch (err) {
+      console.error('whisper binary download failed', err);
+    } finally {
+      setDownloadingBinary(false);
+    }
+  };
+
+  const handleDownloadModel = async (modelId: string) => {
+    setDownloadingModel(modelId);
+    try {
+      await api.stt.whisperDownload({ modelId: modelId as WhisperModelInfo['id'] });
+      await loadWhisperModels();
+    } catch (err) {
+      console.error('whisper model download failed', err);
+    } finally {
+      setDownloadingModel(null);
+    }
+  };
+
+  const handleDeleteModel = async (modelId: string) => {
+    try {
+      await api.stt.whisperDelete({ modelId: modelId as WhisperModelInfo['id'] });
+      await loadWhisperModels();
+    } catch (err) {
+      console.error('whisper model delete failed', err);
     }
   };
 
@@ -96,6 +150,88 @@ export function SettingsPage() {
               <p className="mt-1 text-xs text-zinc-600">
                 Stored securely in macOS Keychain via safeStorage.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Whisper Local (P12) */}
+        <section>
+          <h2 className="mb-3 text-sm font-medium text-zinc-400">{t('whisper.title')}</h2>
+
+          {/* Binary status */}
+          <div className="mb-4 rounded-lg border border-zinc-800 bg-zinc-900 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-zinc-200">{t('whisper.binaryStatus')}</p>
+                <p className="text-xs text-zinc-500">
+                  {binaryReady ? (
+                    <span className="text-green-400">{t('whisper.binaryReady')}</span>
+                  ) : (
+                    <span className="text-yellow-400">{t('whisper.binaryNotReady')}</span>
+                  )}
+                </p>
+              </div>
+              {!binaryReady && (
+                <button
+                  onClick={handleDownloadBinary}
+                  disabled={downloadingBinary}
+                  className="rounded-md bg-violet-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-500 disabled:opacity-50"
+                >
+                  {downloadingBinary ? t('whisper.downloading') : t('whisper.downloadBinary')}
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Model list */}
+          <div>
+            <p className="mb-2 text-xs text-zinc-500">{t('whisper.models')}</p>
+            <div className="space-y-2">
+              {whisperModels.map((model) => (
+                <div
+                  key={model.id}
+                  className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-3"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-zinc-200">
+                      {model.label}
+                      {model.id === 'ggml-large-v3-turbo-q5_0' && (
+                        <span className="ml-2 rounded bg-violet-600/20 px-1.5 py-0.5 text-xs text-violet-300">
+                          {t('whisper.recommended')}
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-xs text-zinc-500">
+                      {model.sizeMB}MB ·{' '}
+                      {model.downloaded ? (
+                        <span className="text-green-400">{t('whisper.downloaded')}</span>
+                      ) : (
+                        <span className="text-zinc-600">{t('whisper.notDownloaded')}</span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="ml-3 flex gap-2">
+                    {model.downloaded ? (
+                      <button
+                        onClick={() => void handleDeleteModel(model.id)}
+                        className="rounded border border-zinc-700 px-2 py-1 text-xs text-zinc-400 hover:border-red-700 hover:text-red-400"
+                      >
+                        {t('whisper.delete')}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => void handleDownloadModel(model.id)}
+                        disabled={downloadingModel !== null}
+                        className="rounded bg-violet-600 px-2 py-1 text-xs font-medium text-white hover:bg-violet-500 disabled:opacity-50"
+                      >
+                        {downloadingModel === model.id
+                          ? t('whisper.downloading')
+                          : t('whisper.download')}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>

@@ -32,6 +32,7 @@ import {
   type WhisperDownloadRequest,
   type WhisperDownloadResponse,
   type WhisperDeleteRequest,
+  type WhisperBinaryDownloadResponse,
   type VideoEditRequest,
   type VideoEditResponse,
   type AudioMergeRequest,
@@ -250,6 +251,10 @@ export const api = {
     async whisperDelete(req: WhisperDeleteRequest): Promise<void> {
       const resp = await window.electronAPI.stt.whisperDelete(req);
       unwrap(resp);
+    },
+    async whisperBinaryDownload(): Promise<WhisperBinaryDownloadResponse> {
+      const resp = await window.electronAPI.stt.whisperBinaryDownload();
+      return SttSchemas.WhisperBinaryDownloadResponse.parse(unwrap(resp));
     },
   },
 

@@ -65,6 +65,7 @@ export const Channels = {
     WhisperModels: 'stt:whisper:models',
     WhisperDownload: 'stt:whisper:download',
     WhisperDelete: 'stt:whisper:delete',
+    WhisperBinaryDownload: 'stt:whisper:binaryDownload',
   },
   Audio: {
     Merge: 'audio:merge',

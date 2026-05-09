@@ -26,7 +26,7 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
   const [stylePreset, setStylePreset] = useState<StylePreset>('default');
   const [isProcessing, setProcessing] = useState(false);
   const [error, setError] = useState('');
-  const [sttProvider, setSttProvider] = useState<'openai' | 'gemini'>('openai');
+  const [sttProvider, setSttProvider] = useState<'openai' | 'gemini' | 'whisper-local'>('openai');
 
   const handleGenerateSubtitle = useCallback(async () => {
     if (!scene) return;
@@ -46,9 +46,12 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
 
     try {
       // 1. STT 전사
-      const apiKey = await api.keychain.get(
-        sttProvider === 'openai' ? 'openai-api-key' : 'gemini-api-key',
-      );
+      let apiKey: string | null = null;
+      if (sttProvider === 'openai') {
+        apiKey = await api.keychain.get('openai-api-key');
+      } else if (sttProvider === 'gemini') {
+        apiKey = await api.keychain.get('gemini-api-key');
+      }
 
       const sttResult = await api.stt.transcribe({
         audioPath: scene.narrationAudio.path,
@@ -120,11 +123,12 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
       <div className="flex items-center gap-3">
         <select
           value={sttProvider}
-          onChange={(e) => setSttProvider(e.target.value as 'openai' | 'gemini')}
+          onChange={(e) => setSttProvider(e.target.value as 'openai' | 'gemini' | 'whisper-local')}
           className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs"
         >
           <option value="openai">OpenAI Whisper</option>
           <option value="gemini">Gemini</option>
+          <option value="whisper-local">{t('whisper.title')}</option>
         </select>
 
         <select
