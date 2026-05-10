@@ -28,7 +28,6 @@ export function Waveform({ audioPath, isPlaying, onPlayPause, onFinish }: Props)
       barRadius: 2,
       height: 64,
       normalize: true,
-      backend: 'WebAudio',
     });
 
     ws.on('finish', handleFinish);
