@@ -99,10 +99,10 @@ videoforge/
 └── .github/workflows/         # CI + release-please
 ```
 
-### Service Domains (19)
+### Service Domains (22)
 
 `apps/desktop/electron/main/services/`:
-assets, audio, chat, diagnostics, dialog, file, grok, imagefx, keychain, project, remote, settings, shell, stt, tts, update, video, whisk, window
+assets, audio, chat, cloud, collab, diagnostics, dialog, file, grok, imagefx, keychain, project, remote, settings, shell, stt, tts, update, video, videogen, whisk, window
 
 Plus `ping.ts` (app:ping / app:getVersion).
 
@@ -167,7 +167,7 @@ Grok, Whisk, ImageFX use `puppeteer-core` + `puppeteer-extra` + stealth plugin. 
 ### i18n
 
 - Translation files: `apps/desktop/src/i18n/ko.ts` (Korean) + `en.ts` (English)
-- 116 keys across 11 categories: app, projects, wizard, editor, tts, scene/script/inspector, subtitle, assets, whisper, bridge, remote, common
+- 143 keys across 14 categories: app, projects, wizard, editor, tts, scene/script/inspector, subtitle, assets, whisper, bridge, remote, cloud, videogen, collab, common
 - Usage: `const t = useT()` hook → `t('key.name')` in components
 - All user-facing strings must go through i18n — no hardcoded Korean/English in `.tsx` files
 
@@ -209,6 +209,35 @@ WebSocket server for mobile companion app to remotely control VideoForge.
   - `apps/desktop/electron/main/services/remote/index.ts` — WebSocket server, pairing, command relay
   - `packages/shared/src/schemas/chat-and-remote.ts` — `RemoteInitRequest/Response`, `RemoteSceneSummary`, `RemoteScenesResponse`
 
+### Cloud Sync (Phase 12+ — Supabase opt-in)
+
+Project sync via Supabase. Service skeleton ready, actual Supabase client deferred.
+
+- **IPC channels**: `cloud:connect/disconnect/status/sync/listRemote`
+- **Key files**:
+  - `apps/desktop/electron/main/services/cloud/index.ts` — connect, disconnect, sync, listRemote
+  - `packages/shared/src/schemas/cloud-sync.ts` — `CloudConnectRequest`, `CloudSyncRequest`, `CloudRemoteProject`
+
+### Video Generation (Phase 12+ — Veo/Sora)
+
+Official API-based video generation. Service skeleton ready, pending Veo/Sora API release.
+
+- **Providers**: `veo`, `sora` (both currently unavailable)
+- **IPC channels**: `videogen:generate/cancel/status` + events `onProgress/onComplete`
+- **Key files**:
+  - `apps/desktop/electron/main/services/videogen/index.ts` — generate, cancel, status
+  - `packages/shared/src/schemas/videogen.ts` — `VideogenGenerateRequest`, `VideogenProgressEvent`
+
+### Collaboration / Shared Library (Phase 12+)
+
+Community asset sharing. Service skeleton ready, backend deferred.
+
+- **Asset types**: template, font, sfx, preset, prompt
+- **IPC channels**: `collab:publish/browse/download/delete`
+- **Key files**:
+  - `apps/desktop/electron/main/services/collab/index.ts` — publish, browse, download, delete
+  - `packages/shared/src/schemas/collab.ts` — `SharedAsset`, `CollabPublishRequest`, `CollabBrowseRequest`
+
 ## Code Style
 
 - Files: `kebab-case.ts`, components: `PascalCase.tsx`
@@ -222,7 +251,7 @@ WebSocket server for mobile companion app to remotely control VideoForge.
 
 ## Testing
 
-- **Unit tests** (Vitest): 79 tests — 17 shared + 62 desktop (`electron/**/*.test.ts`)
+- **Unit tests** (Vitest): 99 tests — 17 shared + 82 desktop (`electron/**/*.test.ts`)
 - **E2E tests** (Playwright Electron): 3 app specs (`smoke`, `project-lifecycle`, `tts`)
 - **E2E mock servers** (Playwright + express): 4 mock specs (`grok-mock`, `imagegen-mock`, `chat-mock`, `whisper-mock`)
 - **Performance budget**: `pnpm perf:budget` — 13 checks (deps, LoC, typecheck speed, test speed, i18n coverage, large files)
@@ -235,10 +264,10 @@ WebSocket server for mobile companion app to remotely control VideoForge.
 | ------------ | --------------- | ---------- |
 | Typecheck    | 14-17s          | 30s        |
 | All tests    | 9-11s           | 30s        |
-| Total LoC    | ~12,200         | —          |
+| Total LoC    | ~13,200         | —          |
 | Shared deps  | 1               | 10         |
 | Desktop deps | 18              | 40         |
-| i18n keys    | 116 ko / 116 en | must match |
+| i18n keys    | 143 ko / 143 en | must match |
 
 Run `pnpm perf:budget` after significant changes to check for regressions.
 
@@ -279,7 +308,10 @@ Run `pnpm perf:budget` after significant changes to check for regressions.
 
 - Grok Bridge extension WebSocket server (port 9821, 4 IPC channels)
 - Mobile Companion remote WebSocket server (pairing code auth, 5 IPC channels)
-- 15 new i18n keys, 13 unit tests
+- Cloud Sync service skeleton (Supabase opt-in, 5 IPC channels)
+- Video Generation service skeleton (Veo/Sora, 5 IPC channels)
+- Collaboration / Shared Library service skeleton (4 IPC channels)
+- 42 new i18n keys, 33 unit tests
 
 ### Remaining (non-code):
 
