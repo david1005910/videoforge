@@ -287,6 +287,7 @@ Run `pnpm perf:budget` after significant changes to check for regressions.
 - Using `waitForTimeout` on Puppeteer Page (removed in newer versions; use `setTimeout` + `Promise`)
 - Using `.then()` chains (use `async/await`; prefix fire-and-forget promises with `void`)
 - Hardcoded Korean/English strings in `.tsx` — use `t('key')` via i18n
+- WaveSurfer.js `backend: 'WebAudio'` — causes silent playback due to suspended AudioContext; use default HTML5 backend
 
 ## Current Phase
 
@@ -332,6 +333,7 @@ Run `pnpm perf:budget` after significant changes to check for regressions.
 - Waveform component: support blob: URL scheme
 - Editor Inspector: narration audio preview (play/stop + waveform) and "음성 불러오기" file loading
 - i18n keys: 144 → 145 (added `inspector.loadNarration`)
+- Waveform audio fix: removed `backend: 'WebAudio'` — v7 WebAudioPlayer creates suspended AudioContext that never resumes; default HTML5 `<audio>` backend works correctly
 
 ### Local DMG build (개인 사용)
 
