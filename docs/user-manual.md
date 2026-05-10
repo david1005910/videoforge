@@ -15,9 +15,29 @@
 
 ### 설치
 
-1. GitHub Releases 페이지에서 최신 `.dmg` 파일을 다운로드합니다.
+1. GitHub Releases 페이지 또는 CI Artifacts에서 `.dmg` 파일을 다운로드합니다.
 2. DMG 파일을 열고 VideoForge 아이콘을 Applications 폴더로 드래그합니다.
-3. 처음 실행 시 Gatekeeper 경고가 나타나면, 시스템 설정 > 보안 및 개인 정보 보호에서 허용합니다.
+3. **Gatekeeper 해제** (Apple Developer ID 미서명 앱이므로 필수):
+
+**방법 A — 우클릭 열기 (권장, 1회만):**
+
+1. Finder에서 `/Applications/VideoForge.app` 우클릭
+2. "열기" 클릭
+3. "열기" 확인 팝업에서 다시 "열기" 클릭
+4. 이후부터는 더블클릭으로 정상 실행됨
+
+**방법 B — 터미널 (한 줄):**
+
+```bash
+xattr -cr /Applications/VideoForge.app
+```
+
+**방법 C — 시스템 설정:**
+
+1. VideoForge를 더블클릭 (차단 팝업 나옴)
+2. 시스템 설정 → 개인 정보 보호 및 보안 → 하단 "확인 없이 열기" 클릭
+
+> 이 과정은 Apple Developer ID 서명이 없는 앱에서 1회만 필요합니다. 향후 공식 서명 버전이 배포되면 이 단계는 불필요합니다.
 
 ### 온보딩 (첫 실행)
 

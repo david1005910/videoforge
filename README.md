@@ -40,7 +40,20 @@
 | Node      | 20 LTS                              |
 | 로컬 빌드 | x64 only (universal2는 CI에서만)    |
 
-## Quick Start
+## 앱 설치 (개인 사용)
+
+1. CI Artifacts 또는 로컬 빌드(`pnpm dist:mac:local`)에서 `.dmg` 다운로드
+2. DMG 열기 → VideoForge.app을 `/Applications`로 드래그
+3. Gatekeeper 해제 (미서명 앱이므로 최초 1회 필요):
+
+```bash
+# 터미널에서 한 줄로 해제
+xattr -cr /Applications/VideoForge.app
+```
+
+또는 Finder에서 앱 **우클릭 → 열기 → 열기 확인** (1회만).
+
+## 개발 환경 Quick Start
 
 ```bash
 # 1. Xcode CLT
