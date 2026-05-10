@@ -78,8 +78,8 @@ See v0.2.0 Phase 12+ entries below for details.
 ### Technical Stats
 
 - **Source files**: 126 (20 shared + 72 main + 34 renderer)
-- **Lines of code**: ~13,200
-- **Unit tests**: 99 (17 shared + 82 desktop)
+- **Lines of code**: ~12,900
+- **Unit tests**: 110 (17 shared + 93 desktop)
 - **E2E tests**: 10 specs (3 app + 4 mock server)
 - **i18n keys**: 143 (Korean + English)
 - **IPC channels**: 77+

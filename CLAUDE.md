@@ -251,7 +251,7 @@ Community asset sharing. Service skeleton ready, backend deferred.
 
 ## Testing
 
-- **Unit tests** (Vitest): 99 tests — 17 shared + 82 desktop (`electron/**/*.test.ts`)
+- **Unit tests** (Vitest): 110 tests — 17 shared + 93 desktop (`electron/**/*.test.ts`)
 - **E2E tests** (Playwright Electron): 3 app specs (`smoke`, `project-lifecycle`, `tts`)
 - **E2E mock servers** (Playwright + express): 4 mock specs (`grok-mock`, `imagegen-mock`, `chat-mock`, `whisper-mock`)
 - **Performance budget**: `pnpm perf:budget` — 13 checks (deps, LoC, typecheck speed, test speed, i18n coverage, large files)
@@ -264,7 +264,7 @@ Community asset sharing. Service skeleton ready, backend deferred.
 | ------------ | --------------- | ---------- |
 | Typecheck    | 14-17s          | 30s        |
 | All tests    | 9-11s           | 30s        |
-| Total LoC    | ~13,200         | —          |
+| Total LoC    | ~12,900         | —          |
 | Shared deps  | 1               | 10         |
 | Desktop deps | 18              | 40         |
 | i18n keys    | 143 ko / 143 en | must match |
