@@ -86,6 +86,9 @@ export type {
   GrokStatusResponse,
   GrokVideoReadyEvent,
   GrokProgressEvent,
+  GrokBridgeStatusResponse,
+  GrokBridgeSendRequest,
+  GrokBridgeSetProjectRequest,
 } from './schemas/grok';
 export type {
   WhiskRefKind,
@@ -108,6 +111,10 @@ export type {
   DnaScriptScene,
   UpdateStatusEvent,
   UpdateStatusResponse,
+  RemoteInitRequest,
+  RemoteInitResponse,
+  RemoteSceneSummary,
+  RemoteScenesResponse,
 } from './schemas/chat-and-remote';
 export type {
   FontInfo,

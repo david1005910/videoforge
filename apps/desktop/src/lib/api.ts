@@ -51,6 +51,9 @@ import {
   type GrokCancelRequest,
   type GrokLoginResponse,
   type GrokStatusResponse,
+  type GrokBridgeStatusResponse,
+  type GrokBridgeSendRequest,
+  type GrokBridgeSetProjectRequest,
   type WhiskUploadRefRequest,
   type WhiskUploadRefResponse,
   type WhiskGenerateRequest,
@@ -65,6 +68,9 @@ import {
   type ChatThumbnailRequest,
   type ChatThumbnailResponse,
   type UpdateStatusResponse,
+  type RemoteInitRequest,
+  type RemoteInitResponse,
+  type RemoteScenesResponse,
 } from '@videoforge/shared';
 import { Project } from '@videoforge/shared';
 
@@ -310,6 +316,22 @@ export const api = {
       const resp = await window.electronAPI.grok.status();
       return GrokSchemas.GrokStatusResponse.parse(unwrap(resp));
     },
+    async bridgeStatus(): Promise<GrokBridgeStatusResponse> {
+      const resp = await window.electronAPI.grok.bridgeStatus();
+      return GrokSchemas.GrokBridgeStatusResponse.parse(unwrap(resp));
+    },
+    async bridgeSend(req: GrokBridgeSendRequest): Promise<void> {
+      const resp = await window.electronAPI.grok.bridgeSend(req);
+      unwrap(resp);
+    },
+    async bridgeCancel(): Promise<void> {
+      const resp = await window.electronAPI.grok.bridgeCancel();
+      unwrap(resp);
+    },
+    async bridgeSetProject(req: GrokBridgeSetProjectRequest): Promise<void> {
+      const resp = await window.electronAPI.grok.bridgeSetProject(req);
+      unwrap(resp);
+    },
     onProgress(cb: (payload: unknown) => void): () => void {
       return window.electronAPI.grok.onProgress(cb);
     },
@@ -409,6 +431,27 @@ export const api = {
     },
     onStatus(cb: (payload: unknown) => void): () => void {
       return window.electronAPI.update.onStatus(cb);
+    },
+  },
+
+  remote: {
+    async init(req: RemoteInitRequest): Promise<RemoteInitResponse> {
+      const resp = await window.electronAPI.remote.init(req);
+      return ChatRemoteSchemas.RemoteInitResponse.parse(unwrap(resp));
+    },
+    async sendScenes(req: RemoteScenesResponse): Promise<void> {
+      const resp = await window.electronAPI.remote.sendScenes(req);
+      unwrap(resp);
+    },
+    async sendResponse(payload: unknown): Promise<void> {
+      const resp = await window.electronAPI.remote.sendResponse({ payload });
+      unwrap(resp);
+    },
+    onGetScenes(cb: (payload: unknown) => void): () => void {
+      return window.electronAPI.remote.onGetScenes(cb);
+    },
+    onCommand(cb: (payload: unknown) => void): () => void {
+      return window.electronAPI.remote.onCommand(cb);
     },
   },
 

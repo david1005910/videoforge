@@ -94,6 +94,9 @@ importers:
       wavesurfer.js:
         specifier: ^7.12.6
         version: 7.12.6
+      ws:
+        specifier: ^8.20.0
+        version: 8.20.0
       zod:
         specifier: 3.23.8
         version: 3.23.8
@@ -116,6 +119,9 @@ importers:
       '@types/react-dom':
         specifier: 18.3.1
         version: 18.3.1
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
       '@videoforge/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -1315,6 +1321,12 @@ packages:
     resolution:
       {
         integrity: sha512-RlDm9K7+o5stv0Co8i8ZRGxDbrTxhJtgjqjFyVh/tXQyl/rYtTKlnTvZ88oSTeYREWurwx20Js4kTuKCsFkUtg==,
+      }
+
+  '@types/ws@8.18.1':
+    resolution:
+      {
+        integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==,
       }
 
   '@types/yauzl@2.10.3':
@@ -8048,6 +8060,10 @@ snapshots:
 
   '@types/verror@1.10.11':
     optional: true
+
+  '@types/ws@8.18.1':
+    dependencies:
+      '@types/node': 20.16.0
 
   '@types/yauzl@2.10.3':
     dependencies:

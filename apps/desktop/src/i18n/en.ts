@@ -119,6 +119,25 @@ export const en: Record<keyof typeof ko, string> = {
   'whisper.selectModel': 'Select Model',
   'whisper.noModels': 'No models downloaded.',
 
+  // Bridge
+  'bridge.title': 'Grok Bridge Extension',
+  'bridge.status': 'Connection Status',
+  'bridge.connected': 'Connected',
+  'bridge.disconnected': 'Disconnected',
+  'bridge.connectedTabs': 'Connected Tabs',
+  'bridge.send': 'Send Generation',
+  'bridge.cancel': 'Cancel Generation',
+
+  // Remote (Mobile Companion)
+  'remote.title': 'Mobile Remote',
+  'remote.start': 'Start Server',
+  'remote.stop': 'Stop Server',
+  'remote.pairingCode': 'Pairing Code',
+  'remote.port': 'Port',
+  'remote.expires': 'Expires',
+  'remote.notRunning': 'Server is not running.',
+  'remote.paired': 'Connected',
+
   // Common
   'common.cancel': 'Cancel',
   'common.confirm': 'OK',

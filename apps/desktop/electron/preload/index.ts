@@ -113,7 +113,7 @@ const api = {
     sfxDelete: (payload: unknown) => invoke(Channels.Assets.SfxDelete, payload),
   },
 
-  // === Grok (Phase 6 — P6-09/10) ===
+  // === Grok (Phase 6 — P6-09/10, Bridge — Phase 12+) ===
   grok: {
     login: () => invoke(Channels.Grok.Login),
     generate: (payload: unknown) => invoke(Channels.Grok.Generate, payload),
@@ -121,6 +121,10 @@ const api = {
     cancel: (payload: unknown) => invoke(Channels.Grok.Cancel, payload),
     close: () => invoke(Channels.Grok.Close),
     status: () => invoke(Channels.Grok.Status),
+    bridgeStatus: () => invoke(Channels.Grok.BridgeStatus),
+    bridgeSend: (payload: unknown) => invoke(Channels.Grok.BridgeSend, payload),
+    bridgeCancel: () => invoke(Channels.Grok.BridgeCancel),
+    bridgeSetProject: (payload: unknown) => invoke(Channels.Grok.BridgeSetProject, payload),
     onProgress: (cb: (payload: unknown) => void) => onEvent(Channels.Grok.OnProgress, cb),
     onVideoReady: (cb: (payload: unknown) => void) => onEvent(Channels.Grok.OnVideoReady, cb),
   },
@@ -173,6 +177,15 @@ const api = {
     download: () => invoke(Channels.Update.Download),
     install: () => invoke(Channels.Update.Install),
     onStatus: (cb: (payload: unknown) => void) => onEvent(Channels.Update.On, cb),
+  },
+
+  // === Remote (Mobile Companion — Phase 12+) ===
+  remote: {
+    init: (payload: unknown) => invoke(Channels.Remote.Init, payload),
+    sendScenes: (payload: unknown) => invoke(Channels.Remote.SendScenes, payload),
+    sendResponse: (payload: unknown) => invoke(Channels.Remote.SendResponse, payload),
+    onGetScenes: (cb: (payload: unknown) => void) => onEvent(Channels.Remote.OnGetScenes, cb),
+    onCommand: (cb: (payload: unknown) => void) => onEvent(Channels.Remote.OnCommand, cb),
   },
 
   /**

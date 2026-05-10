@@ -18,6 +18,7 @@ import { registerImagefxHandlers } from './services/imagefx';
 import { registerChatHandlers } from './services/chat';
 import { registerUpdateHandlers } from './services/update';
 import { registerDiagnosticsHandlers } from './services/diagnostics';
+import { registerRemoteHandlers } from './services/remote';
 import { loadPreferences } from './services/settings';
 import { setProjectsDir, getProjectsDir } from './services/project/storage';
 import { logger } from './logger';
@@ -170,6 +171,7 @@ void app.whenReady().then(async () => {
   registerChatHandlers();
   registerUpdateHandlers();
   registerDiagnosticsHandlers();
+  registerRemoteHandlers();
 
   buildMenu();
   createWindow();

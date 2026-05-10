@@ -6,6 +6,7 @@ import { grokLogin } from './login';
 import { grokGenerate } from './generate';
 import { grokBatch, cancelBatch } from './batch';
 import { closeBrowser, isBrowserConnected } from './browser-pool';
+import { getBridgeStatus, sendToExtension, cancelBridgeTasks, setBridgeProject } from './bridge';
 import { logger } from '../../logger';
 import type { GrokProgressEvent, GrokVideoReadyEvent } from '@videoforge/shared';
 
@@ -65,5 +66,32 @@ export function registerGrokHandlers(): void {
       browserConnected: isBrowserConnected(GROK_PROFILE),
       queue: { pending: 0, running: 0, completed: 0, failed: 0 },
     }),
+  );
+
+  // grok:bridge:status
+  registerHandler(Channels.Grok.BridgeStatus, z.object({}), () =>
+    Promise.resolve(getBridgeStatus()),
+  );
+
+  // grok:bridge:send
+  registerHandler(Channels.Grok.BridgeSend, GrokSchemas.GrokBridgeSendRequest, (req) => {
+    sendToExtension(req);
+    return Promise.resolve();
+  });
+
+  // grok:bridge:cancel
+  registerHandler(Channels.Grok.BridgeCancel, z.object({}), () => {
+    cancelBridgeTasks();
+    return Promise.resolve();
+  });
+
+  // grok:bridge:setProject
+  registerHandler(
+    Channels.Grok.BridgeSetProject,
+    GrokSchemas.GrokBridgeSetProjectRequest,
+    (req) => {
+      setBridgeProject(req);
+      return Promise.resolve();
+    },
   );
 }

@@ -117,6 +117,25 @@ export const ko = {
   'whisper.selectModel': '모델 선택',
   'whisper.noModels': '다운로드된 모델이 없습니다.',
 
+  // Bridge
+  'bridge.title': 'Grok Bridge 익스텐션',
+  'bridge.status': '연결 상태',
+  'bridge.connected': '연결됨',
+  'bridge.disconnected': '연결 안됨',
+  'bridge.connectedTabs': '연결된 탭',
+  'bridge.send': '생성 요청',
+  'bridge.cancel': '생성 취소',
+
+  // Remote (Mobile Companion)
+  'remote.title': '모바일 리모컨',
+  'remote.start': '서버 시작',
+  'remote.stop': '서버 중지',
+  'remote.pairingCode': '페어링 코드',
+  'remote.port': '포트',
+  'remote.expires': '만료',
+  'remote.notRunning': '서버가 실행 중이 아닙니다.',
+  'remote.paired': '연결됨',
+
   // Common
   'common.cancel': '취소',
   'common.confirm': '확인',

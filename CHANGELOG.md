@@ -22,14 +22,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mock server + 4 E2E tests for whisper flow
 - 14 new i18n keys (Korean + English), 9 unit tests
 
+#### Phase 12+ — Grok Bridge Extension
+
+- WebSocket bridge server for Chrome extension communication (port 9821)
+- Bridge IPC: `grok:bridge:status/send/cancel/setProject`
+- Extension message relay (progress, videoReady events)
+- Project context forwarding to connected extensions
+- 5 new i18n keys (Korean + English), 6 unit tests
+
+#### Phase 12+ — Mobile Companion (Remote)
+
+- WebSocket remote server with pairing code authentication
+- Auto port detection, 5-minute pairing TTL
+- Remote IPC: `remote:init/sendScenes/sendResponse` + events
+- Scene summary relay + command forwarding
+- 8 new i18n keys (Korean + English), 7 unit tests
+
 ### Technical Stats
 
-- **Source files**: 117 (17 shared + 66 main + 34 renderer)
-- **Lines of code**: ~11,700
-- **Unit tests**: 66 (17 shared + 49 desktop)
+- **Source files**: 120 (17 shared + 69 main + 34 renderer)
+- **Lines of code**: ~12,200
+- **Unit tests**: 79 (17 shared + 62 desktop)
 - **E2E tests**: 10 specs (3 app + 4 mock server)
-- **i18n keys**: 101 (Korean + English)
-- **IPC channels**: 54+
+- **i18n keys**: 116 (Korean + English)
+- **IPC channels**: 63+
 
 ---
 
