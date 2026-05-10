@@ -86,40 +86,41 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Import signing certificate
+        if: env.CSC_LINK != ''
+        run: |
+          echo "$CSC_LINK" | base64 --decode > /tmp/cert.p12
+          security create-keychain -p actions build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p actions build.keychain
+          security import /tmp/cert.p12 -k build.keychain -P "$CSC_KEY_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k actions build.keychain
+          rm /tmp/cert.p12
+        env:
+          CSC_LINK: ${{ secrets.APPLE_CERT_P12_BASE64 }}
+          CSC_KEY_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+
       - name: Build x64 DMG
         run: pnpm --filter @videoforge/desktop dist:mac:local
         env:
-          # P9-04: Apple Developer ID 등록 후 아래 secrets 설정 필요:
-          #   APPLE_ID              — Apple ID 이메일
-          #   APPLE_APP_SPECIFIC_PASSWORD — appleid.apple.com에서 생성한 앱 전용 비밀번호
-          #   APPLE_TEAM_ID         — Apple Developer Team ID (10자 영숫자)
-          #   APPLE_CERT_P12_BASE64 — base64 인코딩된 Developer ID Application 인증서 (.p12)
-          #   APPLE_CERT_PASSWORD   — .p12 파일 비밀번호
-          #
-          # secrets 등록 완료 후 아래 주석 해제:
-          # APPLE_ID: ${{ secrets.APPLE_ID }}
-          # APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          # CSC_LINK: ${{ secrets.APPLE_CERT_P12_BASE64 }}
-          # CSC_KEY_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_LINK: ${{ secrets.APPLE_CERT_P12_BASE64 }}
+          CSC_KEY_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
 
-      # P9-05: Notarization (Apple Developer ID 등록 후 활성화)
-      # secrets 등록 완료 후 아래 주석 해제:
-      # - name: Notarize DMG
-      #   if: env.APPLE_ID != ''
-      #   run: |
-      #     DMG_PATH=$(ls apps/desktop/release/*.dmg | head -1)
-      #     xcrun notarytool submit "$DMG_PATH" \
-      #       --apple-id "$APPLE_ID" \
-      #       --password "$APPLE_APP_SPECIFIC_PASSWORD" \
-      #       --team-id "$APPLE_TEAM_ID" \
-      #       --wait
-      #     xcrun stapler staple "$DMG_PATH"
-      #   env:
-      #     APPLE_ID: ${{ secrets.APPLE_ID }}
-      #     APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-      #     APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      - name: Notarize DMG
+        if: env.APPLE_ID != ''
+        run: |
+          DMG_PATH=$(ls apps/desktop/release/*.dmg | head -1)
+          xcrun notarytool submit "$DMG_PATH" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait
+          xcrun stapler staple "$DMG_PATH"
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: Upload Intel artifacts
         uses: actions/upload-artifact@v4
@@ -154,10 +155,41 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Import signing certificate
+        if: env.CSC_LINK != ''
+        run: |
+          echo "$CSC_LINK" | base64 --decode > /tmp/cert.p12
+          security create-keychain -p actions build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p actions build.keychain
+          security import /tmp/cert.p12 -k build.keychain -P "$CSC_KEY_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k actions build.keychain
+          rm /tmp/cert.p12
+        env:
+          CSC_LINK: ${{ secrets.APPLE_CERT_P12_BASE64 }}
+          CSC_KEY_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+
       - name: Build Universal2 DMG
         run: pnpm --filter @videoforge/desktop dist:mac:universal
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_LINK: ${{ secrets.APPLE_CERT_P12_BASE64 }}
+          CSC_KEY_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+
+      - name: Notarize DMG
+        if: env.APPLE_ID != ''
+        run: |
+          DMG_PATH=$(ls apps/desktop/release/*.dmg | head -1)
+          xcrun notarytool submit "$DMG_PATH" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait
+          xcrun stapler staple "$DMG_PATH"
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: Upload Universal artifacts
         uses: actions/upload-artifact@v4
