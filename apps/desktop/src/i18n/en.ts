@@ -138,6 +138,39 @@ export const en: Record<keyof typeof ko, string> = {
   'remote.notRunning': 'Server is not running.',
   'remote.paired': 'Connected',
 
+  // Cloud Sync
+  'cloud.title': 'Cloud Sync',
+  'cloud.connect': 'Connect',
+  'cloud.disconnect': 'Disconnect',
+  'cloud.status': 'Sync Status',
+  'cloud.connected': 'Connected',
+  'cloud.disconnected': 'Disconnected',
+  'cloud.syncing': 'Syncing...',
+  'cloud.sync': 'Sync Now',
+  'cloud.lastSync': 'Last Synced',
+  'cloud.remoteProjects': 'Remote Projects',
+
+  // Videogen (Veo/Sora)
+  'videogen.title': 'AI Video Generation',
+  'videogen.provider': 'Provider',
+  'videogen.generate': 'Generate',
+  'videogen.generating': 'Generating...',
+  'videogen.cancel': 'Cancel',
+  'videogen.notAvailable': 'API not yet released — will activate automatically.',
+  'videogen.prompt': 'Prompt',
+  'videogen.duration': 'Duration (sec)',
+  'videogen.aspectRatio': 'Aspect Ratio',
+
+  // Collab (Shared Library)
+  'collab.title': 'Shared Library',
+  'collab.publish': 'Publish',
+  'collab.browse': 'Browse',
+  'collab.download': 'Download',
+  'collab.delete': 'Delete',
+  'collab.noItems': 'No shared items found.',
+  'collab.tags': 'Tags',
+  'collab.search': 'Search...',
+
   // Common
   'common.cancel': 'Cancel',
   'common.confirm': 'OK',

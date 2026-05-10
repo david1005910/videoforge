@@ -31,6 +31,9 @@ export * as AssetsSchemas from './schemas/assets';
 export * as GrokSchemas from './schemas/grok';
 export * as ImagegenSchemas from './schemas/imagegen';
 export * as ChatRemoteSchemas from './schemas/chat-and-remote';
+export * as CloudSyncSchemas from './schemas/cloud-sync';
+export * as VideogenSchemas from './schemas/videogen';
+export * as CollabSchemas from './schemas/collab';
 
 // 자주 쓰는 타입은 직접 re-export (편의용)
 export type { PingRequest, PingResponse, VersionResponse } from './schemas/app';
@@ -128,6 +131,37 @@ export type {
   SfxUploadResponse,
   SfxDeleteRequest,
 } from './schemas/assets';
+export type {
+  CloudSyncStatus,
+  CloudConnectRequest,
+  CloudConnectResponse,
+  CloudDisconnectResponse,
+  CloudStatusResponse,
+  CloudSyncRequest,
+  CloudSyncResponse,
+  CloudRemoteProject,
+  CloudListRemoteResponse,
+} from './schemas/cloud-sync';
+export type {
+  VideogenProvider,
+  VideogenGenerateRequest,
+  VideogenGenerateResponse,
+  VideogenStatusResponse,
+  VideogenCancelRequest,
+  VideogenProgressEvent,
+  VideogenCompleteEvent,
+} from './schemas/videogen';
+export type {
+  CollabAssetType,
+  SharedAsset,
+  CollabPublishRequest,
+  CollabPublishResponse,
+  CollabBrowseRequest,
+  CollabBrowseResponse,
+  CollabDownloadRequest,
+  CollabDownloadResponse,
+  CollabDeleteRequest,
+} from './schemas/collab';
 export type {
   DialogSelectFolderResponse,
   DialogConfirmResponse,

@@ -22,6 +22,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mock server + 4 E2E tests for whisper flow
 - 14 new i18n keys (Korean + English), 9 unit tests
 
+#### Phase 12+ — Cloud Sync (Supabase)
+
+- Cloud sync service skeleton with connect/disconnect/sync/listRemote
+- 5 IPC channels: `cloud:connect/disconnect/status/sync/listRemote`
+- Zod schemas: CloudConnectRequest, CloudSyncRequest, CloudRemoteProject, etc.
+- 10 new i18n keys (Korean + English), 7 unit tests
+
+#### Phase 12+ — Video Generation (Veo/Sora)
+
+- Videogen service skeleton with generate/cancel/status
+- 5 IPC channels: `videogen:generate/cancel/status/onProgress/onComplete`
+- Zod schemas: VideogenGenerateRequest, VideogenProgressEvent, etc.
+- Provider enum: `veo`, `sora` (pending official API release)
+- 9 new i18n keys (Korean + English), 6 unit tests
+
+#### Phase 12+ — Collaboration / Shared Library
+
+- Collab service skeleton with publish/browse/download/delete
+- 4 IPC channels: `collab:publish/browse/download/delete`
+- Zod schemas: SharedAsset, CollabPublishRequest, CollabBrowseRequest, etc.
+- Asset types: template, font, sfx, preset, prompt
+- 8 new i18n keys (Korean + English), 7 unit tests
+
 #### Phase 12+ — Grok Bridge Extension
 
 - WebSocket bridge server for Chrome extension communication (port 9821)
@@ -40,12 +63,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Technical Stats
 
-- **Source files**: 120 (17 shared + 69 main + 34 renderer)
-- **Lines of code**: ~12,200
-- **Unit tests**: 79 (17 shared + 62 desktop)
+- **Source files**: 126 (20 shared + 72 main + 34 renderer)
+- **Lines of code**: ~13,200
+- **Unit tests**: 99 (17 shared + 82 desktop)
 - **E2E tests**: 10 specs (3 app + 4 mock server)
-- **i18n keys**: 116 (Korean + English)
-- **IPC channels**: 63+
+- **i18n keys**: 143 (Korean + English)
+- **IPC channels**: 77+
 
 ---
 

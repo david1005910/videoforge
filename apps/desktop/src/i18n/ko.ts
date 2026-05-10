@@ -136,6 +136,39 @@ export const ko = {
   'remote.notRunning': '서버가 실행 중이 아닙니다.',
   'remote.paired': '연결됨',
 
+  // Cloud Sync
+  'cloud.title': '클라우드 동기화',
+  'cloud.connect': '연결',
+  'cloud.disconnect': '연결 해제',
+  'cloud.status': '동기화 상태',
+  'cloud.connected': '연결됨',
+  'cloud.disconnected': '연결 안됨',
+  'cloud.syncing': '동기화 중...',
+  'cloud.sync': '지금 동기화',
+  'cloud.lastSync': '마지막 동기화',
+  'cloud.remoteProjects': '원격 프로젝트',
+
+  // Videogen (Veo/Sora)
+  'videogen.title': 'AI 영상 생성',
+  'videogen.provider': '프로바이더',
+  'videogen.generate': '생성',
+  'videogen.generating': '생성 중...',
+  'videogen.cancel': '취소',
+  'videogen.notAvailable': 'API 미출시 — 출시 후 자동 활성화됩니다.',
+  'videogen.prompt': '프롬프트',
+  'videogen.duration': '길이 (초)',
+  'videogen.aspectRatio': '화면 비율',
+
+  // Collab (Shared Library)
+  'collab.title': '공유 라이브러리',
+  'collab.publish': '공유',
+  'collab.browse': '탐색',
+  'collab.download': '다운로드',
+  'collab.delete': '삭제',
+  'collab.noItems': '공유된 항목이 없습니다.',
+  'collab.tags': '태그',
+  'collab.search': '검색...',
+
   // Common
   'common.cancel': '취소',
   'common.confirm': '확인',

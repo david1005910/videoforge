@@ -19,6 +19,9 @@ import { registerChatHandlers } from './services/chat';
 import { registerUpdateHandlers } from './services/update';
 import { registerDiagnosticsHandlers } from './services/diagnostics';
 import { registerRemoteHandlers } from './services/remote';
+import { registerCloudHandlers } from './services/cloud';
+import { registerVideogenHandlers } from './services/videogen';
+import { registerCollabHandlers } from './services/collab';
 import { loadPreferences } from './services/settings';
 import { setProjectsDir, getProjectsDir } from './services/project/storage';
 import { logger } from './logger';
@@ -172,6 +175,9 @@ void app.whenReady().then(async () => {
   registerUpdateHandlers();
   registerDiagnosticsHandlers();
   registerRemoteHandlers();
+  registerCloudHandlers();
+  registerVideogenHandlers();
+  registerCollabHandlers();
 
   buildMenu();
   createWindow();

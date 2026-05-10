@@ -9,6 +9,9 @@ import {
   GrokSchemas,
   ImagegenSchemas,
   ChatRemoteSchemas,
+  CloudSyncSchemas,
+  VideogenSchemas,
+  CollabSchemas,
   UtilitySchemas,
   type IpcResponse,
   type PingRequest,
@@ -71,6 +74,23 @@ import {
   type RemoteInitRequest,
   type RemoteInitResponse,
   type RemoteScenesResponse,
+  type CloudConnectRequest,
+  type CloudConnectResponse,
+  type CloudStatusResponse,
+  type CloudSyncRequest,
+  type CloudSyncResponse,
+  type CloudListRemoteResponse,
+  type VideogenGenerateRequest,
+  type VideogenGenerateResponse,
+  type VideogenStatusResponse,
+  type VideogenCancelRequest,
+  type CollabPublishRequest,
+  type CollabPublishResponse,
+  type CollabBrowseRequest,
+  type CollabBrowseResponse,
+  type CollabDownloadRequest,
+  type CollabDownloadResponse,
+  type CollabDeleteRequest,
 } from '@videoforge/shared';
 import { Project } from '@videoforge/shared';
 
@@ -431,6 +451,69 @@ export const api = {
     },
     onStatus(cb: (payload: unknown) => void): () => void {
       return window.electronAPI.update.onStatus(cb);
+    },
+  },
+
+  cloud: {
+    async connect(req: CloudConnectRequest): Promise<CloudConnectResponse> {
+      const resp = await window.electronAPI.cloud.connect(req);
+      return CloudSyncSchemas.CloudConnectResponse.parse(unwrap(resp));
+    },
+    async disconnect(): Promise<void> {
+      const resp = await window.electronAPI.cloud.disconnect();
+      unwrap(resp);
+    },
+    async status(): Promise<CloudStatusResponse> {
+      const resp = await window.electronAPI.cloud.status();
+      return CloudSyncSchemas.CloudStatusResponse.parse(unwrap(resp));
+    },
+    async sync(req: CloudSyncRequest): Promise<CloudSyncResponse> {
+      const resp = await window.electronAPI.cloud.sync(req);
+      return CloudSyncSchemas.CloudSyncResponse.parse(unwrap(resp));
+    },
+    async listRemote(): Promise<CloudListRemoteResponse> {
+      const resp = await window.electronAPI.cloud.listRemote();
+      return CloudSyncSchemas.CloudListRemoteResponse.parse(unwrap(resp));
+    },
+  },
+
+  videogen: {
+    async generate(req: VideogenGenerateRequest): Promise<VideogenGenerateResponse> {
+      const resp = await window.electronAPI.videogen.generate(req);
+      return VideogenSchemas.VideogenGenerateResponse.parse(unwrap(resp));
+    },
+    async cancel(req: VideogenCancelRequest): Promise<void> {
+      const resp = await window.electronAPI.videogen.cancel(req);
+      unwrap(resp);
+    },
+    async status(): Promise<VideogenStatusResponse> {
+      const resp = await window.electronAPI.videogen.status();
+      return VideogenSchemas.VideogenStatusResponse.parse(unwrap(resp));
+    },
+    onProgress(cb: (payload: unknown) => void): () => void {
+      return window.electronAPI.videogen.onProgress(cb);
+    },
+    onComplete(cb: (payload: unknown) => void): () => void {
+      return window.electronAPI.videogen.onComplete(cb);
+    },
+  },
+
+  collab: {
+    async publish(req: CollabPublishRequest): Promise<CollabPublishResponse> {
+      const resp = await window.electronAPI.collab.publish(req);
+      return CollabSchemas.CollabPublishResponse.parse(unwrap(resp));
+    },
+    async browse(req: CollabBrowseRequest): Promise<CollabBrowseResponse> {
+      const resp = await window.electronAPI.collab.browse(req);
+      return CollabSchemas.CollabBrowseResponse.parse(unwrap(resp));
+    },
+    async download(req: CollabDownloadRequest): Promise<CollabDownloadResponse> {
+      const resp = await window.electronAPI.collab.download(req);
+      return CollabSchemas.CollabDownloadResponse.parse(unwrap(resp));
+    },
+    async delete(req: CollabDeleteRequest): Promise<void> {
+      const resp = await window.electronAPI.collab.delete(req);
+      unwrap(resp);
     },
   },
 

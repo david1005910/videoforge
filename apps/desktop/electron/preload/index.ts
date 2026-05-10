@@ -179,6 +179,32 @@ const api = {
     onStatus: (cb: (payload: unknown) => void) => onEvent(Channels.Update.On, cb),
   },
 
+  // === Cloud Sync (Phase 12+ — Supabase opt-in) ===
+  cloud: {
+    connect: (payload: unknown) => invoke(Channels.Cloud.Connect, payload),
+    disconnect: () => invoke(Channels.Cloud.Disconnect),
+    status: () => invoke(Channels.Cloud.Status),
+    sync: (payload: unknown) => invoke(Channels.Cloud.Sync, payload),
+    listRemote: () => invoke(Channels.Cloud.ListRemote),
+  },
+
+  // === Videogen (Phase 12+ — Veo/Sora) ===
+  videogen: {
+    generate: (payload: unknown) => invoke(Channels.Videogen.Generate, payload),
+    cancel: (payload: unknown) => invoke(Channels.Videogen.Cancel, payload),
+    status: () => invoke(Channels.Videogen.Status),
+    onProgress: (cb: (payload: unknown) => void) => onEvent(Channels.Videogen.OnProgress, cb),
+    onComplete: (cb: (payload: unknown) => void) => onEvent(Channels.Videogen.OnComplete, cb),
+  },
+
+  // === Collab (Phase 12+ — Shared Library) ===
+  collab: {
+    publish: (payload: unknown) => invoke(Channels.Collab.Publish, payload),
+    browse: (payload: unknown) => invoke(Channels.Collab.Browse, payload),
+    download: (payload: unknown) => invoke(Channels.Collab.Download, payload),
+    delete: (payload: unknown) => invoke(Channels.Collab.Delete, payload),
+  },
+
   // === Remote (Mobile Companion — Phase 12+) ===
   remote: {
     init: (payload: unknown) => invoke(Channels.Remote.Init, payload),

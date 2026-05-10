@@ -151,6 +151,26 @@ export const Channels = {
     OnCommand: 'remote:onCommand',
     SendResponse: 'remote:sendResponse',
   },
+  Cloud: {
+    Connect: 'cloud:connect',
+    Disconnect: 'cloud:disconnect',
+    Status: 'cloud:status',
+    Sync: 'cloud:sync',
+    ListRemote: 'cloud:listRemote',
+  },
+  Videogen: {
+    Generate: 'videogen:generate',
+    Cancel: 'videogen:cancel',
+    Status: 'videogen:status',
+    OnProgress: 'videogen:onProgress',
+    OnComplete: 'videogen:onComplete',
+  },
+  Collab: {
+    Publish: 'collab:publish',
+    Browse: 'collab:browse',
+    Download: 'collab:download',
+    Delete: 'collab:delete',
+  },
 } as const;
 
 /**
