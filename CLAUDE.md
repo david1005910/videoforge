@@ -167,7 +167,7 @@ Grok, Whisk, ImageFX use `puppeteer-core` + `puppeteer-extra` + stealth plugin. 
 ### i18n
 
 - Translation files: `apps/desktop/src/i18n/ko.ts` (Korean) + `en.ts` (English)
-- 144 keys across 14 categories: app, projects, wizard, editor, tts, scene/script/inspector, subtitle, assets, whisper, bridge, remote, cloud, videogen, collab, common
+- 145 keys across 14 categories: app, projects, wizard, editor, tts, scene/script/inspector, subtitle, assets, whisper, bridge, remote, cloud, videogen, collab, common
 - Usage: `const t = useT()` hook → `t('key.name')` in components
 - All user-facing strings must go through i18n — no hardcoded Korean/English in `.tsx` files
 
@@ -266,7 +266,7 @@ Community asset sharing. Service skeleton ready, backend deferred.
 | Total LoC    | ~12,900         | —          |
 | Shared deps  | 1               | 10         |
 | Desktop deps | 18              | 40         |
-| i18n keys    | 144 ko / 144 en | must match |
+| i18n keys    | 145 ko / 145 en | must match |
 
 Run `pnpm perf:budget` after significant changes to check for regressions.
 
@@ -330,6 +330,8 @@ Run `pnpm perf:budget` after significant changes to check for regressions.
 - Asset upload dialogs fixed: pass parent BrowserWindow to prevent dialogs opening behind app on macOS
 - TTS audio loading: use base64 → blob URL instead of file:// (webSecurity: true compatibility)
 - Waveform component: support blob: URL scheme
+- Editor Inspector: narration audio preview (play/stop + waveform) and "음성 불러오기" file loading
+- i18n keys: 144 → 145 (added `inspector.loadNarration`)
 
 ### Local DMG build (개인 사용)
 
