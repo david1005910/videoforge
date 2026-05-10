@@ -167,7 +167,7 @@ Grok, Whisk, ImageFX use `puppeteer-core` + `puppeteer-extra` + stealth plugin. 
 ### i18n
 
 - Translation files: `apps/desktop/src/i18n/ko.ts` (Korean) + `en.ts` (English)
-- 143 keys across 14 categories: app, projects, wizard, editor, tts, scene/script/inspector, subtitle, assets, whisper, bridge, remote, cloud, videogen, collab, common
+- 144 keys across 14 categories: app, projects, wizard, editor, tts, scene/script/inspector, subtitle, assets, whisper, bridge, remote, cloud, videogen, collab, common
 - Usage: `const t = useT()` hook → `t('key.name')` in components
 - All user-facing strings must go through i18n — no hardcoded Korean/English in `.tsx` files
 
@@ -266,7 +266,7 @@ Community asset sharing. Service skeleton ready, backend deferred.
 | Total LoC    | ~12,900         | —          |
 | Shared deps  | 1               | 10         |
 | Desktop deps | 18              | 40         |
-| i18n keys    | 143 ko / 143 en | must match |
+| i18n keys    | 144 ko / 144 en | must match |
 
 Run `pnpm perf:budget` after significant changes to check for regressions.
 
@@ -320,10 +320,13 @@ Run `pnpm perf:budget` after significant changes to check for regressions.
 - README.md rewritten for v0.3.0 (22 services, 110 tests, architecture, perf budget)
 - tasks.md updated with completion status for all phases
 - Full quality verification passed: typecheck, 110 unit tests, 17 E2E tests, lint 0 warnings, perf budget 13/13
-- i18n Korean UX copy reviewed (143 keys, terminology consistent)
+- i18n Korean UX copy reviewed (144 keys, terminology consistent)
 - P9-05 CI code signing + notarization workflow activated (conditional on secrets — safe skip when absent)
 - Unsigned app installation guide added (user manual + README: xattr -cr, right-click, System Settings)
 - Local x64 DMG built and verified: `VideoForge-0.3.0.dmg` (211MB)
+- `dialog:selectFile` IPC channel added (8-step pattern) — file picker for renderer
+- TTS page: "음성 파일 불러오기" button — load external audio files for waveform preview/playback
+- i18n keys: 143 → 144 (added `tts.loadAudio`)
 
 ### Local DMG build (개인 사용)
 
