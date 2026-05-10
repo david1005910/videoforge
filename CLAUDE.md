@@ -291,7 +291,7 @@ Run `pnpm perf:budget` after significant changes to check for regressions.
 
 ## Current Phase
 
-**Phases 0-12 complete. Phase 12+ extensions complete.**
+**Phases 0-12 complete. Phase 12+ extensions complete. Current version: v0.3.0.**
 
 ### Phase 12 completed:
 
@@ -313,10 +313,16 @@ Run `pnpm perf:budget` after significant changes to check for regressions.
 - Collaboration / Shared Library service skeleton (4 IPC channels)
 - 42 new i18n keys, 33 unit tests
 
+### v0.3.0 additional:
+
+- All pre-existing lint warnings fixed (0 errors, 0 warnings)
+- User manual expanded to 19 sections (Bridge, Remote, Cloud, Videogen, Collab docs added)
+- CI notarization workflow prepared (commented, ready for P9-04 secrets)
+
 ### Remaining (non-code):
 
-- P9-04: Apple Developer ID (external account setup)
-- P9-05: CI Notarization (depends on P9-04)
+- P9-04: Apple Developer ID (external account setup, $99/year)
+- P9-05: CI Notarization — uncomment `.github/workflows/ci.yml` notarize step after P9-04
 - P10-05: CI notarized DMG upload (depends on P9-04/05)
 - P11-01/02/06: Beta recruitment, bug fixes, 1.0.0 release
 
