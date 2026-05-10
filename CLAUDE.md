@@ -321,12 +321,22 @@ Run `pnpm perf:budget` after significant changes to check for regressions.
 - tasks.md updated with completion status for all phases
 - Full quality verification passed: typecheck, 110 unit tests, 17 E2E tests, lint 0 warnings, perf budget 13/13
 - i18n Korean UX copy reviewed (143 keys, terminology consistent)
+- P9-05 CI code signing + notarization workflow activated (conditional on secrets — safe skip when absent)
+- Unsigned app installation guide added (user manual + README: xattr -cr, right-click, System Settings)
+- Local x64 DMG built and verified: `VideoForge-0.3.0.dmg` (211MB)
+
+### Local DMG build (개인 사용)
+
+```bash
+pnpm dist:mac:local                                    # 8-12min → apps/desktop/release/
+xattr -cr /Applications/VideoForge.app                 # Gatekeeper 해제 (1회)
+open /Applications/VideoForge.app                      # 실행
+```
 
 ### Remaining (non-code):
 
-- P9-04: Apple Developer ID (external account setup, $99/year)
-- P9-05: CI Notarization — uncomment `.github/workflows/ci.yml` notarize step after P9-04
-- P10-05: CI notarized DMG upload (depends on P9-04/05)
+- P9-04: Apple Developer ID (optional, $99/year — 공개 배포 시에만 필요)
+- P10-05: CI notarized DMG upload (depends on P9-04)
 - P11-01: Beta 5명 모집 (수동)
 - P11-02: Beta 버그 수정 (피드백 의존)
 - P11-06: 1.0.0 릴리스 (전체 의존)
