@@ -72,7 +72,7 @@ rm -rf apps/desktop/node_modules/.vite  # force-clear Vite cache
 videoforge/
 ├── apps/desktop/
 │   ├── electron/main/         # Main process (Node)
-│   │   ├── services/          # 18 service domains (see below)
+│   │   ├── services/          # 22 service domains (see below)
 │   │   ├── ipc-router.ts      # Type-safe handler registration
 │   │   ├── logger.ts          # pino JSONL logger
 │   │   └── index.ts           # App entry + menu + handler wiring
@@ -80,7 +80,7 @@ videoforge/
 │   ├── electron/knowledge/    # AI chat system prompts (cs.md, dna-script.md, thumbnail.md)
 │   ├── src/                   # Renderer (React + Tailwind + Zustand)
 │   │   ├── routes/            # 11 page components + router.tsx
-│   │   ├── i18n/              # ko.ts / en.ts (101 keys each)
+│   │   ├── i18n/              # ko.ts / en.ts (143 keys each)
 │   │   └── lib/api.ts         # Renderer IPC wrapper (unwrap + zod-validate)
 │   ├── e2e/                   # Playwright E2E + mock servers
 │   ├── build/                 # icon.icns (macOS app icon)
@@ -252,8 +252,7 @@ Community asset sharing. Service skeleton ready, backend deferred.
 ## Testing
 
 - **Unit tests** (Vitest): 110 tests — 17 shared + 93 desktop (`electron/**/*.test.ts`)
-- **E2E tests** (Playwright Electron): 3 app specs (`smoke`, `project-lifecycle`, `tts`)
-- **E2E mock servers** (Playwright + express): 4 mock specs (`grok-mock`, `imagegen-mock`, `chat-mock`, `whisper-mock`)
+- **E2E tests** (Playwright Electron): 17 total — 3 app specs (`smoke`, `project-lifecycle`, `tts`) + 4 mock specs (`grok-mock`, `imagegen-mock`, `chat-mock`, `whisper-mock`)
 - **Performance budget**: `pnpm perf:budget` — 13 checks (deps, LoC, typecheck speed, test speed, i18n coverage, large files)
 - Service functions must be IPC-independent and unit-testable
 - Font tests mock `app.isPackaged = true` to avoid scanning real `resources/fonts/`
@@ -318,13 +317,19 @@ Run `pnpm perf:budget` after significant changes to check for regressions.
 - All pre-existing lint warnings fixed (0 errors, 0 warnings)
 - User manual expanded to 19 sections (Bridge, Remote, Cloud, Videogen, Collab docs added)
 - CI notarization workflow prepared (commented, ready for P9-04 secrets)
+- README.md rewritten for v0.3.0 (22 services, 110 tests, architecture, perf budget)
+- tasks.md updated with completion status for all phases
+- Full quality verification passed: typecheck, 110 unit tests, 17 E2E tests, lint 0 warnings, perf budget 13/13
+- i18n Korean UX copy reviewed (143 keys, terminology consistent)
 
 ### Remaining (non-code):
 
 - P9-04: Apple Developer ID (external account setup, $99/year)
 - P9-05: CI Notarization — uncomment `.github/workflows/ci.yml` notarize step after P9-04
 - P10-05: CI notarized DMG upload (depends on P9-04/05)
-- P11-01/02/06: Beta recruitment, bug fixes, 1.0.0 release
+- P11-01: Beta 5명 모집 (수동)
+- P11-02: Beta 버그 수정 (피드백 의존)
+- P11-06: 1.0.0 릴리스 (전체 의존)
 
 **Repository**: `https://github.com/david1005910/videoforge.git`
 
