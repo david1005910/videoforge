@@ -327,6 +327,9 @@ Run `pnpm perf:budget` after significant changes to check for regressions.
 - `dialog:selectFile` IPC channel added (8-step pattern) — file picker for renderer
 - TTS page: "음성 파일 불러오기" button — load external audio files for waveform preview/playback
 - i18n keys: 143 → 144 (added `tts.loadAudio`)
+- Asset upload dialogs fixed: pass parent BrowserWindow to prevent dialogs opening behind app on macOS
+- TTS audio loading: use base64 → blob URL instead of file:// (webSecurity: true compatibility)
+- Waveform component: support blob: URL scheme
 
 ### Local DMG build (개인 사용)
 
