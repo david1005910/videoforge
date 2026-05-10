@@ -25,13 +25,6 @@ export function SettingsPage() {
   const [downloadingBinary, setDownloadingBinary] = useState(false);
   const [downloadingModel, setDownloadingModel] = useState<string | null>(null);
 
-  useEffect(() => {
-    void api.keychain.get('auto-update-enabled').then((val) => {
-      setAutoUpdate(val === 'true');
-    });
-    void loadWhisperModels();
-  }, []);
-
   const loadWhisperModels = useCallback(async () => {
     try {
       const result = await api.stt.whisperModels();
@@ -41,6 +34,13 @@ export function SettingsPage() {
       console.error('whisperModels failed', err);
     }
   }, []);
+
+  useEffect(() => {
+    void api.keychain.get('auto-update-enabled').then((val) => {
+      setAutoUpdate(val === 'true');
+    });
+    void loadWhisperModels();
+  }, [loadWhisperModels]);
 
   const handleSaveApiKey = async () => {
     if (!apiKey.trim()) return;

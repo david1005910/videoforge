@@ -80,7 +80,7 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
     } finally {
       setProcessing(false);
     }
-  }, [scene, projectLanguage, sttProvider, stylePreset, onSubtitleGenerated]);
+  }, [scene, projectLanguage, sttProvider, stylePreset, onSubtitleGenerated, t]);
 
   const handleWordTimeChange = useCallback(
     (index: number, field: 'startMs' | 'endMs', value: number) => {

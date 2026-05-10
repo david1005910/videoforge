@@ -1,6 +1,6 @@
 {
   "name": "@videoforge/desktop",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "VideoForge — Electron desktop app (Intel 16GB Monterey 최적화)",
   "main": "out/main/index.js",
