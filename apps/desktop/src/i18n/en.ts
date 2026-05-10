@@ -77,6 +77,7 @@ export const en: Record<keyof typeof ko, string> = {
   'inspector.finalClip': 'Final Clip',
   'inspector.prompts': 'Prompts',
   'inspector.notes': 'Notes',
+  'inspector.loadNarration': 'Load Audio',
 
   // Subtitle
   'subtitle.noAudio': 'No narration audio. Generate TTS first.',

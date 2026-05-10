@@ -143,6 +143,31 @@ export function EditorPage(): JSX.Element {
     [currentProject, saveProject],
   );
 
+  const handleLoadNarration = useCallback(
+    (sceneId: string, filePath: string) => {
+      if (!currentProject) return;
+      const scenes = currentProject.scenes.map((s) =>
+        s.id === sceneId
+          ? {
+              ...s,
+              narrationAudio: {
+                kind: 'audio' as const,
+                path: filePath,
+                sha1: '0000000000000000000000000000000000000000',
+              },
+            }
+          : s,
+      );
+      const updated: Project = {
+        ...currentProject,
+        scenes,
+        updatedAt: new Date().toISOString(),
+      };
+      void saveProject(updated);
+    },
+    [currentProject, saveProject],
+  );
+
   const handleBack = () => {
     setCurrentProject(null);
     void navigate({ to: '/' });
@@ -197,7 +222,7 @@ export function EditorPage(): JSX.Element {
           onScriptChange={handleScriptChange}
           onNotesChange={handleNotesChange}
         />
-        <Inspector scene={selectedScene} />
+        <Inspector scene={selectedScene} onLoadNarration={handleLoadNarration} />
       </main>
 
       {/* P4-13: Timeline */}

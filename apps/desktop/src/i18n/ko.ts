@@ -75,6 +75,7 @@ export const ko = {
   'inspector.finalClip': '최종 클립',
   'inspector.prompts': '프롬프트',
   'inspector.notes': '노트',
+  'inspector.loadNarration': '음성 불러오기',
 
   // Subtitle
   'subtitle.noAudio': '나레이션 오디오가 없습니다. 먼저 TTS를 생성하세요.',

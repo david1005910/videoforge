@@ -1,9 +1,13 @@
-import { Image, Volume2, Subtitles, Film, FileText } from 'lucide-react';
+import { useState } from 'react';
+import { Image, Volume2, Subtitles, Film, FileText, Play, Square, Upload } from 'lucide-react';
 import { useT } from '../../i18n';
+import { api } from '../../lib/api';
+import { Waveform } from '../../components/Waveform';
 import type { Scene } from '@videoforge/shared';
 
 interface Props {
   scene: Scene | null;
+  onLoadNarration?: (sceneId: string, filePath: string) => void;
 }
 
 function AssetBadge({
@@ -35,8 +39,64 @@ function AssetBadge({
   );
 }
 
-export function Inspector({ scene }: Props): JSX.Element {
+export function Inspector({ scene, onLoadNarration }: Props): JSX.Element {
   const t = useT();
+  const [isPlaying, setPlaying] = useState(false);
+  const [audioBlobUrl, setAudioBlobUrl] = useState<string | null>(null);
+  const [audioError, setAudioError] = useState('');
+  const [loadingAudio, setLoadingAudio] = useState(false);
+
+  const handlePreviewNarration = async (audioPath: string) => {
+    if (audioBlobUrl) {
+      setPlaying((p) => !p);
+      return;
+    }
+    setLoadingAudio(true);
+    setAudioError('');
+    try {
+      const { base64Data, mimeType } = await api.file.readBase64(audioPath);
+      const binary = atob(base64Data);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      const blob = new Blob([bytes], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      setAudioBlobUrl(url);
+      setPlaying(true);
+    } catch (err) {
+      setAudioError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoadingAudio(false);
+    }
+  };
+
+  const handleLoadNarrationFile = async () => {
+    if (!scene) return;
+    try {
+      const { filePath } = await api.dialog.selectFile(t('inspector.loadNarration'), undefined, [
+        { name: 'Audio', extensions: ['mp3', 'wav', 'ogg', 'aac', 'm4a', 'flac'] },
+      ]);
+      if (!filePath) return;
+      // 기존 blob URL 해제
+      if (audioBlobUrl) {
+        URL.revokeObjectURL(audioBlobUrl);
+        setAudioBlobUrl(null);
+      }
+      setPlaying(false);
+      onLoadNarration?.(scene.id, filePath);
+    } catch (err) {
+      setAudioError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  // 씬 변경 시 오디오 상태 초기화
+  const [prevSceneId, setPrevSceneId] = useState<string | null>(null);
+  if (scene?.id !== prevSceneId) {
+    setPrevSceneId(scene?.id ?? null);
+    if (audioBlobUrl) URL.revokeObjectURL(audioBlobUrl);
+    setAudioBlobUrl(null);
+    setPlaying(false);
+    setAudioError('');
+  }
 
   if (!scene) {
     return (
@@ -81,6 +141,41 @@ export function Inspector({ scene }: Props): JSX.Element {
             icon={Volume2}
             hasAsset={!!scene.narrationAudio}
           />
+
+          {/* 나레이션 미리듣기 */}
+          <div className="space-y-1.5">
+            <div className="flex gap-1">
+              {scene.narrationAudio && (
+                <button
+                  type="button"
+                  onClick={() => void handlePreviewNarration(scene.narrationAudio!.path)}
+                  disabled={loadingAudio}
+                  className="flex flex-1 items-center justify-center gap-1 rounded-md border border-zinc-700 px-2 py-1 text-[10px] text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-50"
+                >
+                  {isPlaying ? <Square size={10} /> : <Play size={10} />}
+                  {loadingAudio ? t('common.loading') : isPlaying ? t('tts.stop') : t('tts.play')}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => void handleLoadNarrationFile()}
+                className="flex flex-1 items-center justify-center gap-1 rounded-md border border-zinc-700 px-2 py-1 text-[10px] text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-200"
+              >
+                <Upload size={10} />
+                {t('inspector.loadNarration')}
+              </button>
+            </div>
+            {audioBlobUrl && (
+              <Waveform
+                audioPath={audioBlobUrl}
+                isPlaying={isPlaying}
+                onPlayPause={() => setPlaying((p) => !p)}
+                onFinish={() => setPlaying(false)}
+              />
+            )}
+            {audioError && <p className="text-[10px] text-red-400">{audioError}</p>}
+          </div>
+
           <AssetBadge
             label={t('inspector.subtitleAss')}
             icon={Subtitles}
