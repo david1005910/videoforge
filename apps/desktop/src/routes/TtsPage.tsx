@@ -45,6 +45,8 @@ export function TtsPage(): JSX.Element {
     }
   };
 
+  const [loadedBlobUrl, setLoadedBlobUrl] = useState<string | null>(null);
+
   const handleLoadAudio = async () => {
     setError('');
     try {
@@ -52,6 +54,19 @@ export function TtsPage(): JSX.Element {
         { name: 'Audio', extensions: ['mp3', 'wav', 'ogg', 'aac', 'm4a', 'flac', 'webm'] },
       ]);
       if (!filePath) return;
+
+      // webSecurity가 켜져 있어 file:// 직접 로드 불가 → base64로 읽어 blob URL 생성
+      const { base64Data, mimeType } = await api.file.readBase64(filePath);
+      const binary = atob(base64Data);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      const blob = new Blob([bytes], { type: mimeType });
+
+      // 이전 blob URL 해제
+      if (loadedBlobUrl) URL.revokeObjectURL(loadedBlobUrl);
+      const blobUrl = URL.createObjectURL(blob);
+      setLoadedBlobUrl(blobUrl);
+
       setResult({ audioPath: filePath, durationMs: 0, cached: false });
       setPlaying(false);
     } catch (err) {
@@ -241,7 +256,9 @@ export function TtsPage(): JSX.Element {
                 </div>
               </div>
               <Waveform
-                audioPath={result.audioPath}
+                audioPath={
+                  loadedBlobUrl && result.durationMs === 0 ? loadedBlobUrl : result.audioPath
+                }
                 isPlaying={isPlaying}
                 onPlayPause={handlePlayPause}
                 onFinish={() => setPlaying(false)}

@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { app, dialog } from 'electron';
+import { app, dialog, BrowserWindow } from 'electron';
 import { logger } from '../../logger';
 import type {
   FontInfo,
@@ -79,12 +79,14 @@ export async function listFonts(): Promise<FontsListResponse> {
   return { fonts: [...bundled, ...user] };
 }
 
-export async function uploadFonts(): Promise<FontsUploadResponse> {
-  const result = await dialog.showOpenDialog({
+export async function uploadFonts(senderId?: number): Promise<FontsUploadResponse> {
+  const win = senderId ? (BrowserWindow.fromId(senderId) ?? undefined) : undefined;
+  const opts: Electron.OpenDialogOptions = {
     title: '폰트 파일 선택',
     filters: [{ name: 'Fonts', extensions: ['ttf', 'otf', 'woff', 'woff2'] }],
     properties: ['openFile', 'multiSelections'],
-  });
+  };
+  const result = win ? await dialog.showOpenDialog(win, opts) : await dialog.showOpenDialog(opts);
 
   if (result.canceled || result.filePaths.length === 0) {
     return { added: [], skipped: [] };

@@ -34,7 +34,11 @@ export function Waveform({ audioPath, isPlaying, onPlayPause, onFinish }: Props)
     ws.on('finish', handleFinish);
     ws.on('click', () => onPlayPause());
 
-    void ws.load(`file://${audioPath}`);
+    const url =
+      audioPath.startsWith('blob:') || audioPath.startsWith('http')
+        ? audioPath
+        : `file://${audioPath}`;
+    void ws.load(url);
     wsRef.current = ws;
 
     return () => {

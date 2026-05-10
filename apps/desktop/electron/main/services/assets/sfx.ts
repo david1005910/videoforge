@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { app, dialog } from 'electron';
+import { app, dialog, BrowserWindow } from 'electron';
 import { ulid } from 'ulid';
 import { logger } from '../../logger';
 import { ffprobe, getDurationMs } from '../video/ffmpeg-runner';
@@ -84,12 +84,14 @@ export async function listSfx(req: SfxListRequest): Promise<SfxListResponse> {
   return { items };
 }
 
-export async function uploadSfx(): Promise<SfxUploadResponse> {
-  const result = await dialog.showOpenDialog({
+export async function uploadSfx(senderId?: number): Promise<SfxUploadResponse> {
+  const win = senderId ? (BrowserWindow.fromId(senderId) ?? undefined) : undefined;
+  const opts: Electron.OpenDialogOptions = {
     title: 'SFX 파일 선택',
     filters: [{ name: 'Audio', extensions: ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac'] }],
     properties: ['openFile', 'multiSelections'],
-  });
+  };
+  const result = win ? await dialog.showOpenDialog(win, opts) : await dialog.showOpenDialog(opts);
 
   if (result.canceled || result.filePaths.length === 0) {
     return { added: [], skipped: [] };
