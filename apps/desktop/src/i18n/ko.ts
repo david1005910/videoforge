@@ -39,6 +39,7 @@ export const ko = {
   'tts.stop': '정지',
   'tts.play': '재생',
   'tts.save': '저장',
+  'tts.loadAudio': '음성 파일 불러오기',
 
   // Scene
   'scene.scenes': '씬',

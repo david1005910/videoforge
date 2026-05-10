@@ -147,6 +147,14 @@ export const api = {
       const resp = await window.electronAPI.dialog.selectFolder({ title, defaultPath });
       return UtilitySchemas.DialogSelectFolderResponse.parse(unwrap(resp));
     },
+    async selectFile(
+      title?: string,
+      defaultPath?: string,
+      filters?: { name: string; extensions: string[] }[],
+    ) {
+      const resp = await window.electronAPI.dialog.selectFile({ title, defaultPath, filters });
+      return UtilitySchemas.DialogSelectFileResponse.parse(unwrap(resp));
+    },
     async alert(title: string, message: string, level: 'info' | 'warning' | 'error' = 'info') {
       const resp = await window.electronAPI.dialog.alert({ title, message, level });
       unwrap(resp);

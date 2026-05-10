@@ -41,6 +41,7 @@ export const en: Record<keyof typeof ko, string> = {
   'tts.stop': 'Stop',
   'tts.play': 'Play',
   'tts.save': 'Save',
+  'tts.loadAudio': 'Load Audio File',
 
   // Scene
   'scene.scenes': 'Scenes',

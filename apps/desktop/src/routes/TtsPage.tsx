@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { ArrowLeft, Play, Square, Download, Volume2 } from 'lucide-react';
+import { ArrowLeft, Play, Square, Download, Volume2, FolderOpen } from 'lucide-react';
 import { api } from '../lib/api';
 import { useT } from '../i18n';
 import { EDGE_VOICES } from '../lib/voices';
@@ -42,6 +42,20 @@ export function TtsPage(): JSX.Element {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const handleLoadAudio = async () => {
+    setError('');
+    try {
+      const { filePath } = await api.dialog.selectFile(t('tts.loadAudio'), undefined, [
+        { name: 'Audio', extensions: ['mp3', 'wav', 'ogg', 'aac', 'm4a', 'flac', 'webm'] },
+      ]);
+      if (!filePath) return;
+      setResult({ audioPath: filePath, durationMs: 0, cached: false });
+      setPlaying(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
     }
   };
 
@@ -161,16 +175,27 @@ export function TtsPage(): JSX.Element {
             </div>
           </div>
 
-          {/* 생성 버튼 */}
-          <button
-            type="button"
-            onClick={() => void handleGenerate()}
-            disabled={!text.trim() || isGenerating}
-            className="bg-accent hover:bg-accent-600 flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-medium text-white transition disabled:opacity-50"
-          >
-            <Volume2 size={16} />
-            {isGenerating ? t('tts.generating') : t('tts.generate')}
-          </button>
+          {/* 생성 버튼 + 파일 불러오기 */}
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => void handleGenerate()}
+              disabled={!text.trim() || isGenerating}
+              className="bg-accent hover:bg-accent-600 flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-medium text-white transition disabled:opacity-50"
+            >
+              <Volume2 size={16} />
+              {isGenerating ? t('tts.generating') : t('tts.generate')}
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleLoadAudio()}
+              disabled={isGenerating}
+              className="flex items-center gap-2 rounded-lg border border-zinc-700 px-6 py-2.5 text-sm font-medium text-zinc-300 transition hover:bg-zinc-800 disabled:opacity-50"
+            >
+              <FolderOpen size={16} />
+              {t('tts.loadAudio')}
+            </button>
+          </div>
 
           {/* 에러 */}
           {error && (
@@ -184,8 +209,12 @@ export function TtsPage(): JSX.Element {
             <div className="space-y-3 rounded-lg border border-zinc-700 bg-zinc-900/50 p-4">
               <div className="flex items-center justify-between">
                 <div className="text-sm">
-                  <span className="text-zinc-400">{t('tts.duration')}:</span>{' '}
-                  <span className="font-mono">{formatDuration(result.durationMs)}</span>
+                  {result.durationMs > 0 && (
+                    <>
+                      <span className="text-zinc-400">{t('tts.duration')}:</span>{' '}
+                      <span className="font-mono">{formatDuration(result.durationMs)}</span>
+                    </>
+                  )}
                   {result.cached && (
                     <span className="ml-2 rounded bg-blue-900/40 px-1.5 py-0.5 text-xs text-blue-300">
                       {t('tts.cached')}

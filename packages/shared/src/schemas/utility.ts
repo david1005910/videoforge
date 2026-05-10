@@ -145,6 +145,25 @@ export const DialogSelectFolderResponse = z.object({
 });
 export type DialogSelectFolderResponse = z.infer<typeof DialogSelectFolderResponse>;
 
+export const DialogSelectFileRequest = z.object({
+  title: z.string().optional(),
+  defaultPath: FilePath.optional(),
+  filters: z
+    .array(
+      z.object({
+        name: z.string(),
+        extensions: z.array(z.string()),
+      }),
+    )
+    .optional(),
+});
+export type DialogSelectFileRequest = z.infer<typeof DialogSelectFileRequest>;
+
+export const DialogSelectFileResponse = z.object({
+  filePath: FilePath.nullable(),
+});
+export type DialogSelectFileResponse = z.infer<typeof DialogSelectFileResponse>;
+
 export const DialogAlertRequest = z.object({
   title: z.string().max(200),
   message: z.string().max(2000),

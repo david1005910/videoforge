@@ -26,6 +26,26 @@ export function registerDialogHandlers(): void {
     },
   );
 
+  registerHandler(
+    Channels.Dialog.SelectFile,
+    UtilitySchemas.DialogSelectFileRequest,
+    async (req, ctx) => {
+      const win = getWindow(ctx.senderId);
+      const opts: Electron.OpenDialogOptions = {
+        title: req.title ?? '파일 선택',
+        properties: ['openFile'],
+      };
+      if (req.defaultPath) opts.defaultPath = req.defaultPath;
+      if (req.filters) opts.filters = req.filters;
+      const result = win
+        ? await dialog.showOpenDialog(win, opts)
+        : await dialog.showOpenDialog(opts);
+      return {
+        filePath: result.canceled ? null : (result.filePaths[0] ?? null),
+      };
+    },
+  );
+
   registerHandler(Channels.Dialog.Alert, UtilitySchemas.DialogAlertRequest, async (req, ctx) => {
     const win = getWindow(ctx.senderId);
     const level = req.level ?? 'info';

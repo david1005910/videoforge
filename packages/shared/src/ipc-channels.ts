@@ -26,6 +26,7 @@ export const Channels = {
   },
   Dialog: {
     SelectFolder: 'dialog:selectFolder',
+    SelectFile: 'dialog:selectFile',
     Alert: 'dialog:alert',
     Confirm: 'dialog:confirm',
   },

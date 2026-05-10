@@ -42,6 +42,7 @@ const api = {
   // === Dialog (Phase 1 — P1-08) ===
   dialog: {
     selectFolder: (payload?: unknown) => invoke(Channels.Dialog.SelectFolder, payload),
+    selectFile: (payload?: unknown) => invoke(Channels.Dialog.SelectFile, payload),
     alert: (payload: unknown) => invoke(Channels.Dialog.Alert, payload),
     confirm: (payload: unknown) => invoke(Channels.Dialog.Confirm, payload),
   },
