@@ -251,7 +251,7 @@ Community asset sharing. Service skeleton ready, backend deferred.
 
 ## Testing
 
-- **Unit tests** (Vitest): 110 tests — 17 shared + 93 desktop (`electron/**/*.test.ts`)
+- **Unit tests** (Vitest): 99 tests — 17 shared + 82 desktop (`electron/**/*.test.ts`)
 - **E2E tests** (Playwright Electron): 17 total — 3 app specs (`smoke`, `project-lifecycle`, `tts`) + 4 mock specs (`grok-mock`, `imagegen-mock`, `chat-mock`, `whisper-mock`)
 - **Performance budget**: `pnpm perf:budget` — 13 checks (deps, LoC, typecheck speed, test speed, i18n coverage, large files)
 - Service functions must be IPC-independent and unit-testable
@@ -288,6 +288,7 @@ Run `pnpm perf:budget` after significant changes to check for regressions.
 - Using `.then()` chains (use `async/await`; prefix fire-and-forget promises with `void`)
 - Hardcoded Korean/English strings in `.tsx` — use `t('key')` via i18n
 - WaveSurfer.js `backend: 'WebAudio'` — causes silent playback due to suspended AudioContext; use default HTML5 backend
+- Render-time `setState` for tracking previous values — causes infinite re-renders in production; use `useEffect` + `useRef` instead
 
 ## Current Phase
 
@@ -334,6 +335,9 @@ Run `pnpm perf:budget` after significant changes to check for regressions.
 - Editor Inspector: narration audio preview (play/stop + waveform) and "음성 불러오기" file loading
 - i18n keys: 144 → 145 (added `inspector.loadNarration`)
 - Waveform audio fix: removed `backend: 'WebAudio'` — v7 WebAudioPlayer creates suspended AudioContext that never resumes; default HTML5 `<audio>` backend works correctly
+- Inspector fix: replaced render-time setState with useEffect+useRef — fixes React #301 (infinite re-render) that crashed editor page in production builds
+- SFX delete fix: match by filename instead of ephemeral ULID — renderer sends `item.name`, service uses `path.basename`
+- E2E project-lifecycle test stabilized: 17/17 all green
 
 ### Local DMG build (개인 사용)
 
