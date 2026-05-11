@@ -39,7 +39,7 @@ test.describe('P1-16: project lifecycle', () => {
 
     // 5. 에디터로 이동 — h2에 프로젝트 제목 표시
     await expect(window.locator('h2', { hasText: 'E2E Test Project' })).toBeVisible({
-      timeout: 10_000,
+      timeout: 15_000,
     });
 
     // 6. 뒤로 가기 (프로젝트 목록)

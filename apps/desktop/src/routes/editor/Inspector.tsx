@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Image, Volume2, Subtitles, Film, FileText, Play, Square, Upload } from 'lucide-react';
 import { useT } from '../../i18n';
 import { api } from '../../lib/api';
@@ -89,14 +89,19 @@ export function Inspector({ scene, onLoadNarration }: Props): JSX.Element {
   };
 
   // 씬 변경 시 오디오 상태 초기화
-  const [prevSceneId, setPrevSceneId] = useState<string | null>(null);
-  if (scene?.id !== prevSceneId) {
-    setPrevSceneId(scene?.id ?? null);
-    if (audioBlobUrl) URL.revokeObjectURL(audioBlobUrl);
-    setAudioBlobUrl(null);
-    setPlaying(false);
-    setAudioError('');
-  }
+  const prevSceneIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const currentId = scene?.id ?? null;
+    if (currentId !== prevSceneIdRef.current) {
+      prevSceneIdRef.current = currentId;
+      setAudioBlobUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+      setPlaying(false);
+      setAudioError('');
+    }
+  }, [scene?.id]);
 
   if (!scene) {
     return (

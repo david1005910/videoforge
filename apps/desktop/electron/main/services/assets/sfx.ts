@@ -128,11 +128,10 @@ export async function deleteSfx(req: SfxDeleteRequest): Promise<void> {
   const files = fs.readdirSync(userDir);
 
   for (const f of files) {
-    const filePath = path.join(userDir, f);
-    // Match by filename since IDs are generated on scan
-    const item = await parseSfxFile(filePath, 'user');
-    if (item && item.name === req.id) {
-      await fs.promises.unlink(filePath);
+    const ext = path.extname(f).toLowerCase();
+    const basename = path.basename(f, ext);
+    if (basename === req.id) {
+      await fs.promises.unlink(path.join(userDir, f));
       logger.info({ id: req.id }, 'sfx.deleted');
       return;
     }

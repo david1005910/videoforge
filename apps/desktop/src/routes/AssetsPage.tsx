@@ -174,7 +174,7 @@ function SfxPanel() {
 
   const handleDelete = async (item: SfxItem) => {
     try {
-      await api.assets.sfxDelete({ id: item.id });
+      await api.assets.sfxDelete({ id: item.name });
       await refresh();
     } catch (err) {
       console.error('sfx.delete failed', err);
