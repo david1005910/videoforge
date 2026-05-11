@@ -345,6 +345,11 @@ Run `pnpm perf:budget` after significant changes to check for regressions.
 - Keyboard shortcuts in editor: Arrow keys (scene nav), Cmd+N (add), Cmd+D (duplicate), Cmd+Backspace (delete); ignores textarea/input/select focus
 - Drag-and-drop files onto Inspector: images → `generatedImages`, audio → `narrationAudio`; visual drag-over indicator
 - Theme toggle in Settings: system/dark/light radio buttons using existing `useUiStore` + `useThemeSync`
+- Scene drag-and-drop reorder in SceneList (HTML5 DnD with visual drop indicator)
+- Undo/Redo: 50-level history stack in project-store (`pushProject`/`undo`/`redo`), Cmd+Z / Cmd+Shift+Z
+- Scene duration estimation from script character count (~150 chars/min) in SceneList + Timeline
+- Inline TTS generation button in ScriptEditor (Edge TTS → narration audio, auto-detects ko/en voice)
+- Recent projects section on project list page (localStorage, max 5, horizontal scroll cards)
 
 ### Local DMG build (개인 사용)
 
