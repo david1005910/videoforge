@@ -11,12 +11,13 @@ import {
   Plus,
   RefreshCw,
   X,
+  Send,
 } from 'lucide-react';
 import { useT } from '../../i18n';
 import { api } from '../../lib/api';
 import { Waveform } from '../../components/Waveform';
 import { buildAss, DEFAULT_STYLE } from '@videoforge/shared';
-import type { Scene, AssetRef } from '@videoforge/shared';
+import type { Scene, AssetRef, PipelineStep } from '@videoforge/shared';
 
 interface Props {
   scene: Scene | null;
@@ -25,6 +26,7 @@ interface Props {
   onDropImages?: (sceneId: string, paths: string[]) => void;
   onDropClips?: (sceneId: string, paths: string[]) => void;
   onSubtitleGenerated?: (sceneId: string, assContent: string) => void;
+  onFinalClipGenerated?: (sceneId: string, clipPath: string) => void;
 }
 
 function AssetBadge({
@@ -134,6 +136,31 @@ function ImageThumbnails({ images }: { images: AssetRef[] }) {
   );
 }
 
+function GrokImageThumb({ path }: { path: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const { base64Data, mimeType } = await api.file.readBase64(path);
+        const binary = atob(base64Data);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        const blob = new Blob([bytes], { type: mimeType });
+        if (!cancelled) setUrl(URL.createObjectURL(blob));
+      } catch {
+        /* skip */
+      }
+    };
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [path]);
+  if (!url) return <Image size={12} className="text-white/15" />;
+  return <img src={url} alt="" className="h-full w-full object-cover" />;
+}
+
 export function Inspector({
   scene,
   projectLanguage,
@@ -141,6 +168,7 @@ export function Inspector({
   onDropImages,
   onDropClips,
   onSubtitleGenerated,
+  onFinalClipGenerated,
 }: Props): JSX.Element {
   const t = useT();
   const [isPlaying, setPlaying] = useState(false);
@@ -152,6 +180,86 @@ export function Inspector({
   const [subtitleProcessing, setSubtitleProcessing] = useState(false);
   const [subtitleError, setSubtitleError] = useState('');
   const [imageAssignments, setImageAssignments] = useState<Record<number, string>>({});
+  const [composeProcessing, setComposeProcessing] = useState(false);
+  const [composeError, setComposeError] = useState('');
+  const [grokPrompt, setGrokPrompt] = useState('');
+  const [grokSelectedImage, setGrokSelectedImage] = useState<string | null>(null);
+  const [grokSending, setGrokSending] = useState(false);
+  const [grokError, setGrokError] = useState('');
+
+  const handleGrokGenerate = useCallback(async () => {
+    if (!scene || !grokPrompt.trim()) return;
+    const imagePath = grokSelectedImage ?? scene.generatedImages[0]?.path;
+    if (!imagePath) {
+      setGrokError(t('inspector.grokSelectImage'));
+      return;
+    }
+    setGrokSending(true);
+    setGrokError('');
+    try {
+      const status = await api.grok.bridgeStatus();
+      if (!status.available || status.connectedTabs === 0) {
+        setGrokError(t('inspector.grokNotConnected'));
+        return;
+      }
+      await api.grok.bridgeSend({
+        items: [
+          {
+            prompt: grokPrompt.trim(),
+            imagePath,
+            durationSec: 6,
+            count: 1,
+            outputDir: imagePath.replace(/[^/]+$/, ''),
+            maxRetries: 2,
+          },
+        ],
+      });
+      setGrokPrompt('');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      const hint = (err as Record<string, unknown>)?.hint;
+      setGrokError(hint ? `${msg}: ${String(hint)}` : msg);
+    } finally {
+      setGrokSending(false);
+    }
+  }, [scene, grokPrompt, grokSelectedImage, t]);
+
+  const handleComposeClip = useCallback(async () => {
+    if (!scene) return;
+    const firstImage = scene.generatedImages[0];
+    if (!firstImage) {
+      setComposeError(t('inspector.composeNoImage'));
+      return;
+    }
+    setComposeProcessing(true);
+    setComposeError('');
+    try {
+      const outputPath = firstImage.path.replace(/\.[^.]+$/, '') + `_clip_${Date.now()}.mp4`;
+      const step: Record<string, unknown> = {
+        kind: 'compose',
+        image: firstImage.path,
+      };
+      if (scene.narrationAudio) {
+        step.audio = scene.narrationAudio.path;
+      } else {
+        step.durationMs = 10000;
+      }
+      if (typeof scene.subtitleAss?.meta?.content === 'string') {
+        step.subtitleContent = scene.subtitleAss.meta.content;
+      }
+      const result = await api.video.edit({
+        outputPath,
+        pipeline: [step as PipelineStep],
+      });
+      onFinalClipGenerated?.(scene.id, result.outputPath);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      const hint = (err as Record<string, unknown>)?.hint;
+      setComposeError(hint ? `${msg}: ${String(hint)}` : msg);
+    } finally {
+      setComposeProcessing(false);
+    }
+  }, [scene, onFinalClipGenerated, t]);
 
   const handleAddImages = useCallback(async () => {
     if (!scene) return;
@@ -461,8 +569,69 @@ export function Inspector({
           )}
 
           {/* Final Clip */}
-          <AssetBadge label={t('inspector.finalClip')} icon={Film} hasAsset={!!scene.finalClip} />
+          <div className="space-y-1.5">
+            <AssetBadge label={t('inspector.finalClip')} icon={Film} hasAsset={!!scene.finalClip} />
+            <button
+              type="button"
+              onClick={() => void handleComposeClip()}
+              disabled={composeProcessing || scene.generatedImages.length === 0}
+              className="gooey-btn-primary flex w-full items-center justify-center gap-1 px-2 py-1.5 text-[10px]"
+            >
+              {composeProcessing ? (
+                <RefreshCw size={10} className="animate-spin" />
+              ) : (
+                <Film size={10} />
+              )}
+              {composeProcessing ? t('inspector.composing') : t('inspector.compose')}
+            </button>
+            {composeError && <p className="text-[10px] text-red-400">{composeError}</p>}
+          </div>
         </div>
+
+        {/* Grok Video Generation */}
+        {scene.generatedImages.length > 0 && (
+          <div className="mt-6 space-y-2">
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/20">
+              {t('inspector.grokGenerate')}
+            </h3>
+            {/* Image selector */}
+            <div className="flex gap-1">
+              {scene.generatedImages.map((img) => (
+                <button
+                  key={img.path}
+                  type="button"
+                  onClick={() => setGrokSelectedImage(img.path)}
+                  className={`h-12 w-12 overflow-hidden rounded border transition hover:border-white/30 ${
+                    (grokSelectedImage ?? scene.generatedImages[0]?.path) === img.path
+                      ? 'border-violet-400'
+                      : 'border-white/10'
+                  }`}
+                  title={img.path.split('/').pop()}
+                >
+                  <GrokImageThumb path={img.path} />
+                </button>
+              ))}
+            </div>
+            {/* Prompt + Send */}
+            <textarea
+              value={grokPrompt}
+              onChange={(e) => setGrokPrompt(e.target.value)}
+              placeholder={t('inspector.grokPrompt')}
+              rows={2}
+              className="gooey-input w-full p-2 text-[11px]"
+            />
+            <button
+              type="button"
+              onClick={() => void handleGrokGenerate()}
+              disabled={grokSending || !grokPrompt.trim()}
+              className="gooey-btn-primary flex w-full items-center justify-center gap-1 px-2 py-1.5 text-[10px]"
+            >
+              {grokSending ? <RefreshCw size={10} className="animate-spin" /> : <Send size={10} />}
+              {grokSending ? t('inspector.grokSending') : t('inspector.grokSend')}
+            </button>
+            {grokError && <p className="text-[10px] text-red-400">{grokError}</p>}
+          </div>
+        )}
 
         {/* Prompts */}
         {(scene.prompts.whisk ?? scene.prompts.imagefx ?? scene.prompts.grok) && (

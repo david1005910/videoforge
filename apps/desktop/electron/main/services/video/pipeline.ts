@@ -31,6 +31,8 @@ export function compilePipeline(steps: PipelineStep[], outputPath: string): Comp
         return compileEffect(step, args, outputPath);
       case 'export':
         return compileExport(step, args, outputPath);
+      case 'compose':
+        return compileCompose(step, outputPath);
     }
   }
 
@@ -244,6 +246,54 @@ function compileExport(
 
   // Audio
   args.push('-c:a', step.audioCodec, '-b:a', step.audioBitrate);
+
+  args.push('-y', outputPath);
+  return { args, outputPath };
+}
+
+function compileCompose(
+  step: Extract<PipelineStep, { kind: 'compose' }>,
+  outputPath: string,
+): CompileResult {
+  const args: string[] = [];
+
+  // Input: loop image as video source
+  args.push('-loop', '1', '-i', step.image);
+
+  // Input: audio (if provided)
+  if (step.audio) {
+    args.push('-i', step.audio);
+  }
+
+  // Resolve subtitle path — write content to temp file if needed
+  let subPath = step.subtitlePath;
+  if (!subPath && step.subtitleContent) {
+    subPath = path.join(os.tmpdir(), `vf-compose-sub-${Date.now()}.ass`);
+    fs.writeFileSync(subPath, step.subtitleContent, 'utf-8');
+  }
+
+  // Video filter: subtitle burn (if provided)
+  if (subPath) {
+    const escPath = subPath.replace(/\\/g, '/').replace(/'/g, "'\\''").replace(/:/g, '\\:');
+    if (step.fontsDir) {
+      const escFonts = step.fontsDir.replace(/:/g, '\\:');
+      args.push('-vf', `subtitles='${escPath}':fontsdir='${escFonts}'`);
+    } else {
+      args.push('-vf', `subtitles='${escPath}'`);
+    }
+  }
+
+  // Video codec
+  args.push('-c:v', 'libx264', '-preset', 'faster', '-crf', '23', '-pix_fmt', 'yuv420p');
+
+  if (step.audio) {
+    // Audio codec + use audio duration
+    args.push('-c:a', 'aac', '-b:a', '192k', '-shortest');
+  } else {
+    // No audio: use explicit duration
+    const dur = (step.durationMs ?? 10000) / 1000;
+    args.push('-t', dur.toString(), '-an');
+  }
 
   args.push('-y', outputPath);
   return { args, outputPath };

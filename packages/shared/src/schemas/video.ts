@@ -51,6 +51,18 @@ export const EffectStep = z.object({
   params: z.record(z.unknown()).default({}),
 });
 
+export const ComposeStep = z.object({
+  kind: z.literal('compose'),
+  image: FilePath,
+  audio: FilePath.optional(),
+  subtitlePath: FilePath.optional(),
+  /** ASS content as string — written to temp file if subtitlePath is not provided */
+  subtitleContent: z.string().optional(),
+  fontsDir: FilePath.optional(),
+  /** 오디오 없을 때 영상 길이 (ms). 오디오 있으면 오디오 길이 사용 */
+  durationMs: z.number().int().positive().optional(),
+});
+
 export const ExportStep = z.object({
   kind: z.literal('export'),
   resolution: Resolution,
@@ -69,6 +81,7 @@ export const PipelineStep = z.discriminatedUnion('kind', [
   KenBurnsStep,
   EffectStep,
   ExportStep,
+  ComposeStep,
 ]);
 export type PipelineStep = z.infer<typeof PipelineStep>;
 
@@ -145,9 +158,7 @@ export type VideoSaveEffectRequest = z.infer<typeof VideoSaveEffectRequest>;
 export const VideoFramesExtractRequest = z.object({
   videoPath: FilePath,
   /** 추출할 시각 (ms 또는 'first', 'middle', 'last') */
-  timestamps: z.array(
-    z.union([z.number().nonnegative(), z.enum(['first', 'middle', 'last'])]),
-  ),
+  timestamps: z.array(z.union([z.number().nonnegative(), z.enum(['first', 'middle', 'last'])])),
   outputDir: FilePath,
   /** 출력 포맷 */
   format: z.enum(['png', 'jpg', 'webp']).default('png'),

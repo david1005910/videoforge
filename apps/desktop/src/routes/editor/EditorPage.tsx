@@ -289,6 +289,31 @@ export function EditorPage(): JSX.Element {
     [currentProject, saveProject],
   );
 
+  const handleFinalClipGenerated = useCallback(
+    (sceneId: string, clipPath: string) => {
+      if (!currentProject) return;
+      const scenes = currentProject.scenes.map((s) =>
+        s.id === sceneId
+          ? {
+              ...s,
+              finalClip: {
+                kind: 'video' as const,
+                path: clipPath,
+                sha1: '0000000000000000000000000000000000000000',
+              },
+            }
+          : s,
+      );
+      const updated: Project = {
+        ...currentProject,
+        scenes,
+        updatedAt: new Date().toISOString(),
+      };
+      void saveProject(updated);
+    },
+    [currentProject, saveProject],
+  );
+
   const handleTitleEdit = useCallback(() => {
     if (!currentProject) return;
     setTitleDraft(currentProject.title);
@@ -483,6 +508,7 @@ export function EditorPage(): JSX.Element {
           onDropImages={handleDropImages}
           onDropClips={handleDropClips}
           onSubtitleGenerated={handleSubtitleGenerated}
+          onFinalClipGenerated={handleFinalClipGenerated}
         />
       </main>
 
