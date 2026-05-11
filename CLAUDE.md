@@ -350,6 +350,12 @@ Run `pnpm perf:budget` after significant changes to check for regressions.
 - Scene duration estimation from script character count (~150 chars/min) in SceneList + Timeline
 - Inline TTS generation button in ScriptEditor (Edge TTS → narration audio, auto-detects ko/en voice)
 - Recent projects section on project list page (localStorage, max 5, horizontal scroll cards)
+- Delete confirmation dialogs for scenes (editor) and projects (project list) — prevents accidental deletes
+- Inline project title editing: click title in editor titlebar to rename
+- Keyboard shortcut help overlay: ⌘/ toggle, lists all editor shortcuts
+- Auto-save indicator in editor titlebar (Saving… / ✓ Saved)
+- Timeline total duration as mm:ss format + empty state message
+- Escape key closes all overlays (shortcuts, delete confirm)
 
 ### Local DMG build (개인 사용)
 
