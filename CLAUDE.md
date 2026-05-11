@@ -167,7 +167,7 @@ Grok, Whisk, ImageFX use `puppeteer-core` + `puppeteer-extra` + stealth plugin. 
 ### i18n
 
 - Translation files: `apps/desktop/src/i18n/ko.ts` (Korean) + `en.ts` (English)
-- 145 keys across 14 categories: app, projects, wizard, editor, tts, scene/script/inspector, subtitle, assets, whisper, bridge, remote, cloud, videogen, collab, common
+- 148 keys across 14 categories: app, projects, wizard, editor, tts, scene/script/inspector, subtitle, assets, whisper, bridge, remote, cloud, videogen, collab, common
 - Usage: `const t = useT()` hook → `t('key.name')` in components
 - All user-facing strings must go through i18n — no hardcoded Korean/English in `.tsx` files
 
@@ -266,7 +266,7 @@ Community asset sharing. Service skeleton ready, backend deferred.
 | Total LoC    | ~12,900         | —          |
 | Shared deps  | 1               | 10         |
 | Desktop deps | 18              | 40         |
-| i18n keys    | 145 ko / 145 en | must match |
+| i18n keys    | 148 ko / 148 en | must match |
 
 Run `pnpm perf:budget` after significant changes to check for regressions.
 
@@ -334,10 +334,17 @@ Run `pnpm perf:budget` after significant changes to check for regressions.
 - Waveform component: support blob: URL scheme
 - Editor Inspector: narration audio preview (play/stop + waveform) and "음성 불러오기" file loading
 - i18n keys: 144 → 145 (added `inspector.loadNarration`)
+- i18n keys: 145 → 148 (added `scene.duplicate`, `projects.export`, `projects.import`)
 - Waveform audio fix: removed `backend: 'WebAudio'` — v7 WebAudioPlayer creates suspended AudioContext that never resumes; default HTML5 `<audio>` backend works correctly
 - Inspector fix: replaced render-time setState with useEffect+useRef — fixes React #301 (infinite re-render) that crashed editor page in production builds
 - SFX delete fix: match by filename instead of ephemeral ULID — renderer sends `item.name`, service uses `path.basename`
 - E2E project-lifecycle test stabilized: 17/17 all green
+- Inspector image preview: ImageThumbnails component with 2-column grid + click-to-expand lightbox overlay
+- Scene duplicate: Copy button in SceneList + `handleDuplicateScene` in EditorPage (new ULID, reindex)
+- Project export/import: JSON backup via `file.saveToDisk`, import via `dialog.selectFile` + `project.save(asNewProject: true)`
+- Keyboard shortcuts in editor: Arrow keys (scene nav), Cmd+N (add), Cmd+D (duplicate), Cmd+Backspace (delete); ignores textarea/input/select focus
+- Drag-and-drop files onto Inspector: images → `generatedImages`, audio → `narrationAudio`; visual drag-over indicator
+- Theme toggle in Settings: system/dark/light radio buttons using existing `useUiStore` + `useThemeSync`
 
 ### Local DMG build (개인 사용)
 
