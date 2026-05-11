@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from '@tanstack/react-router';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Check, Keyboard, X } from 'lucide-react';
 import { ulid } from 'ulid';
 import { api } from '../../lib/api';
 import { useProjectStore } from '../../stores/project-store';
@@ -19,6 +19,12 @@ export function EditorPage(): JSX.Element {
   const { currentProject, setCurrentProject, pushProject, undo, redo } = useProjectStore();
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
   const [showExport, setShowExport] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState('');
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,10 +53,14 @@ export function EditorPage(): JSX.Element {
   const saveProject = useCallback(
     async (updated: Project) => {
       pushProject(updated);
+      setSaveStatus('saving');
       try {
         await api.project.save({ project: updated, asNewProject: false });
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 1500);
       } catch (err) {
         console.error('Auto-save failed:', err);
+        setSaveStatus('idle');
       }
     },
     [pushProject],
@@ -112,10 +122,15 @@ export function EditorPage(): JSX.Element {
       if (selectedSceneId === id) {
         setSelectedSceneId(filtered[0]?.id ?? null);
       }
+      setDeleteConfirmId(null);
       void saveProject(updated);
     },
     [currentProject, selectedSceneId, saveProject],
   );
+
+  const handleRequestDelete = useCallback((id: string) => {
+    setDeleteConfirmId(id);
+  }, []);
 
   const handleReorder = useCallback(
     (fromIdx: number, toIdx: number) => {
@@ -220,6 +235,27 @@ export function EditorPage(): JSX.Element {
     [currentProject, saveProject],
   );
 
+  const handleTitleEdit = useCallback(() => {
+    if (!currentProject) return;
+    setTitleDraft(currentProject.title);
+    setEditingTitle(true);
+    setTimeout(() => titleInputRef.current?.select(), 0);
+  }, [currentProject]);
+
+  const handleTitleSave = useCallback(() => {
+    if (!currentProject || !titleDraft.trim()) {
+      setEditingTitle(false);
+      return;
+    }
+    const updated: Project = {
+      ...currentProject,
+      title: titleDraft.trim(),
+      updatedAt: new Date().toISOString(),
+    };
+    setEditingTitle(false);
+    void saveProject(updated);
+  }, [currentProject, titleDraft, saveProject]);
+
   // Undo/redo 후 자동 저장
   const handleUndo = useCallback(() => {
     undo();
@@ -248,6 +284,17 @@ export function EditorPage(): JSX.Element {
         return;
       }
 
+      if (e.key === '/' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setShowShortcuts((v) => !v);
+        return;
+      }
+      if (e.key === 'Escape') {
+        setShowShortcuts(false);
+        setDeleteConfirmId(null);
+        return;
+      }
+
       // textarea/input 내부에서는 나머지 단축키 무시
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'SELECT') return;
@@ -270,7 +317,7 @@ export function EditorPage(): JSX.Element {
         handleDuplicateScene(selectedSceneId);
       } else if (e.key === 'Backspace' && (e.metaKey || e.ctrlKey) && selectedSceneId) {
         e.preventDefault();
-        handleDeleteScene(selectedSceneId);
+        handleRequestDelete(selectedSceneId);
       }
     };
     window.addEventListener('keydown', handler);
@@ -280,7 +327,7 @@ export function EditorPage(): JSX.Element {
     selectedSceneId,
     handleAddScene,
     handleDuplicateScene,
-    handleDeleteScene,
+    handleRequestDelete,
     handleUndo,
     handleRedo,
   ]);
@@ -310,14 +357,52 @@ export function EditorPage(): JSX.Element {
           <ArrowLeft size={14} />
           {t('projects.title')}
         </button>
-        <h2 className="text-xs text-zinc-500">{currentProject.title}</h2>
+        {editingTitle ? (
+          <input
+            ref={titleInputRef}
+            value={titleDraft}
+            onChange={(e) => setTitleDraft(e.target.value)}
+            onBlur={handleTitleSave}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleTitleSave();
+              if (e.key === 'Escape') setEditingTitle(false);
+            }}
+            className="titlebar-no-drag w-40 rounded border border-zinc-600 bg-zinc-800 px-1.5 py-0.5 text-xs text-zinc-200 focus:outline-none"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={handleTitleEdit}
+            className="titlebar-no-drag rounded px-1 text-xs text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-300"
+          >
+            {currentProject.title}
+          </button>
+        )}
+        {saveStatus !== 'idle' && (
+          <span className="flex items-center gap-1 text-[10px] text-zinc-600">
+            {saveStatus === 'saving' && '⏳ Saving…'}
+            {saveStatus === 'saved' && (
+              <>
+                <Check size={10} className="text-emerald-500" /> Saved
+              </>
+            )}
+          </span>
+        )}
         <span className="ml-auto text-[10px] text-zinc-700">
           {currentProject.scenes.length} {t('projects.scenes')}
         </span>
         <button
           type="button"
+          onClick={() => setShowShortcuts(true)}
+          className="titlebar-no-drag rounded-md p-1 text-zinc-600 transition hover:bg-zinc-800 hover:text-zinc-400"
+          title="Keyboard Shortcuts (⌘/)"
+        >
+          <Keyboard size={14} />
+        </button>
+        <button
+          type="button"
           onClick={() => setShowExport(true)}
-          className="titlebar-no-drag ml-2 rounded-md bg-violet-600 px-2.5 py-1 text-[10px] font-medium text-white hover:bg-violet-500"
+          className="titlebar-no-drag ml-1 rounded-md bg-violet-600 px-2.5 py-1 text-[10px] font-medium text-white hover:bg-violet-500"
         >
           Export
         </button>
@@ -330,7 +415,7 @@ export function EditorPage(): JSX.Element {
           selectedId={selectedSceneId}
           onSelect={setSelectedSceneId}
           onAdd={handleAddScene}
-          onDelete={handleDeleteScene}
+          onDelete={handleRequestDelete}
           onDuplicate={handleDuplicateScene}
           onReorder={handleReorder}
         />
@@ -359,6 +444,75 @@ export function EditorPage(): JSX.Element {
       {/* P4-15: Export Dialog */}
       {showExport && (
         <ExportDialog projectTitle={currentProject.title} onClose={() => setShowExport(false)} />
+      )}
+
+      {/* Delete confirmation */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="w-full max-w-xs rounded-xl border border-zinc-800 bg-zinc-900 p-5 shadow-2xl">
+            <h3 className="text-sm font-semibold text-zinc-100">{t('projects.delete.confirm')}</h3>
+            <p className="mt-1 text-xs text-zinc-500">
+              {t('scene.header')} #
+              {(currentProject.scenes.find((s) => s.id === deleteConfirmId)?.index ?? 0) + 1}
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="rounded-md px-3 py-1.5 text-xs text-zinc-400 hover:text-zinc-200"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={() => handleDeleteScene(deleteConfirmId)}
+                className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-500"
+              >
+                {t('scene.delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Keyboard shortcuts overlay */}
+      {showShortcuts && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          onClick={() => setShowShortcuts(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-zinc-100">Keyboard Shortcuts</h2>
+              <button
+                onClick={() => setShowShortcuts(false)}
+                className="rounded-md p-1 text-zinc-500 hover:text-zinc-300"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="space-y-2 text-xs">
+              {[
+                ['⌘ Z', 'Undo'],
+                ['⌘ ⇧ Z', 'Redo'],
+                ['↑ / ↓', 'Navigate scenes'],
+                ['⌘ N', 'Add scene'],
+                ['⌘ D', 'Duplicate scene'],
+                ['⌘ ⌫', 'Delete scene'],
+                ['⌘ /', 'Toggle shortcuts'],
+                ['Esc', 'Close overlay'],
+              ].map(([key, desc]) => (
+                <div key={key} className="flex items-center justify-between">
+                  <span className="text-zinc-400">{desc}</span>
+                  <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5 font-mono text-[10px] text-zinc-300">
+                    {key}
+                  </kbd>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

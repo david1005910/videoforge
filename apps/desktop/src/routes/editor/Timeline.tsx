@@ -80,7 +80,8 @@ export function Timeline({ scenes, selectedId, onSelect, onReorder }: Props) {
         </span>
         <div className="flex-1" />
         <span className="text-[10px] text-zinc-600">
-          {totalDurationSec}s ({scenes.length} scenes)
+          {Math.floor(totalDurationSec / 60)}:{String(totalDurationSec % 60).padStart(2, '0')} (
+          {scenes.length} scenes)
         </span>
         <button
           onClick={handleZoomOut}
@@ -121,52 +122,58 @@ export function Timeline({ scenes, selectedId, onSelect, onReorder }: Props) {
 
       {/* Scene blocks */}
       <div className="scrollbar-thin overflow-x-auto overflow-y-hidden p-2">
-        <div className="flex gap-1" style={{ minWidth: `${scenes.length * sceneWidth}px` }}>
-          {scenes.map((scene, idx) => (
-            <div
-              key={scene.id}
-              draggable
-              onDragStart={() => handleDragStart(idx)}
-              onDragOver={(e) => handleDragOver(e, idx)}
-              onDrop={() => handleDrop(idx)}
-              onDragEnd={handleDragEnd}
-              onClick={() => onSelect(scene.id)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') onSelect(scene.id);
-              }}
-              className={`flex shrink-0 cursor-pointer flex-col rounded-md border px-2 py-1.5 transition ${
-                selectedId === scene.id
-                  ? 'border-violet-500 bg-violet-500/10'
-                  : dropIdx === idx
-                    ? 'border-emerald-500 bg-emerald-500/5'
-                    : 'border-zinc-800 bg-zinc-900 hover:border-zinc-700'
-              } ${dragIdx === idx ? 'opacity-40' : ''}`}
-              style={{ width: `${sceneWidth - 4}px`, minHeight: '48px' }}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-medium text-zinc-500">#{idx + 1}</span>
-                <span className="text-[9px] text-zinc-600">{sceneDurations[idx]}s</span>
+        {scenes.length === 0 ? (
+          <p className="py-2 text-center text-[10px] text-zinc-700">
+            No scenes — add a scene to get started.
+          </p>
+        ) : (
+          <div className="flex gap-1" style={{ minWidth: `${scenes.length * sceneWidth}px` }}>
+            {scenes.map((scene, idx) => (
+              <div
+                key={scene.id}
+                draggable
+                onDragStart={() => handleDragStart(idx)}
+                onDragOver={(e) => handleDragOver(e, idx)}
+                onDrop={() => handleDrop(idx)}
+                onDragEnd={handleDragEnd}
+                onClick={() => onSelect(scene.id)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') onSelect(scene.id);
+                }}
+                className={`flex shrink-0 cursor-pointer flex-col rounded-md border px-2 py-1.5 transition ${
+                  selectedId === scene.id
+                    ? 'border-violet-500 bg-violet-500/10'
+                    : dropIdx === idx
+                      ? 'border-emerald-500 bg-emerald-500/5'
+                      : 'border-zinc-800 bg-zinc-900 hover:border-zinc-700'
+                } ${dragIdx === idx ? 'opacity-40' : ''}`}
+                style={{ width: `${sceneWidth - 4}px`, minHeight: '48px' }}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-medium text-zinc-500">#{idx + 1}</span>
+                  <span className="text-[9px] text-zinc-600">{sceneDurations[idx]}s</span>
+                </div>
+                <p className="mt-0.5 truncate text-[10px] text-zinc-400">
+                  {scene.scriptKo ?? scene.scriptOriginal ?? '—'}
+                </p>
+                {/* Asset indicators */}
+                <div className="mt-auto flex gap-1 pt-1">
+                  {scene.generatedImages.length > 0 && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" title="Images" />
+                  )}
+                  {scene.narrationAudio && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-blue-500" title="Audio" />
+                  )}
+                  {scene.subtitleAss && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500" title="Subtitles" />
+                  )}
+                </div>
               </div>
-              <p className="mt-0.5 truncate text-[10px] text-zinc-400">
-                {scene.scriptKo ?? scene.scriptOriginal ?? '—'}
-              </p>
-              {/* Asset indicators */}
-              <div className="mt-auto flex gap-1 pt-1">
-                {scene.generatedImages.length > 0 && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" title="Images" />
-                )}
-                {scene.narrationAudio && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-blue-500" title="Audio" />
-                )}
-                {scene.subtitleAss && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500" title="Subtitles" />
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

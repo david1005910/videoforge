@@ -42,6 +42,7 @@ export function ProjectListPage(): JSX.Element {
   const { projectList, setProjectList, isListLoading, setListLoading } = useProjectStore();
   const { isNewProjectOpen, setNewProjectOpen } = useUiStore();
   const [query, setQuery] = useState('');
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const loadProjects = useCallback(async () => {
     setListLoading(true);
@@ -65,6 +66,7 @@ export function ProjectListPage(): JSX.Element {
   }, [loadProjects]);
 
   const handleDelete = async (id: string) => {
+    setDeleteConfirmId(null);
     try {
       await api.project.delete({ id, toTrash: true });
       void loadProjects();
@@ -260,7 +262,7 @@ export function ProjectListPage(): JSX.Element {
                     </button>
                     <button
                       type="button"
-                      onClick={() => void handleDelete(p.id)}
+                      onClick={() => setDeleteConfirmId(p.id)}
                       className="titlebar-no-drag rounded-md p-2 text-zinc-600 hover:bg-red-950/50 hover:text-red-400"
                       title={t('projects.delete')}
                     >
@@ -276,6 +278,30 @@ export function ProjectListPage(): JSX.Element {
 
       {isNewProjectOpen && (
         <NewProjectWizard onCreated={handleCreated} onCancel={() => setNewProjectOpen(false)} />
+      )}
+
+      {/* Delete confirmation */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="w-full max-w-xs rounded-xl border border-zinc-800 bg-zinc-900 p-5 shadow-2xl">
+            <h3 className="text-sm font-semibold text-zinc-100">{t('projects.delete.confirm')}</h3>
+            <p className="mt-1 text-xs text-zinc-500">{t('projects.delete.description')}</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="rounded-md px-3 py-1.5 text-xs text-zinc-400 hover:text-zinc-200"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={() => void handleDelete(deleteConfirmId)}
+                className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-500"
+              >
+                {t('projects.delete')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
