@@ -18,6 +18,8 @@ export function SettingsPage() {
   const [exporting, setExporting] = useState(false);
   const fontScale = useUiStore((s) => s.fontScale);
   const setFontScale = useUiStore((s) => s.setFontScale);
+  const theme = useUiStore((s) => s.theme);
+  const setTheme = useUiStore((s) => s.setTheme);
 
   // Whisper state
   const [whisperModels, setWhisperModels] = useState<WhisperModelInfo[]>([]);
@@ -257,6 +259,28 @@ export function SettingsPage() {
                 className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${autoUpdate ? 'translate-x-5' : 'translate-x-0'}`}
               />
             </button>
+          </div>
+        </section>
+
+        {/* Theme */}
+        <section>
+          <h2 className="mb-3 text-sm font-medium text-zinc-400">Theme</h2>
+          <div className="flex gap-2" role="radiogroup" aria-label="Theme">
+            {(['system', 'dark', 'light'] as const).map((opt) => (
+              <button
+                key={opt}
+                onClick={() => setTheme(opt)}
+                role="radio"
+                aria-checked={theme === opt}
+                className={`flex-1 rounded-lg border px-3 py-2 text-center text-sm capitalize ${
+                  theme === opt
+                    ? 'border-violet-500 bg-violet-500/10 text-violet-300'
+                    : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-600'
+                }`}
+              >
+                {opt}
+              </button>
+            ))}
           </div>
         </section>
 

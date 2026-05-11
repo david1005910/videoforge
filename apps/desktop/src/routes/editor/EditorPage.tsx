@@ -74,6 +74,30 @@ export function EditorPage(): JSX.Element {
     void saveProject(updated);
   }, [currentProject, saveProject]);
 
+  const handleDuplicateScene = useCallback(
+    (id: string) => {
+      if (!currentProject) return;
+      const source = currentProject.scenes.find((s) => s.id === id);
+      if (!source) return;
+      const duplicated: Scene = {
+        ...source,
+        id: ulid(),
+        index: source.index + 1,
+      };
+      const scenes = [...currentProject.scenes];
+      scenes.splice(source.index + 1, 0, duplicated);
+      const reindexed = scenes.map((s, i) => ({ ...s, index: i }));
+      const updated: Project = {
+        ...currentProject,
+        scenes: reindexed,
+        updatedAt: new Date().toISOString(),
+      };
+      setSelectedSceneId(duplicated.id);
+      void saveProject(updated);
+    },
+    [currentProject, saveProject],
+  );
+
   const handleDeleteScene = useCallback(
     (id: string) => {
       if (!currentProject) return;
@@ -168,6 +192,66 @@ export function EditorPage(): JSX.Element {
     [currentProject, saveProject],
   );
 
+  const handleDropImages = useCallback(
+    (sceneId: string, paths: string[]) => {
+      if (!currentProject) return;
+      const scenes = currentProject.scenes.map((s) =>
+        s.id === sceneId
+          ? {
+              ...s,
+              generatedImages: [
+                ...s.generatedImages,
+                ...paths.map((p) => ({
+                  kind: 'image' as const,
+                  path: p,
+                  sha1: '0000000000000000000000000000000000000000',
+                })),
+              ],
+            }
+          : s,
+      );
+      const updated: Project = {
+        ...currentProject,
+        scenes,
+        updatedAt: new Date().toISOString(),
+      };
+      void saveProject(updated);
+    },
+    [currentProject, saveProject],
+  );
+
+  // 키보드 단축키
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      // textarea/input 내부에서는 무시
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'SELECT') return;
+      if (!currentProject) return;
+
+      const scenes = currentProject.scenes;
+      const currentIdx = scenes.findIndex((s) => s.id === selectedSceneId);
+
+      if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        if (currentIdx > 0) setSelectedSceneId(scenes[currentIdx - 1]!.id);
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        if (currentIdx < scenes.length - 1) setSelectedSceneId(scenes[currentIdx + 1]!.id);
+      } else if (e.key === 'n' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        handleAddScene();
+      } else if (e.key === 'd' && (e.metaKey || e.ctrlKey) && selectedSceneId) {
+        e.preventDefault();
+        handleDuplicateScene(selectedSceneId);
+      } else if (e.key === 'Backspace' && (e.metaKey || e.ctrlKey) && selectedSceneId) {
+        e.preventDefault();
+        handleDeleteScene(selectedSceneId);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [currentProject, selectedSceneId, handleAddScene, handleDuplicateScene, handleDeleteScene]);
+
   const handleBack = () => {
     setCurrentProject(null);
     void navigate({ to: '/' });
@@ -214,6 +298,7 @@ export function EditorPage(): JSX.Element {
           onSelect={setSelectedSceneId}
           onAdd={handleAddScene}
           onDelete={handleDeleteScene}
+          onDuplicate={handleDuplicateScene}
           onReorder={handleReorder}
         />
         <ScriptEditor
@@ -222,7 +307,11 @@ export function EditorPage(): JSX.Element {
           onScriptChange={handleScriptChange}
           onNotesChange={handleNotesChange}
         />
-        <Inspector scene={selectedScene} onLoadNarration={handleLoadNarration} />
+        <Inspector
+          scene={selectedScene}
+          onLoadNarration={handleLoadNarration}
+          onDropImages={handleDropImages}
+        />
       </main>
 
       {/* P4-13: Timeline */}

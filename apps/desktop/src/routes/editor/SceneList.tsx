@@ -1,4 +1,4 @@
-import { Plus, Trash2, GripVertical, Image, Volume2, Subtitles } from 'lucide-react';
+import { Plus, Trash2, Copy, GripVertical, Image, Volume2, Subtitles } from 'lucide-react';
 import { useT } from '../../i18n';
 import type { Scene } from '@videoforge/shared';
 
@@ -8,10 +8,18 @@ interface Props {
   onSelect: (id: string) => void;
   onAdd: () => void;
   onDelete: (id: string) => void;
+  onDuplicate: (id: string) => void;
   onReorder: (fromIdx: number, toIdx: number) => void;
 }
 
-export function SceneList({ scenes, selectedId, onSelect, onAdd, onDelete }: Props): JSX.Element {
+export function SceneList({
+  scenes,
+  selectedId,
+  onSelect,
+  onAdd,
+  onDelete,
+  onDuplicate,
+}: Props): JSX.Element {
   const t = useT();
 
   return (
@@ -67,17 +75,30 @@ export function SceneList({ scenes, selectedId, onSelect, onAdd, onDelete }: Pro
                   {scene.scriptKo ?? scene.scriptOriginal ?? t('scene.noScript')}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(scene.id);
-                }}
-                className="shrink-0 rounded p-0.5 text-zinc-700 opacity-0 transition hover:text-red-400 group-hover:opacity-100"
-                title={t('scene.delete')}
-              >
-                <Trash2 size={12} />
-              </button>
+              <div className="flex shrink-0 gap-0.5 opacity-0 transition group-hover:opacity-100">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDuplicate(scene.id);
+                  }}
+                  className="rounded p-0.5 text-zinc-700 hover:text-zinc-300"
+                  title={t('scene.duplicate')}
+                >
+                  <Copy size={12} />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(scene.id);
+                  }}
+                  className="rounded p-0.5 text-zinc-700 hover:text-red-400"
+                  title={t('scene.delete')}
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
             </button>
           ))
         )}

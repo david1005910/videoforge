@@ -15,6 +15,8 @@ export const en: Record<keyof typeof ko, string> = {
   'projects.delete.confirm': 'Delete this project?',
   'projects.delete.description': 'The project will be moved to Trash.',
   'projects.open': 'Open',
+  'projects.export': 'Export',
+  'projects.import': 'Import',
 
   // New project wizard
   'wizard.title': 'New Project',
@@ -50,6 +52,7 @@ export const en: Record<keyof typeof ko, string> = {
   'scene.addFirst': '+ Add first scene',
   'scene.noScript': '(no script)',
   'scene.delete': 'Delete',
+  'scene.duplicate': 'Duplicate',
   'scene.select': 'Select a scene',
   'scene.selectOrAdd': 'Select or add a scene',
   'scene.manageHint': 'Manage scenes in the left panel',

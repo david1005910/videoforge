@@ -13,6 +13,8 @@ export const ko = {
   'projects.delete.confirm': '이 프로젝트를 삭제하시겠습니까?',
   'projects.delete.description': '삭제된 프로젝트는 휴지통으로 이동합니다.',
   'projects.open': '열기',
+  'projects.export': '내보내기',
+  'projects.import': '가져오기',
 
   // New project wizard
   'wizard.title': '새 프로젝트',
@@ -48,6 +50,7 @@ export const ko = {
   'scene.addFirst': '+ 첫 씬 추가',
   'scene.noScript': '(스크립트 없음)',
   'scene.delete': '삭제',
+  'scene.duplicate': '복제',
   'scene.select': '씬을 선택하세요',
   'scene.selectOrAdd': '씬을 선택하거나 추가하세요',
   'scene.manageHint': '좌측 패널에서 씬을 관리할 수 있습니다',

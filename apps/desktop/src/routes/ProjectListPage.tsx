@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Plus, Search, FolderOpen, Trash2, Film, Volume2 } from 'lucide-react';
+import { Plus, Search, FolderOpen, Trash2, Film, Volume2, Download, Upload } from 'lucide-react';
 import { api } from '../lib/api';
 import { useProjectStore } from '../stores/project-store';
 import { useUiStore } from '../stores/ui-store';
@@ -53,6 +53,37 @@ export function ProjectListPage(): JSX.Element {
     void navigate({ to: '/editor/$projectId', params: { projectId } });
   };
 
+  const handleExportProject = async (id: string) => {
+    try {
+      const project = await api.project.load(id);
+      const json = JSON.stringify(project, null, 2);
+      const base64 = btoa(unescape(encodeURIComponent(json)));
+      await api.file.saveToDisk(base64, `${project.title.replace(/[/\\?%*:|"<>]/g, '_')}.json`);
+    } catch (err) {
+      console.error('Export failed:', err);
+    }
+  };
+
+  const handleImportProject = async () => {
+    try {
+      const { filePath } = await api.dialog.selectFile(t('projects.import'), undefined, [
+        { name: 'JSON', extensions: ['json'] },
+      ]);
+      if (!filePath) return;
+      const { base64Data } = await api.file.readBase64(filePath);
+      const json = decodeURIComponent(escape(atob(base64Data)));
+      const parsed = JSON.parse(json) as Record<string, unknown>;
+      // 새 ID로 저장 (중복 방지)
+      await api.project.save({
+        project: parsed as Parameters<typeof api.project.save>[0]['project'],
+        asNewProject: true,
+      });
+      void loadProjects();
+    } catch (err) {
+      console.error('Import failed:', err);
+    }
+  };
+
   const formatSize = (bytes: number): string => {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -89,6 +120,14 @@ export function ProjectListPage(): JSX.Element {
               >
                 <Volume2 size={16} />
                 TTS
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleImportProject()}
+                className="titlebar-no-drag flex items-center gap-2 rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition hover:bg-zinc-800"
+              >
+                <Upload size={16} />
+                {t('projects.import')}
               </button>
               <button
                 type="button"
@@ -144,14 +183,24 @@ export function ProjectListPage(): JSX.Element {
                       <span>{formatDate(p.updatedAt)}</span>
                     </div>
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => void handleDelete(p.id)}
-                    className="titlebar-no-drag ml-4 rounded-md p-2 text-zinc-600 opacity-0 transition hover:bg-red-950/50 hover:text-red-400 group-hover:opacity-100"
-                    title={t('projects.delete')}
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  <div className="ml-4 flex gap-1 opacity-0 transition group-hover:opacity-100">
+                    <button
+                      type="button"
+                      onClick={() => void handleExportProject(p.id)}
+                      className="titlebar-no-drag rounded-md p-2 text-zinc-600 hover:bg-zinc-800 hover:text-zinc-300"
+                      title={t('projects.export')}
+                    >
+                      <Download size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleDelete(p.id)}
+                      className="titlebar-no-drag rounded-md p-2 text-zinc-600 hover:bg-red-950/50 hover:text-red-400"
+                      title={t('projects.delete')}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
