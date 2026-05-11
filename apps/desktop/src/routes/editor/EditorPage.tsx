@@ -235,6 +235,60 @@ export function EditorPage(): JSX.Element {
     [currentProject, saveProject],
   );
 
+  const handleSubtitleGenerated = useCallback(
+    (sceneId: string, assContent: string) => {
+      if (!currentProject) return;
+      const scenes = currentProject.scenes.map((s) =>
+        s.id === sceneId
+          ? {
+              ...s,
+              subtitleAss: {
+                kind: 'ass' as const,
+                path: `assets/subs/${sceneId}.ass`,
+                sha1: '0000000000000000000000000000000000000000',
+                meta: { content: assContent },
+              },
+            }
+          : s,
+      );
+      const updated: Project = {
+        ...currentProject,
+        scenes,
+        updatedAt: new Date().toISOString(),
+      };
+      void saveProject(updated);
+    },
+    [currentProject, saveProject],
+  );
+
+  const handleDropClips = useCallback(
+    (sceneId: string, paths: string[]) => {
+      if (!currentProject) return;
+      const scenes = currentProject.scenes.map((s) =>
+        s.id === sceneId
+          ? {
+              ...s,
+              generatedClips: [
+                ...s.generatedClips,
+                ...paths.map((p) => ({
+                  kind: 'video' as const,
+                  path: p,
+                  sha1: '0000000000000000000000000000000000000000',
+                })),
+              ],
+            }
+          : s,
+      );
+      const updated: Project = {
+        ...currentProject,
+        scenes,
+        updatedAt: new Date().toISOString(),
+      };
+      void saveProject(updated);
+    },
+    [currentProject, saveProject],
+  );
+
   const handleTitleEdit = useCallback(() => {
     if (!currentProject) return;
     setTitleDraft(currentProject.title);
@@ -256,7 +310,6 @@ export function EditorPage(): JSX.Element {
     void saveProject(updated);
   }, [currentProject, titleDraft, saveProject]);
 
-  // Undo/redo 후 자동 저장
   const handleUndo = useCallback(() => {
     undo();
     const proj = useProjectStore.getState().currentProject;
@@ -269,10 +322,8 @@ export function EditorPage(): JSX.Element {
     if (proj) void api.project.save({ project: proj, asNewProject: false });
   }, [redo]);
 
-  // 키보드 단축키
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      // Undo/Redo는 textarea/input에서도 동작
       if (e.key === 'z' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
         e.preventDefault();
         handleUndo();
@@ -295,7 +346,6 @@ export function EditorPage(): JSX.Element {
         return;
       }
 
-      // textarea/input 내부에서는 나머지 단축키 무시
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'SELECT') return;
       if (!currentProject) return;
@@ -340,19 +390,19 @@ export function EditorPage(): JSX.Element {
   if (!currentProject) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-sm text-zinc-500">{t('common.loading')}</p>
+        <p className="gooey-text-muted text-sm">{t('common.loading')}</p>
       </div>
     );
   }
 
   return (
     <div className="flex h-full flex-col">
-      {/* 타이틀바 */}
-      <div className="titlebar-drag flex h-10 items-center gap-3 border-b border-zinc-800 px-4">
+      {/* Titlebar */}
+      <div className="titlebar-drag gooey-header flex h-10 items-center gap-3 px-4">
         <button
           type="button"
           onClick={handleBack}
-          className="titlebar-no-drag flex items-center gap-1 rounded-md px-2 py-1 text-xs text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-200"
+          className="titlebar-no-drag gooey-btn-ghost flex items-center gap-1 px-2 py-1 text-xs"
         >
           <ArrowLeft size={14} />
           {t('projects.title')}
@@ -367,34 +417,34 @@ export function EditorPage(): JSX.Element {
               if (e.key === 'Enter') handleTitleSave();
               if (e.key === 'Escape') setEditingTitle(false);
             }}
-            className="titlebar-no-drag w-40 rounded border border-zinc-600 bg-zinc-800 px-1.5 py-0.5 text-xs text-zinc-200 focus:outline-none"
+            className="titlebar-no-drag gooey-input w-40 px-1.5 py-0.5 text-xs"
           />
         ) : (
           <button
             type="button"
             onClick={handleTitleEdit}
-            className="titlebar-no-drag rounded px-1 text-xs text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-300"
+            className="titlebar-no-drag gooey-btn-ghost rounded-lg px-1 text-xs"
           >
             {currentProject.title}
           </button>
         )}
         {saveStatus !== 'idle' && (
-          <span className="flex items-center gap-1 text-[10px] text-zinc-600">
-            {saveStatus === 'saving' && '⏳ Saving…'}
+          <span className="flex items-center gap-1 text-[10px] text-white/30">
+            {saveStatus === 'saving' && 'Saving…'}
             {saveStatus === 'saved' && (
               <>
-                <Check size={10} className="text-emerald-500" /> Saved
+                <Check size={10} className="text-emerald-400" /> Saved
               </>
             )}
           </span>
         )}
-        <span className="ml-auto text-[10px] text-zinc-700">
+        <span className="ml-auto text-[10px] text-white/25">
           {currentProject.scenes.length} {t('projects.scenes')}
         </span>
         <button
           type="button"
           onClick={() => setShowShortcuts(true)}
-          className="titlebar-no-drag rounded-md p-1 text-zinc-600 transition hover:bg-zinc-800 hover:text-zinc-400"
+          className="titlebar-no-drag gooey-btn-ghost p-1"
           title="Keyboard Shortcuts (⌘/)"
         >
           <Keyboard size={14} />
@@ -402,13 +452,13 @@ export function EditorPage(): JSX.Element {
         <button
           type="button"
           onClick={() => setShowExport(true)}
-          className="titlebar-no-drag ml-1 rounded-md bg-violet-600 px-2.5 py-1 text-[10px] font-medium text-white hover:bg-violet-500"
+          className="titlebar-no-drag gooey-btn-primary ml-1 px-2.5 py-1 text-[10px]"
         >
           Export
         </button>
       </div>
 
-      {/* 3-패널 에디터 */}
+      {/* 3-panel editor */}
       <main className="flex flex-1 overflow-hidden">
         <SceneList
           scenes={currentProject.scenes}
@@ -428,12 +478,15 @@ export function EditorPage(): JSX.Element {
         />
         <Inspector
           scene={selectedScene}
+          projectLanguage={currentProject.language}
           onLoadNarration={handleLoadNarration}
           onDropImages={handleDropImages}
+          onDropClips={handleDropClips}
+          onSubtitleGenerated={handleSubtitleGenerated}
         />
       </main>
 
-      {/* P4-13: Timeline */}
+      {/* Timeline */}
       <Timeline
         scenes={currentProject.scenes}
         selectedId={selectedSceneId}
@@ -441,30 +494,30 @@ export function EditorPage(): JSX.Element {
         onReorder={handleReorder}
       />
 
-      {/* P4-15: Export Dialog */}
+      {/* Export Dialog */}
       {showExport && (
         <ExportDialog projectTitle={currentProject.title} onClose={() => setShowExport(false)} />
       )}
 
       {/* Delete confirmation */}
       {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="w-full max-w-xs rounded-xl border border-zinc-800 bg-zinc-900 p-5 shadow-2xl">
-            <h3 className="text-sm font-semibold text-zinc-100">{t('projects.delete.confirm')}</h3>
-            <p className="mt-1 text-xs text-zinc-500">
+        <div className="gooey-modal-backdrop fixed inset-0 z-50 flex items-center justify-center">
+          <div className="gooey-modal w-full max-w-xs p-5">
+            <h3 className="text-sm font-semibold text-white/95">{t('projects.delete.confirm')}</h3>
+            <p className="mt-1 text-xs text-white/40">
               {t('scene.header')} #
               {(currentProject.scenes.find((s) => s.id === deleteConfirmId)?.index ?? 0) + 1}
             </p>
             <div className="mt-4 flex justify-end gap-2">
               <button
                 onClick={() => setDeleteConfirmId(null)}
-                className="rounded-md px-3 py-1.5 text-xs text-zinc-400 hover:text-zinc-200"
+                className="gooey-btn-ghost px-3 py-1.5 text-xs"
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={() => handleDeleteScene(deleteConfirmId)}
-                className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-500"
+                className="gooey-btn-danger px-3 py-1.5 text-xs"
               >
                 {t('scene.delete')}
               </button>
@@ -476,19 +529,13 @@ export function EditorPage(): JSX.Element {
       {/* Keyboard shortcuts overlay */}
       {showShortcuts && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          className="gooey-modal-backdrop fixed inset-0 z-50 flex items-center justify-center"
           onClick={() => setShowShortcuts(false)}
         >
-          <div
-            className="w-full max-w-sm rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="gooey-modal w-full max-w-sm p-6" onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-zinc-100">Keyboard Shortcuts</h2>
-              <button
-                onClick={() => setShowShortcuts(false)}
-                className="rounded-md p-1 text-zinc-500 hover:text-zinc-300"
-              >
+              <h2 className="text-sm font-semibold text-white/95">Keyboard Shortcuts</h2>
+              <button onClick={() => setShowShortcuts(false)} className="gooey-btn-ghost p-1">
                 <X size={16} />
               </button>
             </div>
@@ -504,8 +551,8 @@ export function EditorPage(): JSX.Element {
                 ['Esc', 'Close overlay'],
               ].map(([key, desc]) => (
                 <div key={key} className="flex items-center justify-between">
-                  <span className="text-zinc-400">{desc}</span>
-                  <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5 font-mono text-[10px] text-zinc-300">
+                  <span className="text-white/50">{desc}</span>
+                  <kbd className="rounded-lg border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-white/70">
                     {key}
                   </kbd>
                 </div>

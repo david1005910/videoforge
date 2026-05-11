@@ -70,7 +70,10 @@ function getBinaryPath(): string {
 
 export function isBinaryReady(): boolean {
   const binPath = getBinaryPath();
-  return fs.existsSync(binPath) && isExecutable(binPath);
+  const exists = fs.existsSync(binPath);
+  const exec = exists && isExecutable(binPath);
+  logger.info({ binPath, exists, executable: exec }, 'whisper.isBinaryReady');
+  return exists && exec;
 }
 
 function isExecutable(filePath: string): boolean {

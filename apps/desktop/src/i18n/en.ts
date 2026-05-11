@@ -3,6 +3,7 @@ import type { ko } from './ko';
 export const en: Record<keyof typeof ko, string> = {
   // App
   'app.name': 'VideoForge',
+  'app.settings': 'Settings',
 
   // Project list
   'projects.title': 'Projects',

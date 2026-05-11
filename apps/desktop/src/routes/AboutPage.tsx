@@ -14,16 +14,16 @@ export function AboutPage() {
   }, []);
 
   return (
-    <div className="flex h-full items-center justify-center bg-zinc-950 text-zinc-100">
-      <div className="space-y-4 text-center">
-        <h1 className="text-3xl font-bold">VideoForge</h1>
-        <p className="text-sm text-zinc-400">macOS AI Video Creation Studio</p>
-        {version && <p className="text-xs text-zinc-500">Version {version}</p>}
-        <p className="text-xs text-zinc-600">Built for the HBAS YouTube channel</p>
+    <div className="gooey-page flex h-full items-center justify-center">
+      <div className="gooey-panel space-y-4 p-10 text-center">
+        <h1 className="gooey-text-primary text-3xl font-bold">VideoForge</h1>
+        <p className="gooey-text-secondary text-sm">macOS AI Video Creation Studio</p>
+        {version && <p className="gooey-text-muted text-xs">Version {version}</p>}
+        <p className="gooey-text-muted text-xs">Built for the HBAS YouTube channel</p>
         <div className="pt-4">
           <button
             onClick={() => api.shell.openExternal('https://github.com/user/videoforge')}
-            className="rounded-md bg-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700"
+            className="gooey-btn-secondary px-5 py-2.5 text-sm"
           >
             GitHub
           </button>

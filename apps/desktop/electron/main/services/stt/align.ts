@@ -48,11 +48,24 @@ export function alignTranscript(req: SttAlignRequest): SttAlignResponse {
     };
   }
 
+  // For CJK languages, BBC stt-align-node can hang — skip alignment
+  // and use STT segments directly (not character-level tokens).
+  if (['ko', 'ja', 'zh'].includes(language)) {
+    logger.info(
+      { segments: sttSegments.length, scriptWords: scriptWords.length },
+      'stt.align.cjk-direct',
+    );
+    return buildSegmentAlignment(sttSegments);
+  }
+
   // BBC stt-align-node 호출
-  const aligned = sttAlign(
-    scriptWords.map((w) => ({ word: w })),
-    sttWords.map((w) => ({ word: w.word, start: w.start, end: w.end })),
-  ) as BbcAlignResult[];
+  // API: alignSTT(sttWordsObj, transcriptText, start?, end?)
+  // - sttWordsObj: { words: [{word, start, end}, ...] }
+  // - transcriptText: plain string
+  const sttInput = { words: sttWords.map((w) => ({ word: w.word, start: w.start, end: w.end })) };
+  const aligned = (
+    sttAlign as unknown as (a: { words: SttAlignWord[] }, b: string) => BbcAlignResult[]
+  )(sttInput, transcript);
 
   const result: AlignedWord[] = [];
   const unalignedIndexes: number[] = [];
@@ -115,6 +128,36 @@ function splitByLanguage(text: string, language: string): string[] {
     return cleaned.split(/\s+/).filter(Boolean);
   }
   return cleaned.split(/\s+/).filter(Boolean);
+}
+
+/**
+ * CJK segment alignment: use STT segments as whole subtitle lines.
+ * Each segment becomes one AlignedWord (actually a phrase) to avoid
+ * character-level splitting that breaks CJK text.
+ */
+function buildSegmentAlignment(segments: SttAlignRequest['sttSegments']): SttAlignResponse {
+  const result: AlignedWord[] = [];
+
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i];
+    if (seg) {
+      result.push({
+        word: seg.text.trim(),
+        scriptIndex: i,
+        startMs: Math.round(seg.start * 1000),
+        endMs: Math.round(seg.end * 1000),
+        confidence: 1.0,
+      });
+    }
+  }
+
+  logger.info({ total: result.length, unaligned: 0 }, 'stt.align.done');
+
+  return {
+    words: result,
+    unalignedIndexes: [],
+    averageConfidence: 1.0,
+  };
 }
 
 interface SttAlignWord {

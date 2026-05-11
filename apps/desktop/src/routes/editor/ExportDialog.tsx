@@ -88,15 +88,11 @@ export function ExportDialog({ projectTitle, onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl">
+    <div className="gooey-modal-backdrop fixed inset-0 z-50 flex items-center justify-center">
+      <div className="gooey-modal w-full max-w-md p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-zinc-100">Export Video</h2>
-          <button
-            onClick={onClose}
-            className="rounded-md p-1 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
-            aria-label="Close"
-          >
+          <h2 className="gooey-text-primary text-lg font-semibold">Export Video</h2>
+          <button onClick={onClose} className="gooey-btn-ghost p-1" aria-label="Close">
             <X size={18} />
           </button>
         </div>
@@ -104,7 +100,7 @@ export function ExportDialog({ projectTitle, onClose }: Props) {
         <div className="space-y-4">
           {/* Resolution */}
           <div>
-            <label className="mb-1 block text-xs text-zinc-500">Resolution</label>
+            <label className="gooey-text-muted mb-1 block text-xs">Resolution</label>
             <select
               value={`${resolution.w}x${resolution.h}`}
               onChange={(e) => {
@@ -113,7 +109,7 @@ export function ExportDialog({ projectTitle, onClose }: Props) {
                 );
                 if (found) setResolution(found.value);
               }}
-              className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-200"
+              className="gooey-input w-full px-3 py-2 text-sm"
             >
               {RESOLUTIONS.map((r) => (
                 <option key={r.label} value={`${r.value.w}x${r.value.h}`}>
@@ -125,20 +121,20 @@ export function ExportDialog({ projectTitle, onClose }: Props) {
 
           {/* Codec */}
           <div>
-            <label className="mb-1 block text-xs text-zinc-500">Codec</label>
+            <label className="gooey-text-muted mb-1 block text-xs">Codec</label>
             <div className="flex gap-2">
               {CODECS.map((c) => (
                 <button
                   key={c.value}
                   onClick={() => setCodec(c.value)}
-                  className={`flex-1 rounded-lg border px-3 py-2 text-left ${
+                  className={`flex-1 rounded-2xl border px-3 py-2 text-left transition ${
                     codec === c.value
-                      ? 'border-violet-500 bg-violet-500/10'
-                      : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
+                      ? 'border-violet-500/40 bg-violet-500/10 shadow-[0_0_12px_rgba(139,92,246,0.15)]'
+                      : 'border-white/8 bg-white/4 hover:border-white/15'
                   }`}
                 >
-                  <p className="text-sm font-medium text-zinc-200">{c.label}</p>
-                  <p className="text-xs text-zinc-500">{c.desc}</p>
+                  <p className="text-sm font-medium text-white/85">{c.label}</p>
+                  <p className="text-xs text-white/35">{c.desc}</p>
                 </button>
               ))}
             </div>
@@ -146,11 +142,11 @@ export function ExportDialog({ projectTitle, onClose }: Props) {
 
           {/* Bitrate */}
           <div>
-            <label className="mb-1 block text-xs text-zinc-500">Bitrate</label>
+            <label className="gooey-text-muted mb-1 block text-xs">Bitrate</label>
             <select
               value={bitrate}
               onChange={(e) => setBitrate(e.target.value)}
-              className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-200"
+              className="gooey-input w-full px-3 py-2 text-sm"
             >
               {BITRATES.map((b) => (
                 <option key={b} value={b}>
@@ -163,13 +159,10 @@ export function ExportDialog({ projectTitle, onClose }: Props) {
           {/* Progress */}
           {progress !== null && (
             <div>
-              <div className="h-2 overflow-hidden rounded-full bg-zinc-800">
-                <div
-                  className="h-full rounded-full bg-violet-500 transition-all"
-                  style={{ width: `${progress}%` }}
-                />
+              <div className="gooey-progress-track h-2">
+                <div className="gooey-progress-fill h-full" style={{ width: `${progress}%` }} />
               </div>
-              <p className="mt-1 text-center text-xs text-zinc-500">{progress}%</p>
+              <p className="gooey-text-muted mt-1 text-center text-xs">{progress}%</p>
             </div>
           )}
 
@@ -180,14 +173,14 @@ export function ExportDialog({ projectTitle, onClose }: Props) {
             <button
               onClick={onClose}
               disabled={exporting}
-              className="rounded-md px-4 py-2 text-sm text-zinc-400 hover:text-zinc-200 disabled:opacity-50"
+              className="gooey-btn-ghost px-4 py-2 text-sm"
             >
               Cancel
             </button>
             <button
               onClick={handleExport}
               disabled={exporting}
-              className="flex items-center gap-2 rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 disabled:opacity-50"
+              className="gooey-btn-primary flex items-center gap-2 px-4 py-2 text-sm"
             >
               <Download size={14} />
               {exporting ? 'Exporting…' : 'Export'}

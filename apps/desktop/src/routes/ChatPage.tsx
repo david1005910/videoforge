@@ -58,35 +58,32 @@ export function ChatPage() {
   };
 
   return (
-    <div className="flex h-full flex-col bg-zinc-950 text-zinc-100">
-      <header className="flex items-center gap-4 border-b border-zinc-800 px-6 py-3">
-        <h1 className="text-lg font-semibold">AI Chat</h1>
-        <div className="flex gap-1 rounded-lg bg-zinc-900 p-1">
+    <div className="gooey-page flex h-full flex-col">
+      <header className="gooey-header flex items-center gap-4 px-6 py-3">
+        <h1 className="gooey-text-primary text-lg font-semibold">AI Chat</h1>
+        <div className="gooey-tab-group flex gap-1">
           <button
-            className={`rounded-md px-3 py-1 text-sm ${mode === 'cs' ? 'bg-violet-600 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
+            className={`gooey-tab ${mode === 'cs' ? 'gooey-tab-active' : 'gooey-tab-inactive'}`}
             onClick={() => setMode('cs')}
           >
             Help
           </button>
           <button
-            className={`rounded-md px-3 py-1 text-sm ${mode === 'dna' ? 'bg-violet-600 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
+            className={`gooey-tab ${mode === 'dna' ? 'gooey-tab-active' : 'gooey-tab-inactive'}`}
             onClick={() => setMode('dna')}
           >
             DNA Script
           </button>
         </div>
         <div className="flex-1" />
-        <button
-          onClick={handleClear}
-          className="rounded-md bg-zinc-800 px-3 py-1.5 text-sm hover:bg-zinc-700"
-        >
+        <button onClick={handleClear} className="gooey-btn-secondary px-3 py-1.5 text-sm">
           Clear
         </button>
       </header>
 
-      <div ref={scrollRef} className="flex-1 space-y-4 overflow-auto p-6">
+      <div ref={scrollRef} className="gooey-scrollbar flex-1 space-y-4 overflow-auto p-6">
         {messages.length === 0 && (
-          <p className="text-center text-sm text-zinc-600">
+          <p className="gooey-text-muted text-center text-sm">
             {mode === 'cs'
               ? 'Ask anything about VideoForge…'
               : 'Describe your video concept to generate a script…'}
@@ -95,8 +92,8 @@ export function ChatPage() {
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div
-              className={`max-w-[80%] whitespace-pre-wrap rounded-lg px-4 py-2.5 text-sm ${
-                msg.role === 'user' ? 'bg-violet-600 text-white' : 'bg-zinc-800 text-zinc-200'
+              className={`max-w-[80%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm ${
+                msg.role === 'user' ? 'gooey-btn-primary' : 'gooey-card px-4 py-2.5 text-white/80'
               }`}
             >
               {msg.content}
@@ -105,14 +102,12 @@ export function ChatPage() {
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="rounded-lg bg-zinc-800 px-4 py-2.5 text-sm text-zinc-400">
-              Thinking…
-            </div>
+            <div className="gooey-card px-4 py-2.5 text-sm text-white/40">Thinking…</div>
           </div>
         )}
       </div>
 
-      <div className="border-t border-zinc-800 p-4">
+      <div className="border-white/6 border-t p-4">
         <div className="flex gap-3">
           <textarea
             value={input}
@@ -120,12 +115,12 @@ export function ChatPage() {
             onKeyDown={handleKeyDown}
             placeholder="Type a message…"
             rows={2}
-            className="flex-1 resize-none rounded-lg border border-zinc-700 bg-zinc-900 p-3 text-sm text-zinc-200 placeholder:text-zinc-600"
+            className="gooey-input flex-1 resize-none p-3 text-sm"
           />
           <button
             onClick={handleSend}
             disabled={!input.trim() || loading}
-            className="self-end rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 disabled:opacity-50"
+            className="gooey-btn-primary self-end px-4 py-2 text-sm"
           >
             Send
           </button>

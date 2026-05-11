@@ -38,32 +38,45 @@ Return ONLY valid JSON, no markdown or explanation.`
 {"text":"full transcription","segments":[{"start":0.0,"end":1.5,"text":"segment text"}]}
 Return ONLY valid JSON, no markdown or explanation.`;
 
-  const resp = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: prompt },
-              {
-                inlineData: {
-                  mimeType,
-                  data: base64Audio,
+  let resp: Response;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60_000);
+    resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: prompt },
+                {
+                  inlineData: {
+                    mimeType,
+                    data: base64Audio,
+                  },
                 },
-              },
-            ],
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0,
           },
-        ],
-        generationConfig: {
-          responseMimeType: 'application/json',
-          temperature: 0,
-        },
-      }),
-    },
-  );
+        }),
+        signal: controller.signal,
+      },
+    );
+    clearTimeout(timeout);
+  } catch (fetchErr) {
+    logger.error({ err: fetchErr }, 'stt.gemini.fetch-error');
+    const msg =
+      fetchErr instanceof Error && fetchErr.name === 'AbortError'
+        ? 'Gemini API 응답 시간 초과 (60초)'
+        : 'Gemini API 연결 실패';
+    throw new UserFacingError(msg, fetchErr instanceof Error ? fetchErr.message : String(fetchErr));
+  }
 
   if (!resp.ok) {
     const body = await resp.text();
@@ -77,9 +90,15 @@ Return ONLY valid JSON, no markdown or explanation.`;
   const data = (await resp.json()) as GeminiResponse;
   const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '{}';
 
+  // Strip markdown code fences if present (e.g. ```json ... ```)
+  const jsonStr = textContent
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```\s*$/, '')
+    .trim();
+
   let parsed: GeminiTranscription;
   try {
-    parsed = JSON.parse(textContent) as GeminiTranscription;
+    parsed = JSON.parse(jsonStr) as GeminiTranscription;
   } catch {
     logger.warn({ textContent }, 'stt.gemini.parse-fail');
     // Fallback: treat whole text as single segment

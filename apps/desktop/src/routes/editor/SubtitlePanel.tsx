@@ -15,9 +15,7 @@ interface Props {
 type StylePreset = 'default' | 'hbas';
 
 /**
- * P3-09: 자막 편집 패널.
- *
- * STT → Align → ASS 생성 워크플로우 + 단어 단위 타임 조정.
+ * P3-09: Subtitle editing panel.
  */
 export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: Props): JSX.Element {
   const t = useT();
@@ -45,7 +43,6 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
     setError('');
 
     try {
-      // 1. STT 전사
       let apiKey: string | null = null;
       if (sttProvider === 'openai') {
         apiKey = await api.keychain.get('openai-api-key');
@@ -61,7 +58,6 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
         wordTimestamps: true,
       });
 
-      // 2. Forced alignment
       const alignResult = await api.stt.align({
         transcript: script,
         sttSegments: sttResult.segments,
@@ -70,7 +66,6 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
 
       setWords(alignResult.words);
 
-      // 3. ASS 생성
       const style = stylePreset === 'hbas' ? HBAS_STYLE : DEFAULT_STYLE;
       const ass = buildAss(alignResult.words, style);
       setAssContent(ass);
@@ -87,7 +82,6 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
       const updated = words.map((w, i) => (i === index ? { ...w, [field]: value } : w));
       setWords(updated);
 
-      // Regenerate ASS
       const style = stylePreset === 'hbas' ? HBAS_STYLE : DEFAULT_STYLE;
       const ass = buildAss(updated, style);
       setAssContent(ass);
@@ -111,7 +105,7 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
 
   if (!scene) {
     return (
-      <div className="flex items-center justify-center p-8 text-sm text-zinc-600">
+      <div className="flex items-center justify-center p-8 text-sm text-white/25">
         {t('scene.select')}
       </div>
     );
@@ -119,12 +113,12 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
 
   return (
     <div className="flex flex-col gap-4 p-4">
-      {/* 컨트롤 */}
+      {/* Controls */}
       <div className="flex items-center gap-3">
         <select
           value={sttProvider}
           onChange={(e) => setSttProvider(e.target.value as 'openai' | 'gemini' | 'whisper-local')}
-          className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs"
+          className="gooey-input px-2 py-1 text-xs"
         >
           <option value="openai">OpenAI Whisper</option>
           <option value="gemini">Gemini</option>
@@ -134,7 +128,7 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
         <select
           value={stylePreset}
           onChange={(e) => handleStyleChange(e.target.value as StylePreset)}
-          className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs"
+          className="gooey-input px-2 py-1 text-xs"
         >
           <option value="default">{t('subtitle.defaultStyle')}</option>
           <option value="hbas">{t('subtitle.hbasStyle')}</option>
@@ -144,7 +138,7 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
           type="button"
           onClick={() => void handleGenerateSubtitle()}
           disabled={isProcessing || !scene.narrationAudio}
-          className="bg-accent hover:bg-accent-600 flex items-center gap-1 rounded px-3 py-1 text-xs font-medium text-white transition disabled:opacity-50"
+          className="gooey-btn-primary flex items-center gap-1 px-3 py-1 text-xs"
         >
           {isProcessing ? (
             <RefreshCw size={12} className="animate-spin" />
@@ -155,21 +149,17 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
         </button>
       </div>
 
-      {error && (
-        <div className="rounded border border-red-800 bg-red-950/30 p-2 text-xs text-red-400">
-          {error}
-        </div>
-      )}
+      {error && <div className="gooey-error p-2 text-xs">{error}</div>}
 
-      {/* 미리보기 */}
+      {/* Preview */}
       {assContent && <SubtitlePreview assContent={assContent} />}
 
-      {/* 단어 타임라인 */}
+      {/* Word timeline */}
       {words.length > 0 && (
-        <div className="scrollbar-thin max-h-60 overflow-y-auto rounded border border-zinc-800">
+        <div className="gooey-scrollbar border-white/8 max-h-60 overflow-y-auto rounded-xl border">
           <table className="w-full text-xs">
-            <thead className="sticky top-0 bg-zinc-900">
-              <tr className="text-zinc-500">
+            <thead className="sticky top-0 bg-[#0f0818]/95 backdrop-blur">
+              <tr className="text-white/35">
                 <th className="px-2 py-1 text-left">#</th>
                 <th className="px-2 py-1 text-left">{t('subtitle.word')}</th>
                 <th className="px-2 py-1 text-right">{t('subtitle.startMs')}</th>
@@ -180,10 +170,10 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
               {words.map((w, i) => (
                 <tr
                   key={`${w.scriptIndex}-${i}`}
-                  className="border-t border-zinc-800/50 hover:bg-zinc-800/30"
+                  className="border-white/4 hover:bg-white/3 border-t"
                 >
-                  <td className="px-2 py-1 text-zinc-600">{i + 1}</td>
-                  <td className="px-2 py-1 text-zinc-300">{w.word}</td>
+                  <td className="px-2 py-1 text-white/25">{i + 1}</td>
+                  <td className="px-2 py-1 text-white/70">{w.word}</td>
                   <td className="px-2 py-1 text-right">
                     <input
                       type="number"
@@ -191,7 +181,7 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
                       onChange={(e) =>
                         handleWordTimeChange(i, 'startMs', parseInt(e.target.value, 10) || 0)
                       }
-                      className="w-20 rounded border border-zinc-700 bg-zinc-900 px-1 py-0.5 text-right text-xs"
+                      className="gooey-input w-20 px-1 py-0.5 text-right text-xs"
                     />
                   </td>
                   <td className="px-2 py-1 text-right">
@@ -201,7 +191,7 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
                       onChange={(e) =>
                         handleWordTimeChange(i, 'endMs', parseInt(e.target.value, 10) || 0)
                       }
-                      className="w-20 rounded border border-zinc-700 bg-zinc-900 px-1 py-0.5 text-right text-xs"
+                      className="gooey-input w-20 px-1 py-0.5 text-right text-xs"
                     />
                   </td>
                 </tr>

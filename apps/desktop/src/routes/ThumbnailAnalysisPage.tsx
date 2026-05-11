@@ -43,62 +43,64 @@ export function ThumbnailAnalysisPage() {
   };
 
   const scoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-400';
-    if (score >= 60) return 'text-yellow-400';
+    if (score >= 80) return 'text-emerald-400';
+    if (score >= 60) return 'text-amber-400';
     if (score >= 40) return 'text-orange-400';
     return 'text-red-400';
   };
 
   return (
-    <div className="flex h-full flex-col bg-zinc-950 text-zinc-100">
-      <header className="border-b border-zinc-800 px-6 py-3">
-        <h1 className="text-lg font-semibold">Thumbnail Analysis</h1>
-        <p className="text-xs text-zinc-500">AI-powered clickability prediction</p>
+    <div className="gooey-page flex h-full flex-col">
+      <header className="gooey-header px-6 py-3">
+        <h1 className="gooey-text-primary text-lg font-semibold">Thumbnail Analysis</h1>
+        <p className="gooey-text-muted text-xs">AI-powered clickability prediction</p>
       </header>
 
-      <div className="flex-1 overflow-auto p-6">
+      <div className="gooey-scrollbar flex-1 overflow-auto p-6">
         <div className="mx-auto max-w-2xl space-y-6">
           {/* Input Form */}
           <section className="space-y-3">
             <div>
-              <label className="mb-1 block text-xs text-zinc-500">Thumbnail Image</label>
+              <label className="gooey-text-muted mb-1 block text-xs">Thumbnail Image</label>
               <div className="flex gap-2">
                 <input
                   value={imagePath}
                   onChange={(e) => setImagePath(e.target.value)}
                   placeholder="/path/to/thumbnail.png"
-                  className="flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 placeholder:text-zinc-600"
+                  className="gooey-input flex-1 px-3 py-1.5 text-sm"
                 />
                 <button
                   onClick={handleSelectImage}
-                  className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm hover:bg-zinc-800"
+                  className="gooey-btn-secondary px-3 py-1.5 text-sm"
                 >
                   Browse
                 </button>
               </div>
             </div>
             <div>
-              <label className="mb-1 block text-xs text-zinc-500">Video Title</label>
+              <label className="gooey-text-muted mb-1 block text-xs">Video Title</label>
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Enter video title…"
-                className="w-full rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 placeholder:text-zinc-600"
+                className="gooey-input w-full px-3 py-1.5 text-sm"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-zinc-500">Channel Genre (optional)</label>
+              <label className="gooey-text-muted mb-1 block text-xs">
+                Channel Genre (optional)
+              </label>
               <input
                 value={genre}
                 onChange={(e) => setGenre(e.target.value)}
                 placeholder="e.g., Tech, Gaming, Education…"
-                className="w-full rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 placeholder:text-zinc-600"
+                className="gooey-input w-full px-3 py-1.5 text-sm"
               />
             </div>
             <button
               onClick={handleAnalyze}
               disabled={loading || !imagePath || !title.trim()}
-              className="rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 disabled:opacity-50"
+              className="gooey-btn-primary px-4 py-2 text-sm"
             >
               {loading ? 'Analyzing…' : 'Analyze Thumbnail'}
             </button>
@@ -110,22 +112,24 @@ export function ThumbnailAnalysisPage() {
           {result && (
             <section className="space-y-4">
               {/* Score */}
-              <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-6 text-center">
-                <p className="text-xs uppercase tracking-wider text-zinc-500">Clickability Score</p>
+              <div className="gooey-score p-6 text-center">
+                <p className="gooey-text-muted text-xs uppercase tracking-wider">
+                  Clickability Score
+                </p>
                 <p className={`mt-2 text-5xl font-bold ${scoreColor(result.score)}`}>
                   {result.score}
                 </p>
-                <p className="mt-1 text-sm text-zinc-400">/100</p>
+                <p className="gooey-text-muted mt-1 text-sm">/100</p>
               </div>
 
               {/* Strengths */}
               {result.strengths.length > 0 && (
-                <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-                  <h3 className="mb-2 text-sm font-medium text-green-400">Strengths</h3>
+                <div className="gooey-card p-4">
+                  <h3 className="mb-2 text-sm font-medium text-emerald-400">Strengths</h3>
                   <ul className="space-y-1">
                     {result.strengths.map((s, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-zinc-300">
-                        <span className="mt-0.5 text-green-500">+</span>
+                      <li key={i} className="flex items-start gap-2 text-sm text-white/70">
+                        <span className="mt-0.5 text-emerald-500">+</span>
                         {s}
                       </li>
                     ))}
@@ -135,11 +139,11 @@ export function ThumbnailAnalysisPage() {
 
               {/* Weaknesses */}
               {result.weaknesses.length > 0 && (
-                <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
+                <div className="gooey-card p-4">
                   <h3 className="mb-2 text-sm font-medium text-red-400">Weaknesses</h3>
                   <ul className="space-y-1">
                     {result.weaknesses.map((w, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-zinc-300">
+                      <li key={i} className="flex items-start gap-2 text-sm text-white/70">
                         <span className="mt-0.5 text-red-500">-</span>
                         {w}
                       </li>
@@ -150,11 +154,11 @@ export function ThumbnailAnalysisPage() {
 
               {/* Suggestions */}
               {result.suggestions.length > 0 && (
-                <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
+                <div className="gooey-card p-4">
                   <h3 className="mb-2 text-sm font-medium text-violet-400">Suggestions</h3>
                   <ul className="space-y-1">
                     {result.suggestions.map((s, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-zinc-300">
+                      <li key={i} className="flex items-start gap-2 text-sm text-white/70">
                         <span className="mt-0.5 text-violet-500">&bull;</span>
                         {s}
                       </li>

@@ -32,24 +32,39 @@ export async function ttsEdge(req: TtsEdgeRequest): Promise<TtsResult> {
     return { audioPath: cached, durationMs, cached: true };
   }
 
-  // Edge TTS 합성
+  // Edge TTS 합성 (timeout: 텍스트 길이에 비례, 최소 30초)
+  const timeoutMs = Math.max(30_000, Math.ceil(req.text.length / 100) * 5_000);
   const tts = new EdgeTTS({
     voice: req.voice,
     rate: formatRate(req.speed),
     pitch: formatPitch(req.pitch),
+    timeout: timeoutMs,
   });
 
   const tempPath = req.outputPath ?? path.join(TEMP_DIR, `${crypto.randomUUID()}.mp3`);
   await fs.ensureDir(path.dirname(tempPath));
 
-  try {
-    await tts.ttsPromise(req.text, tempPath);
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    if (msg.includes('ECONNREFUSED') || msg.includes('ETIMEDOUT') || msg.includes('ENOTFOUND')) {
-      throw new Error(`네트워크 연결 실패: Edge TTS 서버에 접근할 수 없습니다. (${msg})`);
+  const MAX_RETRIES = 2;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      await tts.ttsPromise(req.text, tempPath);
+      break;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      const isTransient =
+        msg.includes('Timed out') || msg.includes('ECONNRESET') || msg.includes('EPIPE');
+
+      if (isTransient && attempt < MAX_RETRIES) {
+        logger.warn({ attempt: attempt + 1, err: msg }, 'tts.edge.retry');
+        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+        continue;
+      }
+
+      if (msg.includes('ECONNREFUSED') || msg.includes('ETIMEDOUT') || msg.includes('ENOTFOUND')) {
+        throw new Error(`네트워크 연결 실패: Edge TTS 서버에 접근할 수 없습니다. (${msg})`);
+      }
+      throw new Error(`Edge TTS 합성 실패: ${msg}`);
     }
-    throw new Error(`Edge TTS 합성 실패: ${msg}`);
   }
 
   // duration 측정

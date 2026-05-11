@@ -1,6 +1,7 @@
 export const ko = {
   // App
   'app.name': 'VideoForge',
+  'app.settings': '설정',
 
   // Project list
   'projects.title': '프로젝트',

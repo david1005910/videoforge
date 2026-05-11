@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 
 interface Props {
@@ -11,17 +11,28 @@ interface Props {
 export function Waveform({ audioPath, isPlaying, onPlayPause, onFinish }: Props): JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<WaveSurfer | null>(null);
+  const readyRef = useRef(false);
+  const onPlayPauseRef = useRef(onPlayPause);
+  const onFinishRef = useRef(onFinish);
 
-  const handleFinish = useCallback(() => onFinish(), [onFinish]);
+  // Keep refs current without triggering WaveSurfer recreation
+  useEffect(() => {
+    onPlayPauseRef.current = onPlayPause;
+  }, [onPlayPause]);
+  useEffect(() => {
+    onFinishRef.current = onFinish;
+  }, [onFinish]);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
+    readyRef.current = false;
+
     const ws = WaveSurfer.create({
       container: containerRef.current,
-      waveColor: '#52525b',
-      progressColor: '#6d28d9',
-      cursorColor: '#a78bfa',
+      waveColor: 'rgba(255,255,255,0.3)',
+      progressColor: '#a855f7',
+      cursorColor: '#c084fc',
       cursorWidth: 1,
       barWidth: 2,
       barGap: 1,
@@ -30,8 +41,14 @@ export function Waveform({ audioPath, isPlaying, onPlayPause, onFinish }: Props)
       normalize: true,
     });
 
-    ws.on('finish', handleFinish);
-    ws.on('click', () => onPlayPause());
+    ws.on('ready', () => {
+      readyRef.current = true;
+    });
+    ws.on('finish', () => onFinishRef.current());
+    ws.on('click', () => onPlayPauseRef.current());
+    ws.on('error', (err) => {
+      console.error('[Waveform] load error:', err);
+    });
 
     const url =
       audioPath.startsWith('blob:') || audioPath.startsWith('http')
@@ -43,24 +60,36 @@ export function Waveform({ audioPath, isPlaying, onPlayPause, onFinish }: Props)
     return () => {
       ws.destroy();
       wsRef.current = null;
+      readyRef.current = false;
     };
-  }, [audioPath, handleFinish, onPlayPause]);
+  }, [audioPath]);
 
   useEffect(() => {
     const ws = wsRef.current;
     if (!ws) return;
 
-    if (isPlaying && !ws.isPlaying()) {
-      void ws.play();
-    } else if (!isPlaying && ws.isPlaying()) {
-      ws.pause();
+    const doPlayPause = () => {
+      if (isPlaying && !ws.isPlaying()) {
+        void ws.play().catch((err: unknown) => console.error('[Waveform] play error:', err));
+      } else if (!isPlaying && ws.isPlaying()) {
+        ws.pause();
+      }
+    };
+
+    if (readyRef.current) {
+      doPlayPause();
+    } else if (isPlaying) {
+      // Audio not ready yet — wait for ready then auto-play
+      const onReady = () => {
+        readyRef.current = true;
+        doPlayPause();
+      };
+      ws.once('ready', onReady);
+      return () => {
+        ws.un('ready', onReady);
+      };
     }
   }, [isPlaying]);
 
-  return (
-    <div
-      ref={containerRef}
-      className="w-full cursor-pointer rounded-lg border border-zinc-800 bg-zinc-900/50 p-2"
-    />
-  );
+  return <div ref={containerRef} className="gooey-card w-full cursor-pointer p-2" />;
 }

@@ -47,6 +47,10 @@ export async function transcribeWhisperLocal(
   // whisper.cpp requires WAV input — convert if needed
   const wavPath = await ensureWav(audioPath);
 
+  // whisper.cpp -oj writes JSON to a file (<output-file>.json), not stdout.
+  // We specify -of to control the output path, then read the .json file after.
+  const jsonOutBase = path.join(os.tmpdir(), `whisper-out-${Date.now()}`);
+
   const args = [
     '-m',
     modelPath,
@@ -54,12 +58,13 @@ export async function transcribeWhisperLocal(
     wavPath,
     '-l',
     mapLanguageCode(req.language),
-    '--output-json',
     '-oj',
+    '-of',
+    jsonOutBase,
     '--no-prints',
   ];
 
-  if (req.wordTimestamps) {
+  if (req.wordTimestamps && !['ko', 'ja', 'zh'].includes(req.language)) {
     args.push('--max-len', '1');
   }
 
@@ -70,19 +75,34 @@ export async function transcribeWhisperLocal(
 
   logger.info({ binPath, modelId, audioPath, threads }, 'stt.whisper-local.start');
 
-  const output = await runWhisper(binPath, args);
+  await runWhisper(binPath, args);
 
-  // Clean up temp WAV if we created one
+  // Read the JSON output file written by whisper.cpp
+  const jsonOutPath = `${jsonOutBase}.json`;
+  let output: string;
+  try {
+    output = await fs.promises.readFile(jsonOutPath, 'utf-8');
+  } catch {
+    throw new UserFacingError(
+      'Whisper JSON 출력 파일을 읽을 수 없습니다',
+      `Expected: ${jsonOutPath}`,
+    );
+  }
+
+  // Clean up temp files
   if (wavPath !== audioPath) {
-    fs.unlink(wavPath, (_err) => {
+    fs.unlink(wavPath, () => {
       /* cleanup */
     });
   }
+  fs.unlink(jsonOutPath, () => {
+    /* cleanup */
+  });
 
   return parseWhisperOutput(output, req.language);
 }
 
-function runWhisper(binPath: string, args: string[]): Promise<string> {
+function runWhisper(binPath: string, args: string[]): Promise<void> {
   return new Promise((resolve, reject) => {
     execFile(
       binPath,
@@ -92,13 +112,13 @@ function runWhisper(binPath: string, args: string[]): Promise<string> {
         maxBuffer: 50 * 1024 * 1024, // 50MB buffer for large transcriptions
         env: { ...process.env, DYLD_LIBRARY_PATH: path.dirname(binPath) },
       },
-      (error, stdout, stderr) => {
+      (error, _stdout, stderr) => {
         if (error) {
           logger.error({ error: error.message, stderr }, 'stt.whisper-local.error');
           reject(new UserFacingError('Whisper 실행 실패', stderr || error.message));
           return;
         }
-        resolve(stdout);
+        resolve();
       },
     );
   });
@@ -153,11 +173,13 @@ function parseWhisperOutput(output: string, language: string): SttTranscribeResp
  * Parse whisper.cpp timestamp format "HH:MM:SS.mmm" to seconds.
  */
 function parseTimestamp(ts: string): number {
-  const parts = ts.split(':');
+  // whisper.cpp uses comma as decimal separator: "00:00:05,230"
+  const normalized = ts.replace(',', '.');
+  const parts = normalized.split(':');
   if (parts.length !== 3) return 0;
-  const hours = Number(parts[0]);
-  const minutes = Number(parts[1]);
-  const seconds = Number(parts[2]);
+  const hours = Number(parts[0]) || 0;
+  const minutes = Number(parts[1]) || 0;
+  const seconds = Number(parts[2]) || 0;
   return hours * 3600 + minutes * 60 + seconds;
 }
 

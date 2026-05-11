@@ -19,25 +19,25 @@ export function AssetsPage() {
   const [tab, setTab] = useState<'fonts' | 'sfx'>('fonts');
 
   return (
-    <div className="flex h-full flex-col bg-zinc-950 text-zinc-100">
-      <header className="flex items-center gap-4 border-b border-zinc-800 px-6 py-3">
-        <h1 className="text-lg font-semibold">{t('assets.title')}</h1>
-        <div className="flex gap-1 rounded-lg bg-zinc-900 p-1">
+    <div className="gooey-page flex h-full flex-col">
+      <header className="gooey-header flex items-center gap-4 px-6 py-3">
+        <h1 className="gooey-text-primary text-lg font-semibold">{t('assets.title')}</h1>
+        <div className="gooey-tab-group flex gap-1">
           <button
-            className={`rounded-md px-3 py-1 text-sm ${tab === 'fonts' ? 'bg-violet-600 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
+            className={`gooey-tab ${tab === 'fonts' ? 'gooey-tab-active' : 'gooey-tab-inactive'}`}
             onClick={() => setTab('fonts')}
           >
             {t('assets.fonts')}
           </button>
           <button
-            className={`rounded-md px-3 py-1 text-sm ${tab === 'sfx' ? 'bg-violet-600 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
+            className={`gooey-tab ${tab === 'sfx' ? 'gooey-tab-active' : 'gooey-tab-inactive'}`}
             onClick={() => setTab('sfx')}
           >
             {t('assets.sfx')}
           </button>
         </div>
       </header>
-      <div className="flex-1 overflow-auto p-6">
+      <div className="gooey-scrollbar flex-1 overflow-auto p-6">
         {tab === 'fonts' ? <FontsPanel /> : <SfxPanel />}
       </div>
     </div>
@@ -83,30 +83,24 @@ function FontsPanel() {
     }
   };
 
-  if (loading) return <p className="text-zinc-500">{t('assets.loadingFonts')}</p>;
+  if (loading) return <p className="gooey-text-muted">{t('assets.loadingFonts')}</p>;
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-sm text-zinc-400">
+        <p className="gooey-text-secondary text-sm">
           {fonts.length} {t('assets.fontsCount')}
         </p>
-        <button
-          onClick={handleUpload}
-          className="rounded-md bg-violet-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-500"
-        >
+        <button onClick={handleUpload} className="gooey-btn-primary px-3 py-1.5 text-sm">
           {t('assets.uploadFont')}
         </button>
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {fonts.map((f) => (
-          <div
-            key={f.postscriptName}
-            className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900 p-4"
-          >
+          <div key={f.postscriptName} className="gooey-card flex items-center justify-between p-4">
             <div className="min-w-0">
-              <p className="truncate font-medium">{f.family}</p>
-              <p className="text-xs text-zinc-500">
+              <p className="truncate font-medium text-white/90">{f.family}</p>
+              <p className="text-xs text-white/35">
                 {f.source} · {f.scripts.join(', ')}
                 {f.italic ? ' · italic' : ''}
               </p>
@@ -194,7 +188,7 @@ function SfxPanel() {
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value as SfxCategory | '')}
-          className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-200"
+          className="gooey-input px-2 py-1.5 text-sm"
         >
           {SFX_CATEGORY_VALUES.map((c) => (
             <option key={c} value={c}>
@@ -207,33 +201,27 @@ function SfxPanel() {
           placeholder={t('assets.search')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 placeholder:text-zinc-600"
+          className="gooey-input px-3 py-1.5 text-sm"
         />
         <div className="flex-1" />
-        <p className="text-sm text-zinc-400">
+        <p className="gooey-text-secondary text-sm">
           {items.length} {t('assets.itemsCount')}
         </p>
-        <button
-          onClick={handleUpload}
-          className="rounded-md bg-violet-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-500"
-        >
+        <button onClick={handleUpload} className="gooey-btn-primary px-3 py-1.5 text-sm">
           {t('assets.uploadSfx')}
         </button>
       </div>
       {loading ? (
-        <p className="text-zinc-500">{t('assets.loadingSfx')}</p>
+        <p className="gooey-text-muted">{t('assets.loadingSfx')}</p>
       ) : items.length === 0 ? (
-        <p className="text-zinc-500">{t('assets.noSfx')}</p>
+        <p className="gooey-text-muted">{t('assets.noSfx')}</p>
       ) : (
         <div className="space-y-2">
           {items.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center gap-4 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-3"
-            >
+            <div key={item.id} className="gooey-card flex items-center gap-4 px-4 py-3">
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{item.name}</p>
-                <p className="text-xs text-zinc-500">
+                <p className="truncate font-medium text-white/90">{item.name}</p>
+                <p className="text-xs text-white/35">
                   {item.category} · {formatDuration(item.durationMs)}
                 </p>
               </div>

@@ -37,11 +37,25 @@ export async function transcribeOpenAI(req: SttTranscribeRequest): Promise<SttTr
 
   logger.info({ model, language: req.language, audioPath }, 'stt.openai.start');
 
-  const resp = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}` },
-    body: formData,
-  });
+  let resp: Response;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60_000);
+    resp = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}` },
+      body: formData,
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+  } catch (fetchErr) {
+    logger.error({ err: fetchErr }, 'stt.openai.fetch-error');
+    const msg =
+      fetchErr instanceof Error && fetchErr.name === 'AbortError'
+        ? 'OpenAI API 응답 시간 초과 (60초)'
+        : 'OpenAI API 연결 실패';
+    throw new UserFacingError(msg, fetchErr instanceof Error ? fetchErr.message : String(fetchErr));
+  }
 
   if (!resp.ok) {
     const body = await resp.text();

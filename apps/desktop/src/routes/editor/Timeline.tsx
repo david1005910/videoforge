@@ -72,30 +72,30 @@ export function Timeline({ scenes, selectedId, onSelect, onReorder }: Props) {
   );
 
   return (
-    <div className="flex flex-col border-t border-zinc-800 bg-zinc-950">
+    <div className="gooey-timeline flex flex-col">
       {/* Toolbar */}
-      <div className="flex items-center gap-2 border-b border-zinc-800 px-3 py-1">
-        <span className="text-xs font-semibold uppercase tracking-wider text-zinc-600">
+      <div className="flex items-center gap-2 border-b border-white/5 px-3 py-1">
+        <span className="text-xs font-semibold uppercase tracking-wider text-white/20">
           Timeline
         </span>
         <div className="flex-1" />
-        <span className="text-[10px] text-zinc-600">
+        <span className="text-[10px] text-white/25">
           {Math.floor(totalDurationSec / 60)}:{String(totalDurationSec % 60).padStart(2, '0')} (
           {scenes.length} scenes)
         </span>
         <button
           onClick={handleZoomOut}
           disabled={zoom <= MIN_ZOOM}
-          className="rounded p-0.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 disabled:opacity-30"
+          className="gooey-btn-ghost rounded-lg p-0.5 disabled:opacity-30"
           aria-label="Zoom out"
         >
           <ZoomOut size={14} />
         </button>
-        <span className="w-8 text-center text-[10px] text-zinc-500">{Math.round(zoom * 100)}%</span>
+        <span className="w-8 text-center text-[10px] text-white/30">{Math.round(zoom * 100)}%</span>
         <button
           onClick={handleZoomIn}
           disabled={zoom >= MAX_ZOOM}
-          className="rounded p-0.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 disabled:opacity-30"
+          className="gooey-btn-ghost rounded-lg p-0.5 disabled:opacity-30"
           aria-label="Zoom in"
         >
           <ZoomIn size={14} />
@@ -103,17 +103,17 @@ export function Timeline({ scenes, selectedId, onSelect, onReorder }: Props) {
       </div>
 
       {/* Ruler */}
-      <div className="relative h-5 border-b border-zinc-800/50 bg-zinc-900/50" ref={scrollRef}>
+      <div className="border-white/4 bg-white/2 relative h-5 border-b" ref={scrollRef}>
         <div className="flex h-full" style={{ width: `${scenes.length * sceneWidth}px` }}>
           {scenes.map((_, i) => {
             const cumSec = sceneDurations.slice(0, i).reduce((s, d) => s + d, 0);
             return (
               <div
                 key={i}
-                className="relative border-r border-zinc-800/30"
+                className="relative border-r border-white/5"
                 style={{ width: `${sceneWidth}px` }}
               >
-                <span className="absolute left-1 top-0.5 text-[9px] text-zinc-700">{cumSec}s</span>
+                <span className="absolute left-1 top-0.5 text-[9px] text-white/20">{cumSec}s</span>
               </div>
             );
           })}
@@ -121,9 +121,9 @@ export function Timeline({ scenes, selectedId, onSelect, onReorder }: Props) {
       </div>
 
       {/* Scene blocks */}
-      <div className="scrollbar-thin overflow-x-auto overflow-y-hidden p-2">
+      <div className="gooey-scrollbar overflow-x-auto overflow-y-hidden p-2">
         {scenes.length === 0 ? (
-          <p className="py-2 text-center text-[10px] text-zinc-700">
+          <p className="py-2 text-center text-[10px] text-white/20">
             No scenes — add a scene to get started.
           </p>
         ) : (
@@ -142,32 +142,32 @@ export function Timeline({ scenes, selectedId, onSelect, onReorder }: Props) {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') onSelect(scene.id);
                 }}
-                className={`flex shrink-0 cursor-pointer flex-col rounded-md border px-2 py-1.5 transition ${
+                className={`flex shrink-0 cursor-pointer flex-col rounded-xl border px-2 py-1.5 transition ${
                   selectedId === scene.id
-                    ? 'border-violet-500 bg-violet-500/10'
+                    ? 'border-violet-500/40 bg-violet-500/10 shadow-[0_0_12px_rgba(139,92,246,0.15)]'
                     : dropIdx === idx
-                      ? 'border-emerald-500 bg-emerald-500/5'
-                      : 'border-zinc-800 bg-zinc-900 hover:border-zinc-700'
+                      ? 'border-emerald-500/30 bg-emerald-500/5'
+                      : 'border-white/6 bg-white/3 hover:border-white/12'
                 } ${dragIdx === idx ? 'opacity-40' : ''}`}
                 style={{ width: `${sceneWidth - 4}px`, minHeight: '48px' }}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-medium text-zinc-500">#{idx + 1}</span>
-                  <span className="text-[9px] text-zinc-600">{sceneDurations[idx]}s</span>
+                  <span className="text-[10px] font-medium text-white/35">#{idx + 1}</span>
+                  <span className="text-[9px] text-white/20">{sceneDurations[idx]}s</span>
                 </div>
-                <p className="mt-0.5 truncate text-[10px] text-zinc-400">
+                <p className="mt-0.5 truncate text-[10px] text-white/40">
                   {scene.scriptKo ?? scene.scriptOriginal ?? '—'}
                 </p>
                 {/* Asset indicators */}
                 <div className="mt-auto flex gap-1 pt-1">
                   {scene.generatedImages.length > 0 && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" title="Images" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500/70" title="Images" />
                   )}
                   {scene.narrationAudio && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-blue-500" title="Audio" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-blue-400/70" title="Audio" />
                   )}
                   {scene.subtitleAss && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500" title="Subtitles" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400/70" title="Subtitles" />
                   )}
                 </div>
               </div>

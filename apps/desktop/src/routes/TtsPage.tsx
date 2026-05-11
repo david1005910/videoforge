@@ -24,7 +24,7 @@ export function TtsPage(): JSX.Element {
 
   const [audioBlobUrl, setAudioBlobUrl] = useState<string | null>(null);
 
-  /** file path → blob URL (webSecurity: true 환경에서 필수) */
+  /** file path -> blob URL (webSecurity: true) */
   const createBlobUrl = async (filePath: string): Promise<string> => {
     const { base64Data, mimeType } = await api.file.readBase64(filePath);
     const binary = atob(base64Data);
@@ -108,25 +108,25 @@ export function TtsPage(): JSX.Element {
   };
 
   return (
-    <div className="flex h-full flex-col">
-      {/* 타이틀바 */}
-      <div className="titlebar-drag flex h-10 items-center gap-3 border-b border-zinc-800 px-4">
+    <div className="gooey-page flex h-full flex-col">
+      {/* Titlebar */}
+      <div className="titlebar-drag gooey-header flex h-10 items-center gap-3 px-4">
         <button
           type="button"
           onClick={() => void navigate({ to: '/' })}
-          className="titlebar-no-drag flex items-center gap-1 rounded-md px-2 py-1 text-xs text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-200"
+          className="titlebar-no-drag gooey-btn-ghost flex items-center gap-1 px-2 py-1 text-xs"
         >
           <ArrowLeft size={14} />
           {t('projects.title')}
         </button>
-        <span className="text-xs text-zinc-500">TTS</span>
+        <span className="gooey-text-muted text-xs">TTS</span>
       </div>
 
-      <main className="flex-1 overflow-auto p-8">
+      <main className="gooey-scrollbar flex-1 overflow-auto p-8">
         <div className="mx-auto max-w-3xl space-y-6">
-          <h1 className="text-2xl font-bold">{t('tts.title')}</h1>
+          <h1 className="gooey-text-primary text-2xl font-bold">{t('tts.title')}</h1>
 
-          {/* Provider 선택 */}
+          {/* Provider */}
           <div className="flex gap-2">
             {(['edge', 'google', 'gemini'] as const).map((p) => (
               <button
@@ -137,10 +137,8 @@ export function TtsPage(): JSX.Element {
                   const first = EDGE_VOICES.find((v) => v.provider === p);
                   if (first) setVoice(first.id);
                 }}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-                  provider === p
-                    ? 'bg-accent text-white'
-                    : 'border border-zinc-700 text-zinc-400 hover:bg-zinc-800'
+                className={`rounded-2xl px-4 py-2 text-sm font-medium transition ${
+                  provider === p ? 'gooey-btn-primary' : 'gooey-btn-secondary'
                 }`}
               >
                 {p === 'edge' ? 'Edge TTS' : p === 'google' ? 'Google TTS' : 'Gemini TTS'}
@@ -148,17 +146,17 @@ export function TtsPage(): JSX.Element {
             ))}
           </div>
 
-          {/* 보이스 + 속도 */}
+          {/* Voice + Speed */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="tts-voice" className="mb-1 block text-sm text-zinc-400">
+              <label htmlFor="tts-voice" className="gooey-text-secondary mb-1 block text-sm">
                 {t('tts.voice')}
               </label>
               <select
                 id="tts-voice"
                 value={voice}
                 onChange={(e) => setVoice(e.target.value)}
-                className="focus:border-accent w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm focus:outline-none"
+                className="gooey-input w-full px-3 py-2 text-sm"
               >
                 {filteredVoices.map((v) => (
                   <option key={v.id} value={v.id}>
@@ -169,7 +167,7 @@ export function TtsPage(): JSX.Element {
               </select>
             </div>
             <div>
-              <label htmlFor="tts-speed" className="mb-1 block text-sm text-zinc-400">
+              <label htmlFor="tts-speed" className="gooey-text-secondary mb-1 block text-sm">
                 {t('tts.speed')}: {speed.toFixed(1)}x
               </label>
               <input
@@ -180,14 +178,14 @@ export function TtsPage(): JSX.Element {
                 step="0.1"
                 value={speed}
                 onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                className="accent-accent mt-2 w-full"
+                className="mt-2 w-full accent-violet-500"
               />
             </div>
           </div>
 
-          {/* 텍스트 입력 */}
+          {/* Text Input */}
           <div>
-            <label htmlFor="tts-text" className="mb-1 block text-sm text-zinc-400">
+            <label htmlFor="tts-text" className="gooey-text-secondary mb-1 block text-sm">
               {t('tts.text')}
             </label>
             <textarea
@@ -195,21 +193,21 @@ export function TtsPage(): JSX.Element {
               value={text}
               onChange={(e) => setText(e.target.value)}
               rows={6}
-              className="focus:border-accent w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm focus:outline-none"
+              className="gooey-input w-full px-3 py-2 text-sm"
               placeholder={t('tts.text.placeholder')}
             />
-            <div className="mt-1 text-right text-xs text-zinc-600">
+            <div className="gooey-text-muted mt-1 text-right text-xs">
               {text.length.toLocaleString()} / 50,000
             </div>
           </div>
 
-          {/* 생성 버튼 + 파일 불러오기 */}
+          {/* Generate + Load */}
           <div className="flex gap-3">
             <button
               type="button"
               onClick={() => void handleGenerate()}
               disabled={!text.trim() || isGenerating}
-              className="bg-accent hover:bg-accent-600 flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-medium text-white transition disabled:opacity-50"
+              className="gooey-btn-primary flex items-center gap-2 px-6 py-2.5 text-sm"
             >
               <Volume2 size={16} />
               {isGenerating ? t('tts.generating') : t('tts.generate')}
@@ -218,33 +216,31 @@ export function TtsPage(): JSX.Element {
               type="button"
               onClick={() => void handleLoadAudio()}
               disabled={isGenerating}
-              className="flex items-center gap-2 rounded-lg border border-zinc-700 px-6 py-2.5 text-sm font-medium text-zinc-300 transition hover:bg-zinc-800 disabled:opacity-50"
+              className="gooey-btn-secondary flex items-center gap-2 px-6 py-2.5 text-sm"
             >
               <FolderOpen size={16} />
               {t('tts.loadAudio')}
             </button>
           </div>
 
-          {/* 에러 */}
-          {error && (
-            <div className="rounded-lg border border-red-800 bg-red-950/30 p-3 text-sm text-red-400">
-              {error}
-            </div>
-          )}
+          {/* Error */}
+          {error && <div className="gooey-error p-3 text-sm">{error}</div>}
 
-          {/* 결과 */}
+          {/* Result */}
           {result && (
-            <div className="space-y-3 rounded-lg border border-zinc-700 bg-zinc-900/50 p-4">
+            <div className="gooey-panel space-y-3 p-4">
               <div className="flex items-center justify-between">
                 <div className="text-sm">
                   {result.durationMs > 0 && (
                     <>
-                      <span className="text-zinc-400">{t('tts.duration')}:</span>{' '}
-                      <span className="font-mono">{formatDuration(result.durationMs)}</span>
+                      <span className="gooey-text-secondary">{t('tts.duration')}:</span>{' '}
+                      <span className="font-mono text-white/90">
+                        {formatDuration(result.durationMs)}
+                      </span>
                     </>
                   )}
                   {result.cached && (
-                    <span className="ml-2 rounded bg-blue-900/40 px-1.5 py-0.5 text-xs text-blue-300">
+                    <span className="ml-2 rounded-full bg-blue-500/15 px-1.5 py-0.5 text-xs text-blue-300">
                       {t('tts.cached')}
                     </span>
                   )}
@@ -253,7 +249,7 @@ export function TtsPage(): JSX.Element {
                   <button
                     type="button"
                     onClick={handlePlayPause}
-                    className="flex items-center gap-1 rounded-md border border-zinc-700 px-3 py-1.5 text-sm transition hover:bg-zinc-800"
+                    className="gooey-btn-secondary flex items-center gap-1 px-3 py-1.5 text-sm"
                   >
                     {isPlaying ? <Square size={14} /> : <Play size={14} />}
                     {isPlaying ? t('tts.stop') : t('tts.play')}
@@ -261,7 +257,7 @@ export function TtsPage(): JSX.Element {
                   <button
                     type="button"
                     onClick={() => void handleSave()}
-                    className="flex items-center gap-1 rounded-md border border-zinc-700 px-3 py-1.5 text-sm transition hover:bg-zinc-800"
+                    className="gooey-btn-secondary flex items-center gap-1 px-3 py-1.5 text-sm"
                   >
                     <Download size={14} />
                     {t('tts.save')}
@@ -276,7 +272,7 @@ export function TtsPage(): JSX.Element {
                   onFinish={() => setPlaying(false)}
                 />
               )}
-              <div className="truncate text-xs text-zinc-600">{result.audioPath}</div>
+              <div className="gooey-text-muted truncate text-xs">{result.audioPath}</div>
             </div>
           )}
         </div>

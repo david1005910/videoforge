@@ -53,7 +53,6 @@ export function NewProjectWizard({ onCreated, onCancel }: Props): JSX.Element {
         },
         asNewProject: true,
       });
-      // projectFolder 에서 ID 추출 (마지막 path segment)
       const parts = result.projectFolder.split('/');
       const projectId = parts[parts.length - 1] ?? '';
       onCreated(projectId);
@@ -65,47 +64,43 @@ export function NewProjectWizard({ onCreated, onCancel }: Props): JSX.Element {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-full max-w-md rounded-xl border border-zinc-700 bg-zinc-900 p-6 shadow-2xl">
-        {/* 헤더 */}
+    <div className="gooey-modal-backdrop fixed inset-0 z-50 flex items-center justify-center">
+      <div className="gooey-modal w-full max-w-md p-6">
+        {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{t('wizard.title')}</h2>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-md p-1 text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-200"
-          >
+          <h2 className="gooey-text-primary text-lg font-semibold">{t('wizard.title')}</h2>
+          <button type="button" onClick={onCancel} className="gooey-btn-ghost p-1">
             <X size={18} />
           </button>
         </div>
 
-        {/* 폼 */}
+        {/* Form */}
         <div className="space-y-4">
-          {/* 제목 */}
+          {/* Title */}
           <div>
-            <label htmlFor="project-title" className="mb-1 block text-sm text-zinc-400">
+            <label htmlFor="project-title" className="gooey-text-secondary mb-1 block text-sm">
               {t('wizard.projectTitle')}
             </label>
             <input
               id="project-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="focus:border-accent w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm focus:outline-none"
+              className="gooey-input w-full px-3 py-2 text-sm"
               placeholder={t('wizard.projectTitle.placeholder')}
               autoFocus
             />
           </div>
 
-          {/* 언어 */}
+          {/* Language */}
           <div>
-            <label htmlFor="project-language" className="mb-1 block text-sm text-zinc-400">
+            <label htmlFor="project-language" className="gooey-text-secondary mb-1 block text-sm">
               {t('wizard.language')}
             </label>
             <select
               id="project-language"
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="focus:border-accent w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm focus:outline-none"
+              className="gooey-input w-full px-3 py-2 text-sm"
             >
               {LANGUAGES.map((l) => (
                 <option key={l.value} value={l.value}>
@@ -115,16 +110,16 @@ export function NewProjectWizard({ onCreated, onCancel }: Props): JSX.Element {
             </select>
           </div>
 
-          {/* 해상도 */}
+          {/* Resolution */}
           <div>
-            <label htmlFor="project-resolution" className="mb-1 block text-sm text-zinc-400">
+            <label htmlFor="project-resolution" className="gooey-text-secondary mb-1 block text-sm">
               {t('wizard.resolution')}
             </label>
             <select
               id="project-resolution"
               value={resolutionIdx}
               onChange={(e) => setResolutionIdx(Number(e.target.value))}
-              className="focus:border-accent w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm focus:outline-none"
+              className="gooey-input w-full px-3 py-2 text-sm"
             >
               {RESOLUTIONS.map((r, i) => (
                 <option key={r.label} value={i}>
@@ -134,15 +129,15 @@ export function NewProjectWizard({ onCreated, onCancel }: Props): JSX.Element {
             </select>
           </div>
 
-          {error && <p className="rounded-md bg-red-950/50 p-2 text-xs text-red-400">{error}</p>}
+          {error && <div className="gooey-error p-2 text-xs">{error}</div>}
         </div>
 
-        {/* 버튼 */}
+        {/* Buttons */}
         <div className="mt-6 flex justify-end gap-3">
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition hover:bg-zinc-800"
+            className="gooey-btn-secondary px-4 py-2 text-sm"
           >
             {t('wizard.cancel')}
           </button>
@@ -150,7 +145,7 @@ export function NewProjectWizard({ onCreated, onCancel }: Props): JSX.Element {
             type="button"
             onClick={() => void handleCreate()}
             disabled={!title.trim() || isCreating}
-            className="bg-accent hover:bg-accent-600 rounded-lg px-4 py-2 text-sm font-medium text-white transition disabled:opacity-50"
+            className="gooey-btn-primary px-4 py-2 text-sm"
           >
             {isCreating ? t('common.loading') : t('wizard.create')}
           </button>

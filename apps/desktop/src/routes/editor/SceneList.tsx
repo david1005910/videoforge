@@ -68,29 +68,29 @@ export function SceneList({
   }, []);
 
   return (
-    <div className="flex h-full w-60 flex-col border-r border-zinc-800 bg-zinc-950">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between border-b border-zinc-800 px-3 py-2">
-        <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+    <div className="gooey-sidebar border-white/6 flex h-full w-60 flex-col border-r">
+      {/* Header */}
+      <div className="border-white/6 flex items-center justify-between border-b px-3 py-2">
+        <span className="text-xs font-semibold uppercase tracking-wider text-white/35">
           {t('scene.scenes')} ({scenes.length})
         </span>
         <button
           type="button"
           onClick={onAdd}
-          className="rounded-md p-1 text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-300"
+          className="gooey-btn-ghost rounded-lg p-1"
           title={t('scene.add')}
         >
           <Plus size={14} />
         </button>
       </div>
 
-      {/* 씬 목록 */}
-      <div className="scrollbar-thin flex-1 overflow-y-auto">
+      {/* Scene list */}
+      <div className="gooey-scrollbar flex-1 overflow-y-auto">
         {scenes.length === 0 ? (
-          <div className="px-3 py-8 text-center text-xs text-zinc-600">
+          <div className="px-3 py-8 text-center text-xs text-white/25">
             {t('scene.empty')}
             <br />
-            <button type="button" onClick={onAdd} className="text-accent mt-2 hover:underline">
+            <button type="button" onClick={onAdd} className="mt-2 text-violet-400 hover:underline">
               {t('scene.addFirst')}
             </button>
           </div>
@@ -105,33 +105,33 @@ export function SceneList({
               onDrop={() => handleDrop(idx)}
               onDragEnd={handleDragEnd}
               onClick={() => onSelect(scene.id)}
-              className={`group flex w-full items-start gap-2 border-b border-zinc-800/50 px-3 py-2.5 text-left transition ${
+              className={`border-white/4 group flex w-full items-start gap-2 border-b px-3 py-2.5 text-left transition ${
                 selectedId === scene.id
-                  ? 'bg-zinc-800/80'
+                  ? 'border-l-2 border-l-violet-500 bg-violet-500/10'
                   : dropIdx === idx
-                    ? 'border-emerald-500 bg-emerald-500/5'
-                    : 'hover:bg-zinc-900'
+                    ? 'border-emerald-500/30 bg-emerald-500/5'
+                    : 'hover:bg-white/4'
               } ${dragIdx === idx ? 'opacity-40' : ''}`}
             >
-              <GripVertical size={12} className="mt-1 shrink-0 cursor-grab text-zinc-700" />
+              <GripVertical size={12} className="mt-1 shrink-0 cursor-grab text-white/20" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1">
-                  <span className="text-xs font-medium text-zinc-400">#{scene.index + 1}</span>
+                  <span className="text-xs font-medium text-white/50">#{scene.index + 1}</span>
                   {estimateDuration(scene) && (
-                    <span className="flex items-center gap-0.5 text-[10px] text-zinc-600">
+                    <span className="flex items-center gap-0.5 text-[10px] text-white/25">
                       <Clock size={8} />
                       {estimateDuration(scene)}
                     </span>
                   )}
                   <div className="flex gap-0.5">
                     {scene.generatedImages.length > 0 && (
-                      <Image size={10} className="text-emerald-600" />
+                      <Image size={10} className="text-emerald-500/70" />
                     )}
-                    {scene.narrationAudio && <Volume2 size={10} className="text-blue-600" />}
-                    {scene.subtitleAss && <Subtitles size={10} className="text-amber-600" />}
+                    {scene.narrationAudio && <Volume2 size={10} className="text-blue-400/70" />}
+                    {scene.subtitleAss && <Subtitles size={10} className="text-amber-400/70" />}
                   </div>
                 </div>
-                <p className="mt-0.5 truncate text-xs text-zinc-500">
+                <p className="mt-0.5 truncate text-xs text-white/35">
                   {scene.scriptKo ?? scene.scriptOriginal ?? t('scene.noScript')}
                 </p>
               </div>
@@ -142,7 +142,7 @@ export function SceneList({
                     e.stopPropagation();
                     onDuplicate(scene.id);
                   }}
-                  className="rounded p-0.5 text-zinc-700 hover:text-zinc-300"
+                  className="rounded-lg p-0.5 text-white/20 hover:text-white/70"
                   title={t('scene.duplicate')}
                 >
                   <Copy size={12} />
@@ -153,7 +153,7 @@ export function SceneList({
                     e.stopPropagation();
                     onDelete(scene.id);
                   }}
-                  className="rounded p-0.5 text-zinc-700 hover:text-red-400"
+                  className="rounded-lg p-0.5 text-white/20 hover:text-red-400"
                   title={t('scene.delete')}
                 >
                   <Trash2 size={12} />
