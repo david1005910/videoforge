@@ -22,11 +22,32 @@ export function TtsPage(): JSX.Element {
 
   const filteredVoices = EDGE_VOICES.filter((v) => v.provider === provider);
 
+  const [audioBlobUrl, setAudioBlobUrl] = useState<string | null>(null);
+
+  /** file path → blob URL (webSecurity: true 환경에서 필수) */
+  const createBlobUrl = async (filePath: string): Promise<string> => {
+    const { base64Data, mimeType } = await api.file.readBase64(filePath);
+    const binary = atob(base64Data);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const blob = new Blob([bytes], { type: mimeType });
+    return URL.createObjectURL(blob);
+  };
+
+  const releaseBlobUrl = () => {
+    if (audioBlobUrl) {
+      URL.revokeObjectURL(audioBlobUrl);
+      setAudioBlobUrl(null);
+    }
+  };
+
   const handleGenerate = async () => {
     if (!text.trim()) return;
     setGenerating(true);
     setError('');
     setResult(null);
+    releaseBlobUrl();
+    setPlaying(false);
 
     try {
       let res: TtsResult;
@@ -37,6 +58,8 @@ export function TtsPage(): JSX.Element {
       } else {
         res = await api.tts.gemini({ text, voice, speed, pitch: 0 });
       }
+      const blobUrl = await createBlobUrl(res.audioPath);
+      setAudioBlobUrl(blobUrl);
       setResult(res);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -44,8 +67,6 @@ export function TtsPage(): JSX.Element {
       setGenerating(false);
     }
   };
-
-  const [loadedBlobUrl, setLoadedBlobUrl] = useState<string | null>(null);
 
   const handleLoadAudio = async () => {
     setError('');
@@ -55,20 +76,12 @@ export function TtsPage(): JSX.Element {
       ]);
       if (!filePath) return;
 
-      // webSecurity가 켜져 있어 file:// 직접 로드 불가 → base64로 읽어 blob URL 생성
-      const { base64Data, mimeType } = await api.file.readBase64(filePath);
-      const binary = atob(base64Data);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      const blob = new Blob([bytes], { type: mimeType });
-
-      // 이전 blob URL 해제
-      if (loadedBlobUrl) URL.revokeObjectURL(loadedBlobUrl);
-      const blobUrl = URL.createObjectURL(blob);
-      setLoadedBlobUrl(blobUrl);
-
-      setResult({ audioPath: filePath, durationMs: 0, cached: false });
+      releaseBlobUrl();
       setPlaying(false);
+
+      const blobUrl = await createBlobUrl(filePath);
+      setAudioBlobUrl(blobUrl);
+      setResult({ audioPath: filePath, durationMs: 0, cached: false });
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
@@ -255,14 +268,14 @@ export function TtsPage(): JSX.Element {
                   </button>
                 </div>
               </div>
-              <Waveform
-                audioPath={
-                  loadedBlobUrl && result.durationMs === 0 ? loadedBlobUrl : result.audioPath
-                }
-                isPlaying={isPlaying}
-                onPlayPause={handlePlayPause}
-                onFinish={() => setPlaying(false)}
-              />
+              {audioBlobUrl && (
+                <Waveform
+                  audioPath={audioBlobUrl}
+                  isPlaying={isPlaying}
+                  onPlayPause={handlePlayPause}
+                  onFinish={() => setPlaying(false)}
+                />
+              )}
               <div className="truncate text-xs text-zinc-600">{result.audioPath}</div>
             </div>
           )}
