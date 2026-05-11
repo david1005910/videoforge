@@ -1,6 +1,18 @@
-import { Plus, Trash2, Copy, GripVertical, Image, Volume2, Subtitles } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Plus, Trash2, Copy, GripVertical, Image, Volume2, Subtitles, Clock } from 'lucide-react';
 import { useT } from '../../i18n';
 import type { Scene } from '@videoforge/shared';
+
+/** Estimate scene duration from script length (~150 chars/min for Korean, ~180 for English) */
+function estimateDuration(scene: Scene): string | null {
+  const text = scene.scriptKo ?? scene.scriptOriginal;
+  if (!text || text.length === 0) return null;
+  const seconds = Math.max(1, Math.round((text.length / 150) * 60));
+  if (seconds < 60) return `${seconds}s`;
+  const min = Math.floor(seconds / 60);
+  const sec = seconds % 60;
+  return sec > 0 ? `${min}m${sec}s` : `${min}m`;
+}
 
 interface Props {
   scenes: Scene[];
@@ -19,8 +31,41 @@ export function SceneList({
   onAdd,
   onDelete,
   onDuplicate,
+  onReorder,
 }: Props): JSX.Element {
   const t = useT();
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [dropIdx, setDropIdx] = useState<number | null>(null);
+
+  const handleDragStart = useCallback((idx: number) => {
+    setDragIdx(idx);
+  }, []);
+
+  const handleDragOver = useCallback(
+    (e: React.DragEvent, idx: number) => {
+      e.preventDefault();
+      if (dragIdx !== null && idx !== dragIdx) {
+        setDropIdx(idx);
+      }
+    },
+    [dragIdx],
+  );
+
+  const handleDrop = useCallback(
+    (idx: number) => {
+      if (dragIdx !== null && dragIdx !== idx) {
+        onReorder(dragIdx, idx);
+      }
+      setDragIdx(null);
+      setDropIdx(null);
+    },
+    [dragIdx, onReorder],
+  );
+
+  const handleDragEnd = useCallback(() => {
+    setDragIdx(null);
+    setDropIdx(null);
+  }, []);
 
   return (
     <div className="flex h-full w-60 flex-col border-r border-zinc-800 bg-zinc-950">
@@ -50,19 +95,34 @@ export function SceneList({
             </button>
           </div>
         ) : (
-          scenes.map((scene) => (
+          scenes.map((scene, idx) => (
             <button
               key={scene.id}
               type="button"
+              draggable
+              onDragStart={() => handleDragStart(idx)}
+              onDragOver={(e) => handleDragOver(e, idx)}
+              onDrop={() => handleDrop(idx)}
+              onDragEnd={handleDragEnd}
               onClick={() => onSelect(scene.id)}
               className={`group flex w-full items-start gap-2 border-b border-zinc-800/50 px-3 py-2.5 text-left transition ${
-                selectedId === scene.id ? 'bg-zinc-800/80' : 'hover:bg-zinc-900'
-              }`}
+                selectedId === scene.id
+                  ? 'bg-zinc-800/80'
+                  : dropIdx === idx
+                    ? 'border-emerald-500 bg-emerald-500/5'
+                    : 'hover:bg-zinc-900'
+              } ${dragIdx === idx ? 'opacity-40' : ''}`}
             >
-              <GripVertical size={12} className="mt-1 shrink-0 text-zinc-700" />
+              <GripVertical size={12} className="mt-1 shrink-0 cursor-grab text-zinc-700" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1">
                   <span className="text-xs font-medium text-zinc-400">#{scene.index + 1}</span>
+                  {estimateDuration(scene) && (
+                    <span className="flex items-center gap-0.5 text-[10px] text-zinc-600">
+                      <Clock size={8} />
+                      {estimateDuration(scene)}
+                    </span>
+                  )}
                   <div className="flex gap-0.5">
                     {scene.generatedImages.length > 0 && (
                       <Image size={10} className="text-emerald-600" />

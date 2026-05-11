@@ -1,6 +1,13 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import { ZoomIn, ZoomOut } from 'lucide-react';
 import type { Scene } from '@videoforge/shared';
+
+/** Estimate scene duration in seconds from script length */
+function estimateSceneSec(scene: Scene): number {
+  const text = scene.scriptKo ?? scene.scriptOriginal;
+  if (!text || text.length === 0) return 6;
+  return Math.max(1, Math.round((text.length / 150) * 60));
+}
 
 /**
  * P4-13: Timeline UI — visual timeline with ruler, zoom, and drag-to-reorder.
@@ -58,8 +65,11 @@ export function Timeline({ scenes, selectedId, onSelect, onReorder }: Props) {
     setDropIdx(null);
   }, []);
 
-  // Calculate total duration estimate (6s per scene if unknown)
-  const totalDurationSec = scenes.length * 6;
+  const sceneDurations = useMemo(() => scenes.map(estimateSceneSec), [scenes]);
+  const totalDurationSec = useMemo(
+    () => sceneDurations.reduce((sum, d) => sum + d, 0),
+    [sceneDurations],
+  );
 
   return (
     <div className="flex flex-col border-t border-zinc-800 bg-zinc-950">
@@ -94,17 +104,18 @@ export function Timeline({ scenes, selectedId, onSelect, onReorder }: Props) {
       {/* Ruler */}
       <div className="relative h-5 border-b border-zinc-800/50 bg-zinc-900/50" ref={scrollRef}>
         <div className="flex h-full" style={{ width: `${scenes.length * sceneWidth}px` }}>
-          {scenes.map((_, i) => (
-            <div
-              key={i}
-              className="relative border-r border-zinc-800/30"
-              style={{ width: `${sceneWidth}px` }}
-            >
-              <span className="absolute left-1 top-0.5 text-[9px] text-zinc-700">
-                {(i * 6).toFixed(0)}s
-              </span>
-            </div>
-          ))}
+          {scenes.map((_, i) => {
+            const cumSec = sceneDurations.slice(0, i).reduce((s, d) => s + d, 0);
+            return (
+              <div
+                key={i}
+                className="relative border-r border-zinc-800/30"
+                style={{ width: `${sceneWidth}px` }}
+              >
+                <span className="absolute left-1 top-0.5 text-[9px] text-zinc-700">{cumSec}s</span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -134,7 +145,10 @@ export function Timeline({ scenes, selectedId, onSelect, onReorder }: Props) {
               } ${dragIdx === idx ? 'opacity-40' : ''}`}
               style={{ width: `${sceneWidth - 4}px`, minHeight: '48px' }}
             >
-              <span className="text-[10px] font-medium text-zinc-500">#{idx + 1}</span>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-medium text-zinc-500">#{idx + 1}</span>
+                <span className="text-[9px] text-zinc-600">{sceneDurations[idx]}s</span>
+              </div>
               <p className="mt-0.5 truncate text-[10px] text-zinc-400">
                 {scene.scriptKo ?? scene.scriptOriginal ?? '—'}
               </p>

@@ -1,11 +1,40 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Plus, Search, FolderOpen, Trash2, Film, Volume2, Download, Upload } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  FolderOpen,
+  Trash2,
+  Film,
+  Volume2,
+  Download,
+  Upload,
+  Clock,
+} from 'lucide-react';
 import { api } from '../lib/api';
 import { useProjectStore } from '../stores/project-store';
 import { useUiStore } from '../stores/ui-store';
 import { useT } from '../i18n';
 import { NewProjectWizard } from '../components/NewProjectWizard';
+
+const RECENT_KEY = 'videoforge:recent-projects';
+const MAX_RECENT = 5;
+
+function getRecentIds(): string[] {
+  try {
+    const raw = localStorage.getItem(RECENT_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw) as string[];
+  } catch {
+    return [];
+  }
+}
+
+function addRecentId(id: string): void {
+  const ids = getRecentIds().filter((i) => i !== id);
+  ids.unshift(id);
+  localStorage.setItem(RECENT_KEY, JSON.stringify(ids.slice(0, MAX_RECENT)));
+}
 
 export function ProjectListPage(): JSX.Element {
   const t = useT();
@@ -45,6 +74,7 @@ export function ProjectListPage(): JSX.Element {
   };
 
   const handleOpen = (id: string) => {
+    addRecentId(id);
     void navigate({ to: '/editor/$projectId', params: { projectId: id } });
   };
 
@@ -150,6 +180,42 @@ export function ProjectListPage(): JSX.Element {
               placeholder={t('projects.search')}
             />
           </div>
+
+          {/* 최근 프로젝트 */}
+          {!query &&
+            !isListLoading &&
+            projectList.length > 0 &&
+            (() => {
+              const recentIds = getRecentIds();
+              const recentProjects = recentIds
+                .map((id) => projectList.find((p) => p.id === id))
+                .filter((p): p is NonNullable<typeof p> => !!p);
+              if (recentProjects.length === 0) return null;
+              return (
+                <div className="mb-6">
+                  <h2 className="mb-2 flex items-center gap-1.5 text-xs font-medium text-zinc-500">
+                    <Clock size={12} />
+                    Recent
+                  </h2>
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    {recentProjects.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => handleOpen(p.id)}
+                        className="shrink-0 rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-left transition hover:border-zinc-700"
+                        style={{ minWidth: '180px', maxWidth: '220px' }}
+                      >
+                        <p className="truncate text-sm font-medium text-zinc-200">{p.title}</p>
+                        <p className="mt-1 text-[10px] text-zinc-600">
+                          {p.sceneCount} {t('projects.scenes')} · {formatDate(p.updatedAt)}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
           {/* 프로젝트 목록 */}
           {isListLoading ? (

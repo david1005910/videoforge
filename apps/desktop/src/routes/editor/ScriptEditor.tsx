@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Volume2, Sparkles } from 'lucide-react';
+import { Volume2, Sparkles, Mic } from 'lucide-react';
 import { useT } from '../../i18n';
+import { api } from '../../lib/api';
 import type { Scene } from '@videoforge/shared';
 
 interface Props {
@@ -8,6 +9,7 @@ interface Props {
   projectLanguage: string;
   onScriptChange: (sceneId: string, field: 'scriptKo' | 'scriptOriginal', value: string) => void;
   onNotesChange: (sceneId: string, value: string) => void;
+  onLoadNarration?: (sceneId: string, filePath: string) => void;
 }
 
 export function ScriptEditor({
@@ -15,11 +17,13 @@ export function ScriptEditor({
   projectLanguage,
   onScriptChange,
   onNotesChange,
+  onLoadNarration,
 }: Props): JSX.Element {
   const t = useT();
   const [scriptKo, setScriptKo] = useState('');
   const [scriptOriginal, setScriptOriginal] = useState('');
   const [notes, setNotes] = useState('');
+  const [ttsGenerating, setTtsGenerating] = useState(false);
 
   useEffect(() => {
     setScriptKo(scene?.scriptKo ?? '');
@@ -38,6 +42,22 @@ export function ScriptEditor({
   const handleNotesBlur = useCallback(() => {
     if (scene) onNotesChange(scene.id, notes);
   }, [scene, notes, onNotesChange]);
+
+  const handleGenerateTts = useCallback(async () => {
+    if (!scene) return;
+    const text = (projectLanguage === 'ko' ? scriptKo : scriptOriginal).trim();
+    if (!text) return;
+    setTtsGenerating(true);
+    try {
+      const voice = projectLanguage === 'ko' ? 'ko-KR-SunHiNeural' : 'en-US-AriaNeural';
+      const result = await api.tts.edge({ text, voice, speed: 1, pitch: 0 });
+      onLoadNarration?.(scene.id, result.audioPath);
+    } catch (err) {
+      console.error('TTS generation failed:', err);
+    } finally {
+      setTtsGenerating(false);
+    }
+  }, [scene, projectLanguage, scriptKo, scriptOriginal, onLoadNarration]);
 
   if (!scene) {
     return (
@@ -68,6 +88,15 @@ export function ScriptEditor({
               <Volume2 size={10} /> {t('scene.narration')}
             </span>
           )}
+          <button
+            type="button"
+            onClick={() => void handleGenerateTts()}
+            disabled={ttsGenerating || !(scriptKo.trim() || scriptOriginal.trim())}
+            className="flex items-center gap-1 rounded bg-violet-600/20 px-1.5 py-0.5 text-[10px] text-violet-300 transition hover:bg-violet-600/30 disabled:opacity-40"
+          >
+            <Mic size={10} />
+            {ttsGenerating ? t('tts.generating') : t('tts.generate')}
+          </button>
         </div>
         <span className="ml-auto text-xs text-zinc-600">
           {scriptKo.length.toLocaleString()}

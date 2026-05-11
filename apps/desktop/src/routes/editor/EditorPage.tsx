@@ -16,7 +16,7 @@ export function EditorPage(): JSX.Element {
   const t = useT();
   const navigate = useNavigate();
   const { projectId } = useParams({ from: '/editor/$projectId' });
-  const { currentProject, setCurrentProject } = useProjectStore();
+  const { currentProject, setCurrentProject, pushProject, undo, redo } = useProjectStore();
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
   const [showExport, setShowExport] = useState(false);
 
@@ -46,14 +46,14 @@ export function EditorPage(): JSX.Element {
 
   const saveProject = useCallback(
     async (updated: Project) => {
-      setCurrentProject(updated);
+      pushProject(updated);
       try {
         await api.project.save({ project: updated, asNewProject: false });
       } catch (err) {
         console.error('Auto-save failed:', err);
       }
     },
-    [setCurrentProject],
+    [pushProject],
   );
 
   const handleAddScene = useCallback(() => {
@@ -220,10 +220,35 @@ export function EditorPage(): JSX.Element {
     [currentProject, saveProject],
   );
 
+  // Undo/redo 후 자동 저장
+  const handleUndo = useCallback(() => {
+    undo();
+    const proj = useProjectStore.getState().currentProject;
+    if (proj) void api.project.save({ project: proj, asNewProject: false });
+  }, [undo]);
+
+  const handleRedo = useCallback(() => {
+    redo();
+    const proj = useProjectStore.getState().currentProject;
+    if (proj) void api.project.save({ project: proj, asNewProject: false });
+  }, [redo]);
+
   // 키보드 단축키
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      // textarea/input 내부에서는 무시
+      // Undo/Redo는 textarea/input에서도 동작
+      if (e.key === 'z' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+        return;
+      }
+      if (e.key === 'z' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
+        e.preventDefault();
+        handleRedo();
+        return;
+      }
+
+      // textarea/input 내부에서는 나머지 단축키 무시
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'SELECT') return;
       if (!currentProject) return;
@@ -250,7 +275,15 @@ export function EditorPage(): JSX.Element {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [currentProject, selectedSceneId, handleAddScene, handleDuplicateScene, handleDeleteScene]);
+  }, [
+    currentProject,
+    selectedSceneId,
+    handleAddScene,
+    handleDuplicateScene,
+    handleDeleteScene,
+    handleUndo,
+    handleRedo,
+  ]);
 
   const handleBack = () => {
     setCurrentProject(null);
@@ -306,6 +339,7 @@ export function EditorPage(): JSX.Element {
           projectLanguage={currentProject.language}
           onScriptChange={handleScriptChange}
           onNotesChange={handleNotesChange}
+          onLoadNarration={handleLoadNarration}
         />
         <Inspector
           scene={selectedScene}
