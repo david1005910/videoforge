@@ -10,6 +10,7 @@ import { ScriptEditor } from './ScriptEditor';
 import { Inspector } from './Inspector';
 import { Timeline } from './Timeline';
 import { ExportDialog } from './ExportDialog';
+import { AutoPipelineDialog } from './AutoPipelineDialog';
 import type { Project, Scene } from '@videoforge/shared';
 
 export function EditorPage(): JSX.Element {
@@ -19,6 +20,7 @@ export function EditorPage(): JSX.Element {
   const { currentProject, setCurrentProject, pushProject, undo, redo } = useProjectStore();
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
   const [showExport, setShowExport] = useState(false);
+  const [showAutoPipeline, setShowAutoPipeline] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [editingTitle, setEditingTitle] = useState(false);
@@ -314,6 +316,33 @@ export function EditorPage(): JSX.Element {
     [currentProject, saveProject],
   );
 
+  const handleAutoPipelineComplete = useCallback(
+    (sceneClips: { sceneId: string; clipPath: string }[]) => {
+      if (!currentProject) return;
+      const scenes = currentProject.scenes.map((s) => {
+        const match = sceneClips.find((c) => c.sceneId === s.id);
+        if (match) {
+          return {
+            ...s,
+            finalClip: {
+              kind: 'video' as const,
+              path: match.clipPath,
+              sha1: '0000000000000000000000000000000000000000',
+            },
+          };
+        }
+        return s;
+      });
+      const updated: Project = {
+        ...currentProject,
+        scenes,
+        updatedAt: new Date().toISOString(),
+      };
+      void saveProject(updated);
+    },
+    [currentProject, saveProject],
+  );
+
   const handleTitleEdit = useCallback(() => {
     if (!currentProject) return;
     setTitleDraft(currentProject.title);
@@ -476,6 +505,13 @@ export function EditorPage(): JSX.Element {
         </button>
         <button
           type="button"
+          onClick={() => setShowAutoPipeline(true)}
+          className="titlebar-no-drag gooey-btn-secondary ml-1 px-2.5 py-1 text-[10px]"
+        >
+          {t('inspector.autoPipeline')}
+        </button>
+        <button
+          type="button"
           onClick={() => setShowExport(true)}
           className="titlebar-no-drag gooey-btn-primary ml-1 px-2.5 py-1 text-[10px]"
         >
@@ -519,6 +555,15 @@ export function EditorPage(): JSX.Element {
         onSelect={setSelectedSceneId}
         onReorder={handleReorder}
       />
+
+      {/* Auto Pipeline Dialog */}
+      {showAutoPipeline && (
+        <AutoPipelineDialog
+          scenes={currentProject.scenes}
+          onClose={() => setShowAutoPipeline(false)}
+          onComplete={handleAutoPipelineComplete}
+        />
+      )}
 
       {/* Export Dialog */}
       {showExport && (

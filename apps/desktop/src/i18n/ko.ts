@@ -86,6 +86,8 @@ export const ko = {
   'inspector.clipSaveAs': '다른 이름으로 저장',
   'inspector.clipRecompose': '다시 합성',
   'inspector.clipSaved': '저장 완료',
+  'inspector.autoPipeline': '자동 영상 생성',
+  'inspector.autoPipelineStart': '자동 생성 시작',
   'inspector.grokGenerate': 'Grok 영상 생성',
   'inspector.grokPrompt': '영상 생성 프롬프트를 입력하세요...',
   'inspector.grokSend': 'Grok 전송',

@@ -88,6 +88,8 @@ export const en: Record<keyof typeof ko, string> = {
   'inspector.clipSaveAs': 'Save As',
   'inspector.clipRecompose': 'Recompose',
   'inspector.clipSaved': 'Saved',
+  'inspector.autoPipeline': 'Auto Video Pipeline',
+  'inspector.autoPipelineStart': 'Start Auto Generate',
   'inspector.grokGenerate': 'Grok Video Generation',
   'inspector.grokPrompt': 'Enter video generation prompt...',
   'inspector.grokSend': 'Send to Grok',
