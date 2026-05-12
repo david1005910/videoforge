@@ -522,7 +522,11 @@ export function EditorPage(): JSX.Element {
 
       {/* Export Dialog */}
       {showExport && (
-        <ExportDialog projectTitle={currentProject.title} onClose={() => setShowExport(false)} />
+        <ExportDialog
+          projectTitle={currentProject.title}
+          scenes={currentProject.scenes}
+          onClose={() => setShowExport(false)}
+        />
       )}
 
       {/* Delete confirmation */}

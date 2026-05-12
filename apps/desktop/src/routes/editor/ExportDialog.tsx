@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Download, X } from 'lucide-react';
 import { api } from '../../lib/api';
+import type { Scene, PipelineStep } from '@videoforge/shared';
 
 /**
  * P4-15: Export dialog — resolution, codec, bitrate selection.
@@ -8,6 +9,7 @@ import { api } from '../../lib/api';
 
 interface Props {
   projectTitle: string;
+  scenes: Scene[];
   onClose: () => void;
 }
 
@@ -32,7 +34,7 @@ const CODECS: { label: string; value: Codec; desc: string }[] = [
 
 const BITRATES = ['4M', '6M', '8M', '10M', '15M', '20M'];
 
-export function ExportDialog({ projectTitle, onClose }: Props) {
+export function ExportDialog({ projectTitle, scenes, onClose }: Props) {
   const [resolution, setResolution] = useState<Res>(RESOLUTIONS[0]!.value);
   const [codec, setCodec] = useState<Codec>('h264');
   const [bitrate, setBitrate] = useState('8M');
@@ -40,7 +42,15 @@ export function ExportDialog({ projectTitle, onClose }: Props) {
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState('');
 
+  // Collect source clips from scenes
+  const sourceClips = scenes.map((s) => s.finalClip?.path).filter((p): p is string => !!p);
+
   const handleExport = async () => {
+    if (sourceClips.length === 0) {
+      setError('내보낼 최종 클립이 없습니다. 먼저 씬별 영상 합성을 완료하세요.');
+      return;
+    }
+
     setExporting(true);
     setError('');
     setProgress(0);
@@ -52,7 +62,8 @@ export function ExportDialog({ projectTitle, onClose }: Props) {
         return;
       }
 
-      const outputPath = `${folder.folderPath}/${projectTitle.replace(/[/\\?%*:|"<>]/g, '_')}.mp4`;
+      const ext = codec === 'prores' ? '.mov' : '.mp4';
+      const outputPath = `${folder.folderPath}/${projectTitle.replace(/[/\\?%*:|"<>]/g, '_')}${ext}`;
 
       const unsub = api.video.onProgress((payload: unknown) => {
         const evt = payload as { percent?: number };
@@ -62,19 +73,28 @@ export function ExportDialog({ projectTitle, onClose }: Props) {
       });
 
       try {
+        const pipeline: PipelineStep[] = [];
+
+        if (sourceClips.length === 1) {
+          // Single clip: compose with export settings
+          pipeline.push({
+            kind: 'compose',
+            video: sourceClips[0],
+          });
+        } else {
+          // Multiple clips: concat first
+          pipeline.push({
+            kind: 'concat',
+            inputs: sourceClips,
+            copyOnly: false,
+          });
+        }
+
         await api.video.edit({
           outputPath,
-          pipeline: [
-            {
-              kind: 'export' as const,
-              resolution,
-              codec,
-              bitrate,
-              audioCodec: 'aac' as const,
-              audioBitrate: '192k',
-            },
-          ],
+          pipeline,
         });
+
         setProgress(100);
         await api.shell.openExternal(`file://${folder.folderPath}`);
       } finally {
@@ -98,6 +118,13 @@ export function ExportDialog({ projectTitle, onClose }: Props) {
         </div>
 
         <div className="space-y-4">
+          {/* Source info */}
+          <p className="text-xs text-white/40">
+            {sourceClips.length > 0
+              ? `${sourceClips.length}개 씬 클립 → 1개 영상으로 내보내기`
+              : '⚠ 최종 클립이 없습니다. 씬별 영상 합성을 먼저 완료하세요.'}
+          </p>
+
           {/* Resolution */}
           <div>
             <label className="gooey-text-muted mb-1 block text-xs">Resolution</label>
@@ -179,7 +206,7 @@ export function ExportDialog({ projectTitle, onClose }: Props) {
             </button>
             <button
               onClick={handleExport}
-              disabled={exporting}
+              disabled={exporting || sourceClips.length === 0}
               className="gooey-btn-primary flex items-center gap-2 px-4 py-2 text-sm"
             >
               <Download size={14} />

@@ -9,11 +9,17 @@ export function registerShellHandlers(): void {
     UtilitySchemas.ShellOpenExternalRequest,
     async (req) => {
       const url = req.url;
-      // http/https만 허용 (보안)
-      if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        throw new UserFacingError('http 또는 https URL만 열 수 있습니다.');
+      // http, https, file 프로토콜만 허용 (보안)
+      if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('file://')) {
+        throw new UserFacingError('http, https 또는 file URL만 열 수 있습니다.');
       }
-      await shell.openExternal(url);
+      if (url.startsWith('file://')) {
+        // file:// → Finder에서 폴더 열기
+        const filePath = decodeURIComponent(url.replace('file://', ''));
+        shell.showItemInFolder(filePath);
+      } else {
+        await shell.openExternal(url);
+      }
       return {};
     },
   );
