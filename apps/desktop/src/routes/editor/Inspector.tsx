@@ -6,12 +6,16 @@ import {
   Film,
   FileText,
   Play,
+  Pause,
   Square,
   Upload,
   Plus,
   RefreshCw,
   X,
   Send,
+  FolderOpen,
+  Save,
+  Download,
 } from 'lucide-react';
 import { useT } from '../../i18n';
 import { api } from '../../lib/api';
@@ -161,6 +165,177 @@ function GrokImageThumb({ path }: { path: string }) {
   return <img src={url} alt="" className="h-full w-full object-cover" />;
 }
 
+function FinalClipPreview({
+  clipPath,
+  onRecompose,
+  recomposing,
+}: {
+  clipPath: string;
+  onRecompose: () => void;
+  recomposing: boolean;
+}) {
+  const t = useT();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const { base64Data, mimeType } = await api.file.readBase64(clipPath);
+        const binary = atob(base64Data);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        const blob = new Blob([bytes], { type: mimeType || 'video/mp4' });
+        if (!cancelled) setBlobUrl(URL.createObjectURL(blob));
+      } catch {
+        /* skip */
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    void load();
+    return () => {
+      cancelled = true;
+      setBlobUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+    };
+  }, [clipPath]);
+
+  const togglePlay = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) {
+      void v.play();
+      setPlaying(true);
+    } else {
+      v.pause();
+      setPlaying(false);
+    }
+  };
+
+  const handleReveal = () => {
+    const folder = clipPath.replace(/[^/]+$/, '');
+    void api.shell.openExternal(`file://${folder}`);
+  };
+
+  const handleSaveAs = async () => {
+    try {
+      const result = await api.video.saveTo(clipPath);
+      if (result.savedPath) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      }
+    } catch {
+      /* user cancelled or error */
+    }
+  };
+
+  const formatTime = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+  };
+
+  const fileName = clipPath.split('/').pop() ?? '';
+
+  return (
+    <div className="space-y-1.5">
+      {loading && <p className="text-[10px] text-white/25">{t('common.loading')}...</p>}
+      {blobUrl && (
+        <div className="overflow-hidden rounded-lg border border-white/10 bg-black">
+          <video
+            ref={videoRef}
+            src={blobUrl}
+            className="w-full cursor-pointer"
+            onClick={togglePlay}
+            onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+            onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+            onEnded={() => setPlaying(false)}
+            onPause={() => setPlaying(false)}
+            onPlay={() => setPlaying(true)}
+          />
+          {/* Progress bar */}
+          <div className="px-2 py-1">
+            <div
+              className="h-1 w-full cursor-pointer rounded-full bg-white/10"
+              onClick={(e) => {
+                const v = videoRef.current;
+                if (!v || !duration) return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                const ratio = (e.clientX - rect.left) / rect.width;
+                v.currentTime = ratio * duration;
+              }}
+            >
+              <div
+                className="h-full rounded-full bg-violet-500 transition-[width]"
+                style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
+              />
+            </div>
+            <div className="mt-0.5 flex items-center justify-between text-[9px] text-white/30">
+              <span>{formatTime(currentTime)}</span>
+              <span>{formatTime(duration)}</span>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* File name */}
+      <p className="truncate text-[9px] text-white/25" title={clipPath}>
+        {fileName}
+      </p>
+      {/* Action buttons */}
+      <div className="flex gap-1">
+        {blobUrl && (
+          <button
+            type="button"
+            onClick={togglePlay}
+            className="gooey-btn-secondary flex flex-1 items-center justify-center gap-1 px-2 py-1 text-[10px]"
+          >
+            {playing ? <Pause size={10} /> : <Play size={10} />}
+            {playing ? t('inspector.clipPause') : t('inspector.clipPlay')}
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={handleReveal}
+          className="gooey-btn-secondary flex flex-1 items-center justify-center gap-1 px-2 py-1 text-[10px]"
+          title={clipPath}
+        >
+          <FolderOpen size={10} />
+          {t('inspector.clipReveal')}
+        </button>
+      </div>
+      <div className="flex gap-1">
+        <button
+          type="button"
+          onClick={() => void handleSaveAs()}
+          className="gooey-btn-secondary flex flex-1 items-center justify-center gap-1 px-2 py-1 text-[10px]"
+        >
+          {saved ? <Download size={10} /> : <Save size={10} />}
+          {saved ? t('inspector.clipSaved') : t('inspector.clipSaveAs')}
+        </button>
+        <button
+          type="button"
+          onClick={onRecompose}
+          disabled={recomposing}
+          className="gooey-btn-secondary flex flex-1 items-center justify-center gap-1 px-2 py-1 text-[10px]"
+        >
+          <RefreshCw size={10} className={recomposing ? 'animate-spin' : ''} />
+          {t('inspector.clipRecompose')}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function Inspector({
   scene,
   projectLanguage,
@@ -197,23 +372,37 @@ export function Inspector({
     setGrokSending(true);
     setGrokError('');
     try {
-      const status = await api.grok.bridgeStatus();
-      if (!status.available || status.connectedTabs === 0) {
-        setGrokError(t('inspector.grokNotConnected'));
-        return;
+      const outputDir = imagePath.replace(/[^/]+$/, '');
+      // Try bridge first, fall back to direct Puppeteer mode
+      const bridgeOk = await api.grok
+        .bridgeStatus()
+        .then((s) => s.available && s.connectedTabs > 0)
+        .catch(() => false);
+
+      if (bridgeOk) {
+        await api.grok.bridgeSend({
+          items: [
+            {
+              prompt: grokPrompt.trim(),
+              imagePath,
+              durationSec: 6,
+              count: 1,
+              outputDir,
+              maxRetries: 2,
+            },
+          ],
+        });
+      } else {
+        // Direct Puppeteer mode
+        await api.grok.generate({
+          prompt: grokPrompt.trim(),
+          imagePath,
+          durationSec: 6,
+          count: 1,
+          outputDir,
+          maxRetries: 2,
+        });
       }
-      await api.grok.bridgeSend({
-        items: [
-          {
-            prompt: grokPrompt.trim(),
-            imagePath,
-            durationSec: 6,
-            count: 1,
-            outputDir: imagePath.replace(/[^/]+$/, ''),
-            maxRetries: 2,
-          },
-        ],
-      });
       setGrokPrompt('');
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -226,6 +415,7 @@ export function Inspector({
 
   const handleComposeClip = useCallback(async () => {
     if (!scene) return;
+    // Use first image or first clip
     const firstImage = scene.generatedImages[0];
     if (!firstImage) {
       setComposeError(t('inspector.composeNoImage'));
@@ -234,7 +424,14 @@ export function Inspector({
     setComposeProcessing(true);
     setComposeError('');
     try {
-      const outputPath = firstImage.path.replace(/\.[^.]+$/, '') + `_clip_${Date.now()}.mp4`;
+      // Use temp directory for output to avoid permission issues
+      const baseName =
+        firstImage.path
+          .split('/')
+          .pop()
+          ?.replace(/\.[^.]+$/, '') ?? 'clip';
+      const outputPath = `/tmp/${baseName}_${Date.now()}.mp4`;
+
       const step: Record<string, unknown> = {
         kind: 'compose',
         image: firstImage.path,
@@ -247,12 +444,15 @@ export function Inspector({
       if (typeof scene.subtitleAss?.meta?.content === 'string') {
         step.subtitleContent = scene.subtitleAss.meta.content;
       }
+      console.log('[compose] pipeline step:', step, 'output:', outputPath);
       const result = await api.video.edit({
         outputPath,
         pipeline: [step as PipelineStep],
       });
+      console.log('[compose] success:', result);
       onFinalClipGenerated?.(scene.id, result.outputPath);
     } catch (err) {
+      console.error('[compose] error:', err);
       const msg = err instanceof Error ? err.message : String(err);
       const hint = (err as Record<string, unknown>)?.hint;
       setComposeError(hint ? `${msg}: ${String(hint)}` : msg);
@@ -571,19 +771,27 @@ export function Inspector({
           {/* Final Clip */}
           <div className="space-y-1.5">
             <AssetBadge label={t('inspector.finalClip')} icon={Film} hasAsset={!!scene.finalClip} />
-            <button
-              type="button"
-              onClick={() => void handleComposeClip()}
-              disabled={composeProcessing || scene.generatedImages.length === 0}
-              className="gooey-btn-primary flex w-full items-center justify-center gap-1 px-2 py-1.5 text-[10px]"
-            >
-              {composeProcessing ? (
-                <RefreshCw size={10} className="animate-spin" />
-              ) : (
-                <Film size={10} />
-              )}
-              {composeProcessing ? t('inspector.composing') : t('inspector.compose')}
-            </button>
+            {scene.finalClip ? (
+              <FinalClipPreview
+                clipPath={scene.finalClip.path}
+                onRecompose={() => void handleComposeClip()}
+                recomposing={composeProcessing}
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => void handleComposeClip()}
+                disabled={composeProcessing || scene.generatedImages.length === 0}
+                className="gooey-btn-primary flex w-full items-center justify-center gap-1 px-2 py-1.5 text-[10px]"
+              >
+                {composeProcessing ? (
+                  <RefreshCw size={10} className="animate-spin" />
+                ) : (
+                  <Film size={10} />
+                )}
+                {composeProcessing ? t('inspector.composing') : t('inspector.compose')}
+              </button>
+            )}
             {composeError && <p className="text-[10px] text-red-400">{composeError}</p>}
           </div>
         </div>

@@ -14,15 +14,15 @@ import type {
 } from '@videoforge/shared';
 
 const GROK_PROFILE = 'grok';
-const GROK_URL = 'https://grok.com';
+const GROK_IMAGINE_URL = 'https://grok.com/imagine';
 
 type ProgressCallback = (event: GrokProgressEvent) => void;
 type VideoReadyCallback = (event: GrokVideoReadyEvent) => void;
 
 /**
- * P6-06: Generate a single video via Grok.
+ * P6-06: Generate a single video via Grok Imagine.
  *
- * Opens grok.com, enters prompt, waits for video, downloads result.
+ * Opens grok.com/imagine, enters prompt, waits for video, downloads result.
  */
 export function grokGenerate(
   task: Omit<GrokTask, 'taskId'>,
@@ -52,43 +52,60 @@ async function runGeneration(
   onProgress({ taskId, percent: 10, phase: 'opening' });
 
   const browser = await acquireBrowser(GROK_PROFILE);
-  const page = await browser.newPage();
+
+  // Reuse existing page instead of opening a new tab
+  const pages = await browser.pages();
+  const page = pages[0] ?? (await browser.newPage());
 
   try {
-    await page.goto(GROK_URL, { waitUntil: 'networkidle2', timeout: 30_000 });
+    // Navigate to Imagine page
+    const currentUrl = page.url();
+    if (!currentUrl.includes('grok.com/imagine')) {
+      logger.info({ currentUrl }, 'grok.generate.navigating-to-imagine');
+      await page.goto(GROK_IMAGINE_URL, { waitUntil: 'networkidle2', timeout: 30_000 });
+    }
+
+    // Wait for page to be interactive
+    await new Promise((r) => setTimeout(r, 2000));
     onProgress({ taskId, percent: 20, phase: 'submitting' });
 
     // Upload image if provided (image-to-video)
     if (task.imagePath) {
+      logger.info({ imagePath: task.imagePath }, 'grok.generate.uploading-image');
       const fileInput = await sel.imageUpload(page);
       if (fileInput) {
         await (fileInput as unknown as { uploadFile: (p: string) => Promise<void> }).uploadFile(
           task.imagePath,
         );
-        await new Promise((r) => setTimeout(r, 2000));
+        await new Promise((r) => setTimeout(r, 3000));
+        logger.info('grok.generate.image-uploaded');
+      } else {
+        logger.warn('grok.generate.image-upload-input-not-found');
       }
     }
 
     // Enter prompt
     const promptEl = await sel.promptInput(page);
     if (!promptEl) {
-      throw new Error('Prompt input not found on Grok page');
+      throw new Error('Prompt input not found on Grok Imagine page');
     }
-    await promptEl.click();
+    await promptEl.click({ clickCount: 3 }); // Select existing text
     await promptEl.type(task.prompt, { delay: 30 });
 
-    // Click generate
+    // Click generate / submit
     const genBtn = await sel.generateBtn(page);
     if (!genBtn) {
-      throw new Error('Generate button not found');
+      // Fallback: press Enter to submit
+      await page.keyboard.press('Enter');
+    } else {
+      await genBtn.click();
     }
-    await genBtn.click();
     onProgress({ taskId, percent: 30, phase: 'generating' });
 
-    // Wait for video result
+    // Wait for video result (up to 2 minutes)
     const videoEl = await sel.videoResult(page);
     if (!videoEl) {
-      throw new Error('Video result not found (timeout)');
+      throw new Error('Video result not found (timeout 120s)');
     }
     onProgress({ taskId, percent: 70, phase: 'downloading' });
 
@@ -96,6 +113,9 @@ async function runGeneration(
     const videoUrl = await page.evaluate((el) => {
       if (el instanceof HTMLVideoElement) return el.src;
       if (el instanceof HTMLAnchorElement) return el.href;
+      // Check for source element inside video
+      const source = el.querySelector?.('source');
+      if (source) return source.src;
       return null;
     }, videoEl);
 
@@ -119,6 +139,7 @@ async function runGeneration(
     logger.info({ taskId, localPath, sizeBytes: stat.size }, 'grok.generate.complete');
   } catch (err) {
     const screenshotPath = await captureFailure(page, `grok-${taskId}`);
+    logger.error({ taskId, err: String(err), screenshotPath }, 'grok.generate.error');
     onProgress({
       taskId,
       percent: 0,
@@ -127,11 +148,8 @@ async function runGeneration(
       failureScreenshotPath: screenshotPath,
     });
     throw err;
-  } finally {
-    await page.close().catch(() => {
-      /* noop */
-    });
   }
+  // Don't close the page — keep it for next generation
 }
 
 async function downloadVideo(

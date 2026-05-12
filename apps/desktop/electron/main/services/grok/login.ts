@@ -3,7 +3,7 @@ import { logger } from '../../logger';
 import type { GrokLoginResponse } from '@videoforge/shared';
 
 const GROK_PROFILE = 'grok';
-const GROK_URL = 'https://grok.com';
+const GROK_URL = 'https://grok.com/imagine';
 
 /**
  * P6-05: Opens browser for user to log in manually.
