@@ -53,7 +53,10 @@ export const EffectStep = z.object({
 
 export const ComposeStep = z.object({
   kind: z.literal('compose'),
-  image: FilePath,
+  /** 이미지 기반 합성 (loop). video와 둘 중 하나 필수 */
+  image: FilePath.optional(),
+  /** 영상 클립 기반 합성. image와 둘 중 하나 필수 */
+  video: FilePath.optional(),
   audio: FilePath.optional(),
   subtitlePath: FilePath.optional(),
   /** ASS content as string — written to temp file if subtitlePath is not provided */

@@ -415,30 +415,32 @@ export function Inspector({
 
   const handleComposeClip = useCallback(async () => {
     if (!scene) return;
-    // Use first image or first clip
+    const firstClip = scene.generatedClips[0];
     const firstImage = scene.generatedImages[0];
-    if (!firstImage) {
+    if (!firstClip && !firstImage) {
       setComposeError(t('inspector.composeNoImage'));
       return;
     }
     setComposeProcessing(true);
     setComposeError('');
     try {
-      // Use temp directory for output to avoid permission issues
+      const sourceAsset = firstClip ?? firstImage!;
       const baseName =
-        firstImage.path
+        sourceAsset.path
           .split('/')
           .pop()
           ?.replace(/\.[^.]+$/, '') ?? 'clip';
       const outputPath = `/tmp/${baseName}_${Date.now()}.mp4`;
 
-      const step: Record<string, unknown> = {
-        kind: 'compose',
-        image: firstImage.path,
-      };
+      const step: Record<string, unknown> = { kind: 'compose' };
+      if (firstClip) {
+        step.video = firstClip.path;
+      } else {
+        step.image = firstImage!.path;
+      }
       if (scene.narrationAudio) {
         step.audio = scene.narrationAudio.path;
-      } else {
+      } else if (!firstClip) {
         step.durationMs = 10000;
       }
       if (typeof scene.subtitleAss?.meta?.content === 'string') {
@@ -781,7 +783,10 @@ export function Inspector({
               <button
                 type="button"
                 onClick={() => void handleComposeClip()}
-                disabled={composeProcessing || scene.generatedImages.length === 0}
+                disabled={
+                  composeProcessing ||
+                  (scene.generatedImages.length === 0 && scene.generatedClips.length === 0)
+                }
                 className="gooey-btn-primary flex w-full items-center justify-center gap-1 px-2 py-1.5 text-[10px]"
               >
                 {composeProcessing ? (

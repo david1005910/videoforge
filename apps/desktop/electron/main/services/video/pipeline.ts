@@ -256,9 +256,16 @@ function compileCompose(
   outputPath: string,
 ): CompileResult {
   const args: string[] = [];
+  const isVideo = !!step.video;
 
-  // Input: loop image as video source
-  args.push('-loop', '1', '-i', step.image);
+  // Input: video clip or looped image
+  if (step.video) {
+    args.push('-i', step.video);
+  } else if (step.image) {
+    args.push('-loop', '1', '-i', step.image);
+  } else {
+    throw new Error('ComposeStep requires either image or video');
+  }
 
   // Input: audio (if provided)
   if (step.audio) {
@@ -287,12 +294,16 @@ function compileCompose(
   args.push('-c:v', 'libx264', '-preset', 'faster', '-crf', '23', '-pix_fmt', 'yuv420p');
 
   if (step.audio) {
-    // Audio codec + use audio duration
-    args.push('-c:a', 'aac', '-b:a', '192k', '-shortest');
-  } else {
-    // No audio: use explicit duration
+    // Audio codec + use audio duration (shortest for image loop, longest for video)
+    args.push('-c:a', 'aac', '-b:a', '192k');
+    if (!isVideo) args.push('-shortest');
+  } else if (!isVideo) {
+    // No audio + image: use explicit duration
     const dur = (step.durationMs ?? 10000) / 1000;
     args.push('-t', dur.toString(), '-an');
+  } else {
+    // Video without separate audio: copy original audio if present
+    args.push('-c:a', 'aac', '-b:a', '192k');
   }
 
   args.push('-y', outputPath);
