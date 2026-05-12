@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0](https://github.com/david1005910/videoforge/compare/v0.2.0...v0.3.0) (2026-05-12)
+
+
+### Features
+
+* add 6 editor enhancements ([2cfc718](https://github.com/david1005910/videoforge/commit/2cfc718618cda7224273e678570aab5ea3ffdfcb))
+* add audio file loading to TTS page via dialog:selectFile IPC ([7d49099](https://github.com/david1005910/videoforge/commit/7d490996d61d3f33a929e0b2364d2c526167f492))
+* add auto video pipeline — Grok batch generation + compose per scene ([b13f5a8](https://github.com/david1005910/videoforge/commit/b13f5a8e44aa6ce0f62412e2e98593d962c75693))
+* add delete confirm, inline title edit, shortcuts overlay, save indicator ([d01c433](https://github.com/david1005910/videoforge/commit/d01c4332d33a49a44dbc4f5ef72eb2c91110d1b6))
+* add final clip compose button and Grok image-to-video in Inspector ([bc684f0](https://github.com/david1005910/videoforge/commit/bc684f08fd04c8685757a929bb8fe758ad6f0cea))
+* add final clip preview with playback, save-as, and Grok Puppeteer fixes ([35abf4f](https://github.com/david1005910/videoforge/commit/35abf4f712a3748d3a6cbe32bf427b6a375ea188))
+* add narration audio preview and loading in editor Inspector ([b11c65b](https://github.com/david1005910/videoforge/commit/b11c65bc755942ddca8574104ccfa967fcbeabc3))
+* add scene DnD reorder, undo/redo, duration display, inline TTS, recent projects ([38fbe1c](https://github.com/david1005910/videoforge/commit/38fbe1c53a9d7744bc9dac277f0c08e87ba9b04b))
+* **P12+:** add cloud sync, videogen (Veo/Sora), and collab services ([e67d5c3](https://github.com/david1005910/videoforge/commit/e67d5c3fb13010e96e50273da9444a271d58864b))
+* **P12+:** add Grok bridge extension and mobile companion remote services ([f6c041d](https://github.com/david1005910/videoforge/commit/f6c041d1a132d5e93e92ed93d18a5310139280ec))
+* **P9-05:** activate CI code signing and notarization workflow ([49cd728](https://github.com/david1005910/videoforge/commit/49cd728e92ddfe592bd79cc13320b4c213f703ec))
+
+
+### Bug Fixes
+
+* attach parent window to asset upload dialogs and use blob URL for audio loading ([142e27f](https://github.com/david1005910/videoforge/commit/142e27ffdfa4cbaaa864906cc6904c6680316792))
+* export uses scene final clips as source and allow file:// in shell ([0411611](https://github.com/david1005910/videoforge/commit/0411611f8b43d04ceb8c0389c5433e2a1f67cdbf))
+* remove WebAudio backend to fix audio playback in Waveform ([578697b](https://github.com/david1005910/videoforge/commit/578697b653224454e7c031a938ead232ce8670c7))
+* resolve Inspector infinite re-render and SFX delete bug ([65cedbd](https://github.com/david1005910/videoforge/commit/65cedbd1a41ade7c4437c7cd593e182ff13e4972))
+* STT subtitle generation and add subtitle/image editor ([9726ca4](https://github.com/david1005910/videoforge/commit/9726ca4ea241d66c2da8c4c2e6b8af53667133b5))
+* support video clip compose in addition to image-based compose ([61a9ae7](https://github.com/david1005910/videoforge/commit/61a9ae7e20c74e5e93f633d00100ac4f0a2178d7))
+* use blob URL for TTS audio playback (webSecurity compatibility) ([06ac55d](https://github.com/david1005910/videoforge/commit/06ac55d386c90362140cf6f5dd3b97da6489b309))
+
 ## [0.3.0] — 2026-05-10
 
 ### Added
