@@ -317,7 +317,7 @@ export function EditorPage(): JSX.Element {
   );
 
   const handleAutoPipelineComplete = useCallback(
-    (sceneClips: { sceneId: string; clipPath: string }[]) => {
+    (sceneClips: { sceneId: string; clipPath: string }[], _finalVideoPath?: string) => {
       if (!currentProject) return;
       const scenes = currentProject.scenes.map((s) => {
         const match = sceneClips.find((c) => c.sceneId === s.id);
@@ -505,6 +505,30 @@ export function EditorPage(): JSX.Element {
         </button>
         <button
           type="button"
+          onClick={() => {
+            void api.grok.openWithExtension('grok').then((res) => {
+              if (!res.ok) console.error('Grok Automation:', res.message);
+            });
+          }}
+          className="titlebar-no-drag gooey-btn-ghost ml-1 px-2.5 py-1 text-[10px]"
+          title="Chrome에서 Grok Automation 확장 열기"
+        >
+          Grok Auto
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            void api.grok.openWithExtension('meta').then((res) => {
+              if (!res.ok) console.error('Meta Automation:', res.message);
+            });
+          }}
+          className="titlebar-no-drag gooey-btn-ghost ml-1 px-2.5 py-1 text-[10px]"
+          title="Chrome에서 Meta Automation 확장 열기"
+        >
+          Meta Auto
+        </button>
+        <button
+          type="button"
           onClick={() => setShowAutoPipeline(true)}
           className="titlebar-no-drag gooey-btn-secondary ml-1 px-2.5 py-1 text-[10px]"
         >
@@ -571,6 +595,7 @@ export function EditorPage(): JSX.Element {
           projectTitle={currentProject.title}
           scenes={currentProject.scenes}
           onClose={() => setShowExport(false)}
+          onScenesUpdated={handleAutoPipelineComplete}
         />
       )}
 

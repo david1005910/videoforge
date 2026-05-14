@@ -33,7 +33,7 @@ export async function transcribeWhisperLocal(
   }
 
   // Determine model: use req.model as model ID, or default
-  const modelId = (req.model ?? 'ggml-large-v3-turbo-q5_0') as WhisperModelId;
+  const modelId = (req.model ?? 'ggml-base') as WhisperModelId;
   const modelPath = getModelPath(modelId);
   if (!modelPath) {
     throw new UserFacingError(

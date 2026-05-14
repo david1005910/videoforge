@@ -16,7 +16,7 @@ export async function grokLogin(): Promise<GrokLoginResponse> {
   const pages = await browser.pages();
   const page = pages[0] ?? (await browser.newPage());
 
-  await page.goto(GROK_URL, { waitUntil: 'networkidle2', timeout: 30_000 });
+  await page.goto(GROK_URL, { waitUntil: 'domcontentloaded', timeout: 60_000 });
   logger.info('grok.login: browser opened for user login');
 
   // Try to detect if already logged in

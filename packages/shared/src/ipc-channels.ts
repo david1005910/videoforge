@@ -105,6 +105,8 @@ export const Channels = {
     BridgeSend: 'grok:bridge:send',
     BridgeCancel: 'grok:bridge:cancel',
     BridgeSetProject: 'grok:bridge:setProject',
+    ApiGenerate: 'grok:apiGenerate',
+    OpenWithExtension: 'grok:openWithExtension',
     OnProgress: 'grok:onProgress',
     OnVideoReady: 'grok:onVideoReady',
   },

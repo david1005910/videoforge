@@ -16,10 +16,13 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const [apiKey, setApiKey] = useState('');
   const [openaiKey, setOpenaiKey] = useState('');
+  const [xaiKey, setXaiKey] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [savingOpenai, setSavingOpenai] = useState(false);
   const [savedOpenai, setSavedOpenai] = useState(false);
+  const [savingXai, setSavingXai] = useState(false);
+  const [savedXai, setSavedXai] = useState(false);
   const [autoUpdate, setAutoUpdate] = useState(false);
   const [exporting, setExporting] = useState(false);
   const fontScale = useUiStore((s) => s.fontScale);
@@ -75,6 +78,20 @@ export function SettingsPage() {
       console.error('keychain.set failed', err);
     } finally {
       setSavingOpenai(false);
+    }
+  };
+
+  const handleSaveXaiKey = async () => {
+    if (!xaiKey.trim()) return;
+    setSavingXai(true);
+    try {
+      await api.keychain.set('xai-api-key', xaiKey.trim());
+      setSavedXai(true);
+      setTimeout(() => setSavedXai(false), 2000);
+    } catch (err) {
+      console.error('keychain.set failed', err);
+    } finally {
+      setSavingXai(false);
     }
   };
 
@@ -204,6 +221,31 @@ export function SettingsPage() {
               </div>
               <p className="gooey-text-muted mt-1 text-xs">
                 Used for STT (Whisper API) subtitle generation.
+              </p>
+            </div>
+            <div>
+              <label htmlFor="xai-key" className="gooey-text-muted mb-1 block text-xs">
+                xAI API Key (Grok Video)
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="xai-key"
+                  type="password"
+                  value={xaiKey}
+                  onChange={(e) => setXaiKey(e.target.value)}
+                  placeholder="Enter xAI API key…"
+                  className="gooey-input flex-1 px-3 py-1.5 text-sm"
+                />
+                <button
+                  onClick={handleSaveXaiKey}
+                  disabled={savingXai || !xaiKey.trim()}
+                  className="gooey-btn-primary px-3 py-1.5 text-sm"
+                >
+                  {savedXai ? 'Saved!' : 'Save'}
+                </button>
+              </div>
+              <p className="gooey-text-muted mt-1 text-xs">
+                Used for Grok Imagine Video API (auto video generation).
               </p>
             </div>
           </div>

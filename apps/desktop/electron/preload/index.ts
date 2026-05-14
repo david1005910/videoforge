@@ -118,6 +118,7 @@ const api = {
   grok: {
     login: () => invoke(Channels.Grok.Login),
     generate: (payload: unknown) => invoke(Channels.Grok.Generate, payload),
+    apiGenerate: (payload: unknown) => invoke(Channels.Grok.ApiGenerate, payload),
     batch: (payload: unknown) => invoke(Channels.Grok.Batch, payload),
     cancel: (payload: unknown) => invoke(Channels.Grok.Cancel, payload),
     close: () => invoke(Channels.Grok.Close),
@@ -126,6 +127,7 @@ const api = {
     bridgeSend: (payload: unknown) => invoke(Channels.Grok.BridgeSend, payload),
     bridgeCancel: () => invoke(Channels.Grok.BridgeCancel),
     bridgeSetProject: (payload: unknown) => invoke(Channels.Grok.BridgeSetProject, payload),
+    openWithExtension: (payload?: unknown) => invoke(Channels.Grok.OpenWithExtension, payload),
     onProgress: (cb: (payload: unknown) => void) => onEvent(Channels.Grok.OnProgress, cb),
     onVideoReady: (cb: (payload: unknown) => void) => onEvent(Channels.Grok.OnVideoReady, cb),
   },

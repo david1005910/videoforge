@@ -5,12 +5,15 @@ import type { Scene, PipelineStep } from '@videoforge/shared';
 
 /**
  * P4-15: Export dialog — resolution, codec, bitrate selection.
+ *
+ * If a scene has no finalClip but has an image, auto-compose it first.
  */
 
 interface Props {
   projectTitle: string;
   scenes: Scene[];
   onClose: () => void;
+  onScenesUpdated?: (clips: { sceneId: string; clipPath: string }[]) => void;
 }
 
 type Codec = 'h264' | 'prores';
@@ -34,20 +37,56 @@ const CODECS: { label: string; value: Codec; desc: string }[] = [
 
 const BITRATES = ['4M', '6M', '8M', '10M', '15M', '20M'];
 
-export function ExportDialog({ projectTitle, scenes, onClose }: Props) {
+export function ExportDialog({ projectTitle, scenes, onClose, onScenesUpdated }: Props) {
+  const [fileName, setFileName] = useState(
+    projectTitle.replace(/[/\\?%*:|"<>]/g, '_') || 'VideoForge_Export',
+  );
   const [resolution, setResolution] = useState<Res>(RESOLUTIONS[0]!.value);
   const [codec, setCodec] = useState<Codec>('h264');
   const [bitrate, setBitrate] = useState('8M');
   const [exporting, setExporting] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
+  const [statusMsg, setStatusMsg] = useState('');
   const [error, setError] = useState('');
 
-  // Collect source clips from scenes
-  const sourceClips = scenes.map((s) => s.finalClip?.path).filter((p): p is string => !!p);
+  // Scenes that already have finalClip
+  const readyClips = scenes.filter((s) => s.finalClip?.path);
+  // Scenes that need auto-compose (have image but no finalClip)
+  const needCompose = scenes.filter((s) => !s.finalClip?.path && s.generatedImages.length > 0);
+  const totalExportable = readyClips.length + needCompose.length;
+
+  /** Auto-compose a single scene: image + audio + subtitle → video */
+  const composeScene = async (scene: Scene): Promise<string> => {
+    const image = scene.generatedImages[0]!;
+    const baseName = `export_scene${scene.index + 1}_${Date.now()}`;
+    const composePath = `/tmp/${baseName}.mp4`;
+
+    const step: Record<string, unknown> = {
+      kind: 'compose',
+      image: image.path,
+    };
+
+    if (scene.narrationAudio) {
+      step.audio = scene.narrationAudio.path;
+    } else {
+      step.durationMs = 5000;
+    }
+
+    if (typeof scene.subtitleAss?.meta?.content === 'string') {
+      step.subtitleContent = scene.subtitleAss.meta.content;
+    }
+
+    const result = await api.video.edit({
+      outputPath: composePath,
+      pipeline: [step as PipelineStep],
+    });
+
+    return result.outputPath;
+  };
 
   const handleExport = async () => {
-    if (sourceClips.length === 0) {
-      setError('내보낼 최종 클립이 없습니다. 먼저 씬별 영상 합성을 완료하세요.');
+    if (totalExportable === 0) {
+      setError('내보낼 씬이 없습니다. 이미지 또는 영상을 먼저 추가하세요.');
       return;
     }
 
@@ -63,29 +102,80 @@ export function ExportDialog({ projectTitle, scenes, onClose }: Props) {
       }
 
       const ext = codec === 'prores' ? '.mov' : '.mp4';
-      const outputPath = `${folder.folderPath}/${projectTitle.replace(/[/\\?%*:|"<>]/g, '_')}${ext}`;
+      const safeName = fileName.trim().replace(/[/\\?%*:|"<>]/g, '_') || 'VideoForge_Export';
+      const outputPath = `${folder.folderPath}/${safeName}${ext}`;
+
+      // Step 1: Auto-compose scenes that don't have finalClip yet
+      const composedClips: { sceneId: string; clipPath: string }[] = [];
+
+      if (needCompose.length > 0) {
+        setStatusMsg(`이미지 → 영상 변환 중 (0/${needCompose.length})...`);
+
+        for (let i = 0; i < needCompose.length; i++) {
+          const scene = needCompose[i]!;
+          setStatusMsg(`이미지 → 영상 변환 중 (${i + 1}/${needCompose.length})...`);
+          setProgress(Math.round((i / needCompose.length) * 40));
+
+          try {
+            const clipPath = await composeScene(scene);
+            composedClips.push({ sceneId: scene.id, clipPath });
+          } catch (err) {
+            setError(
+              `씬 ${scene.index + 1} 합성 실패: ${err instanceof Error ? err.message : String(err)}`,
+            );
+            setExporting(false);
+            return;
+          }
+        }
+
+        // Notify parent to update finalClips
+        if (onScenesUpdated && composedClips.length > 0) {
+          onScenesUpdated(composedClips);
+        }
+      }
+
+      setProgress(50);
+      setStatusMsg('영상 내보내기 중...');
+
+      // Step 2: Collect all clips in scene order
+      const allClips: string[] = [];
+      for (const scene of scenes) {
+        if (scene.finalClip?.path) {
+          allClips.push(scene.finalClip.path);
+        } else {
+          const composed = composedClips.find((c) => c.sceneId === scene.id);
+          if (composed) {
+            allClips.push(composed.clipPath);
+          }
+          // Skip scenes with no image and no clip
+        }
+      }
+
+      if (allClips.length === 0) {
+        setError('내보낼 클립이 없습니다.');
+        setExporting(false);
+        return;
+      }
 
       const unsub = api.video.onProgress((payload: unknown) => {
         const evt = payload as { percent?: number };
         if (typeof evt.percent === 'number') {
-          setProgress(evt.percent);
+          setProgress(50 + Math.round(evt.percent * 0.5));
         }
       });
 
       try {
         const pipeline: PipelineStep[] = [];
 
-        if (sourceClips.length === 1) {
-          // Single clip: compose with export settings
+        if (allClips.length === 1) {
           pipeline.push({
             kind: 'compose',
-            video: sourceClips[0],
+            video: allClips[0],
           });
         } else {
-          // Multiple clips: concat first
           pipeline.push({
             kind: 'concat',
-            inputs: sourceClips,
+            inputs: allClips,
             copyOnly: false,
           });
         }
@@ -96,6 +186,7 @@ export function ExportDialog({ projectTitle, scenes, onClose }: Props) {
         });
 
         setProgress(100);
+        setStatusMsg('완료!');
         await api.shell.openExternal(`file://${folder.folderPath}`);
       } finally {
         unsub();
@@ -119,11 +210,39 @@ export function ExportDialog({ projectTitle, scenes, onClose }: Props) {
 
         <div className="space-y-4">
           {/* Source info */}
-          <p className="text-xs text-white/40">
-            {sourceClips.length > 0
-              ? `${sourceClips.length}개 씬 클립 → 1개 영상으로 내보내기`
-              : '⚠ 최종 클립이 없습니다. 씬별 영상 합성을 먼저 완료하세요.'}
-          </p>
+          <div className="text-xs text-white/40">
+            {totalExportable > 0 ? (
+              <>
+                <p>{totalExportable}개 씬 → 1개 영상으로 내보내기</p>
+                {needCompose.length > 0 && (
+                  <p className="mt-1 text-amber-400/80">
+                    {needCompose.length}개 씬은 이미지에서 자동 영상 변환됩니다.
+                  </p>
+                )}
+              </>
+            ) : (
+              <p>⚠ 내보낼 씬이 없습니다. 이미지 또는 영상을 먼저 추가하세요.</p>
+            )}
+          </div>
+
+          {/* File Name */}
+          <div>
+            <label htmlFor="export-filename" className="gooey-text-muted mb-1 block text-xs">
+              파일명
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                id="export-filename"
+                type="text"
+                value={fileName}
+                onChange={(e) => setFileName(e.target.value)}
+                placeholder="파일명을 입력하세요"
+                className="gooey-input flex-1 px-3 py-2 text-sm"
+                disabled={exporting}
+              />
+              <span className="text-xs text-white/30">{codec === 'prores' ? '.mov' : '.mp4'}</span>
+            </div>
+          </div>
 
           {/* Resolution */}
           <div>
@@ -189,7 +308,9 @@ export function ExportDialog({ projectTitle, scenes, onClose }: Props) {
               <div className="gooey-progress-track h-2">
                 <div className="gooey-progress-fill h-full" style={{ width: `${progress}%` }} />
               </div>
-              <p className="gooey-text-muted mt-1 text-center text-xs">{progress}%</p>
+              <p className="gooey-text-muted mt-1 text-center text-xs">
+                {statusMsg || `${progress}%`}
+              </p>
             </div>
           )}
 
@@ -206,7 +327,7 @@ export function ExportDialog({ projectTitle, scenes, onClose }: Props) {
             </button>
             <button
               onClick={handleExport}
-              disabled={exporting || sourceClips.length === 0}
+              disabled={exporting || totalExportable === 0}
               className="gooey-btn-primary flex items-center gap-2 px-4 py-2 text-sm"
             >
               <Download size={14} />

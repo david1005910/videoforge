@@ -62,7 +62,7 @@ async function runGeneration(
     const currentUrl = page.url();
     if (!currentUrl.includes('grok.com/imagine')) {
       logger.info({ currentUrl }, 'grok.generate.navigating-to-imagine');
-      await page.goto(GROK_IMAGINE_URL, { waitUntil: 'networkidle2', timeout: 30_000 });
+      await page.goto(GROK_IMAGINE_URL, { waitUntil: 'domcontentloaded', timeout: 60_000 });
     }
 
     // Wait for page to be interactive

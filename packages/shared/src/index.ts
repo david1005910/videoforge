@@ -92,6 +92,7 @@ export type {
   GrokBridgeStatusResponse,
   GrokBridgeSendRequest,
   GrokBridgeSetProjectRequest,
+  GrokApiGenerateRequest,
 } from './schemas/grok';
 export type {
   WhiskRefKind,

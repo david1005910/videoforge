@@ -352,6 +352,7 @@ export function Inspector({
   const [loadingAudio, setLoadingAudio] = useState(false);
   const [isDragOver, setDragOver] = useState(false);
   const [sttProvider, setSttProvider] = useState<'openai' | 'gemini' | 'whisper-local'>('openai');
+  const [whisperModel, setWhisperModel] = useState('ggml-base');
   const [subtitleProcessing, setSubtitleProcessing] = useState(false);
   const [subtitleError, setSubtitleError] = useState('');
   const [imageAssignments, setImageAssignments] = useState<Record<number, string>>({});
@@ -515,6 +516,7 @@ export function Inspector({
         provider: sttProvider,
         apiKey: apiKey ?? undefined,
         wordTimestamps: true,
+        ...(sttProvider === 'whisper-local' ? { model: whisperModel } : {}),
       });
       const alignResult = await api.stt.align({
         transcript: script,
@@ -530,7 +532,7 @@ export function Inspector({
     } finally {
       setSubtitleProcessing(false);
     }
-  }, [scene, projectLanguage, sttProvider, onSubtitleGenerated, t]);
+  }, [scene, projectLanguage, sttProvider, whisperModel, onSubtitleGenerated, t]);
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -734,6 +736,18 @@ export function Inspector({
                 <option value="gemini">Gemini</option>
                 <option value="whisper-local">{t('whisper.title')}</option>
               </select>
+              {sttProvider === 'whisper-local' && (
+                <select
+                  value={whisperModel}
+                  onChange={(e) => setWhisperModel(e.target.value)}
+                  className="gooey-input px-1.5 py-1 text-[10px]"
+                >
+                  <option value="ggml-tiny">Tiny</option>
+                  <option value="ggml-base">Base</option>
+                  <option value="ggml-small">Small</option>
+                  <option value="ggml-large-v3-turbo-q5_0">Large Q5</option>
+                </select>
+              )}
               <button
                 type="button"
                 onClick={() => void handleGenerateSubtitle()}

@@ -1,13 +1,16 @@
 import { z } from 'zod';
 import { BrowserWindow } from 'electron';
 import { Channels, GrokSchemas } from '@videoforge/shared';
-import { registerHandler } from '../../ipc-router';
+import { registerHandler, UserFacingError } from '../../ipc-router';
 import { grokLogin } from './login';
 import { grokGenerate } from './generate';
+import { grokApiGenerate } from './api-generate';
 import { grokBatch, cancelBatch } from './batch';
 import { closeBrowser, isBrowserConnected } from './browser-pool';
 import { getBridgeStatus, sendToExtension, cancelBridgeTasks, setBridgeProject } from './bridge';
 import { logger } from '../../logger';
+import { getApiKey } from './api-key-helper';
+import { openWithExtension } from './open-with-extension';
 import type { GrokProgressEvent, GrokVideoReadyEvent } from '@videoforge/shared';
 
 const GROK_PROFILE = 'grok';
@@ -66,6 +69,22 @@ export function registerGrokHandlers(): void {
       browserConnected: isBrowserConnected(GROK_PROFILE),
       queue: { pending: 0, running: 0, completed: 0, failed: 0 },
     }),
+  );
+
+  // grok:apiGenerate — xAI REST API
+  registerHandler(Channels.Grok.ApiGenerate, GrokSchemas.GrokApiGenerateRequest, async (req) => {
+    const apiKey = await getApiKey('xai-api-key');
+    if (!apiKey) {
+      throw new UserFacingError('xAI API Key가 설정되지 않았습니다. Settings에서 먼저 설정하세요.');
+    }
+    return grokApiGenerate(apiKey, req, broadcastProgress, broadcastVideoReady);
+  });
+
+  // grok:openWithExtension — open Chrome with user profile + automation extension
+  registerHandler(
+    Channels.Grok.OpenWithExtension,
+    z.object({ target: z.string().optional() }),
+    (req) => Promise.resolve(openWithExtension(req.target ?? 'grok')),
   );
 
   // grok:bridge:status

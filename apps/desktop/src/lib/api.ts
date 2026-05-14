@@ -57,6 +57,7 @@ import {
   type GrokBridgeStatusResponse,
   type GrokBridgeSendRequest,
   type GrokBridgeSetProjectRequest,
+  type GrokApiGenerateRequest,
   type WhiskUploadRefRequest,
   type WhiskUploadRefResponse,
   type WhiskGenerateRequest,
@@ -328,6 +329,10 @@ export const api = {
       const resp = await window.electronAPI.grok.generate(req);
       return GrokSchemas.GrokGenerateResponse.parse(unwrap(resp));
     },
+    async apiGenerate(req: GrokApiGenerateRequest): Promise<GrokGenerateResponse> {
+      const resp = await window.electronAPI.grok.apiGenerate(req);
+      return GrokSchemas.GrokGenerateResponse.parse(unwrap(resp));
+    },
     async batch(req: GrokBatchRequest): Promise<GrokBatchResponse> {
       const resp = await window.electronAPI.grok.batch(req);
       return GrokSchemas.GrokBatchResponse.parse(unwrap(resp));
@@ -339,6 +344,10 @@ export const api = {
     async close(): Promise<void> {
       const resp = await window.electronAPI.grok.close();
       unwrap(resp);
+    },
+    async openWithExtension(target?: string): Promise<{ ok: boolean; message: string }> {
+      const resp = await window.electronAPI.grok.openWithExtension(target ? { target } : {});
+      return unwrap(resp) as { ok: boolean; message: string };
     },
     async status(): Promise<GrokStatusResponse> {
       const resp = await window.electronAPI.grok.status();

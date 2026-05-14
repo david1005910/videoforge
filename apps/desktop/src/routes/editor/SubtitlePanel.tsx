@@ -25,6 +25,7 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
   const [isProcessing, setProcessing] = useState(false);
   const [error, setError] = useState('');
   const [sttProvider, setSttProvider] = useState<'openai' | 'gemini' | 'whisper-local'>('openai');
+  const [whisperModel, setWhisperModel] = useState('ggml-base');
 
   const handleGenerateSubtitle = useCallback(async () => {
     if (!scene) return;
@@ -56,6 +57,7 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
         provider: sttProvider,
         apiKey: apiKey ?? undefined,
         wordTimestamps: true,
+        ...(sttProvider === 'whisper-local' ? { model: whisperModel } : {}),
       });
 
       const alignResult = await api.stt.align({
@@ -75,7 +77,7 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
     } finally {
       setProcessing(false);
     }
-  }, [scene, projectLanguage, sttProvider, stylePreset, onSubtitleGenerated, t]);
+  }, [scene, projectLanguage, sttProvider, whisperModel, stylePreset, onSubtitleGenerated, t]);
 
   const handleWordTimeChange = useCallback(
     (index: number, field: 'startMs' | 'endMs', value: number) => {
@@ -124,6 +126,19 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
           <option value="gemini">Gemini</option>
           <option value="whisper-local">{t('whisper.title')}</option>
         </select>
+
+        {sttProvider === 'whisper-local' && (
+          <select
+            value={whisperModel}
+            onChange={(e) => setWhisperModel(e.target.value)}
+            className="gooey-input px-2 py-1 text-xs"
+          >
+            <option value="ggml-tiny">Tiny (빠름)</option>
+            <option value="ggml-base">Base (권장)</option>
+            <option value="ggml-small">Small</option>
+            <option value="ggml-large-v3-turbo-q5_0">Large Turbo Q5</option>
+          </select>
+        )}
 
         <select
           value={stylePreset}

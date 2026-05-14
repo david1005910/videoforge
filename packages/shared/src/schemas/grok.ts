@@ -51,7 +51,10 @@ export type GrokGenerateResponse = z.infer<typeof GrokGenerateResponse>;
  * grok:batch
  */
 export const GrokBatchRequest = z.object({
-  items: z.array(GrokTask.omit({ taskId: true })).min(1).max(50),
+  items: z
+    .array(GrokTask.omit({ taskId: true }))
+    .min(1)
+    .max(50),
   outputDir: FilePath,
 });
 export type GrokBatchRequest = z.infer<typeof GrokBatchRequest>;
@@ -91,7 +94,15 @@ export type GrokStatusResponse = z.infer<typeof GrokStatusResponse>;
  * grok:onProgress (메인 → 렌더러)
  */
 export const GrokProgressEvent = ProgressEvent.extend({
-  phase: z.enum(['queued', 'opening', 'submitting', 'generating', 'downloading', 'complete', 'failed']),
+  phase: z.enum([
+    'queued',
+    'opening',
+    'submitting',
+    'generating',
+    'downloading',
+    'complete',
+    'failed',
+  ]),
   message: z.string().optional(),
   /** 실패 시 자동 캡처된 스크린샷 경로 */
   failureScreenshotPath: FilePath.optional(),
@@ -113,6 +124,19 @@ export const GrokVideoReadyEvent = z.object({
   generatedAt: z.string().datetime(),
 });
 export type GrokVideoReadyEvent = z.infer<typeof GrokVideoReadyEvent>;
+
+/**
+ * grok:apiGenerate — xAI REST API 기반 영상 생성
+ */
+export const GrokApiGenerateRequest = z.object({
+  prompt: z.string().min(1).max(2000),
+  imagePath: FilePath.optional(),
+  durationSec: z.number().int().min(1).max(15).default(6),
+  outputDir: FilePath,
+  aspectRatio: z.enum(['16:9', '1:1', '4:3', '9:16']).default('16:9'),
+  resolution: z.enum(['480p', '720p']).default('720p'),
+});
+export type GrokApiGenerateRequest = z.infer<typeof GrokApiGenerateRequest>;
 
 /**
  * grok:bridge:* — Bridge 익스텐션 모드 (Phase 12+)
