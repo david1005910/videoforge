@@ -14,7 +14,7 @@ interface Props {
   ) => void;
 }
 
-type GenerationMode = 'api' | 'local';
+type GenerationMode = 'grok' | 'local';
 
 type PipelinePhase =
   | 'idle'
@@ -44,17 +44,17 @@ export function AutoPipelineDialog({ scenes, onClose, onComplete }: Props) {
   const [currentStep, setCurrentStep] = useState(-1);
   const [pipelinePhase, setPipelinePhase] = useState<PipelinePhase>('idle');
   const [error, setError] = useState('');
-  const [mode, setMode] = useState<GenerationMode>('api');
-  const [hasApiKey, setHasApiKey] = useState<boolean | null>(null);
+  const [mode, setMode] = useState<GenerationMode>('grok');
+  const [bridgeReady, setBridgeReady] = useState<boolean | null>(null);
   const [finalPath, setFinalPath] = useState('');
   const cancelledRef = useRef(false);
   const completedClipsRef = useRef<{ sceneId: string; clipPath: string }[]>([]);
 
   useEffect(() => {
-    void api.keychain.get('xai-api-key').then((val) => {
-      const available = !!val;
-      setHasApiKey(available);
-      if (!available) setMode('local');
+    void api.grok.bridgeStatus().then((status) => {
+      const ready = status.available && status.connectedTabs > 0;
+      setBridgeReady(ready);
+      if (!ready) setMode('local');
     });
   }, []);
 
@@ -64,14 +64,14 @@ export function AutoPipelineDialog({ scenes, onClose, onComplete }: Props) {
     setSteps((prev) => prev.map((s, i) => (i === idx ? { ...s, ...update } : s)));
   }, []);
 
-  // ─── Phase 1: Generate video from image via Grok API ───
-  const generateViaApi = useCallback(
+  // ─── Phase 1: Generate video via Grok Automation (Bridge extension) ───
+  const generateViaGrok = useCallback(
     (prompt: string, imagePath: string, outputDir: string, sceneIdx: number): Promise<string> => {
       return new Promise<string>((resolve, reject) => {
         const timeout = setTimeout(() => {
           unsubProgress();
           unsubReady();
-          reject(new Error('xAI API timeout (5min)'));
+          reject(new Error('Grok 영상 생성 타임아웃 (5분)'));
         }, 300_000);
 
         const unsubReady = api.grok.onVideoReady((payload: unknown) => {
@@ -90,22 +90,26 @@ export function AutoPipelineDialog({ scenes, onClose, onComplete }: Props) {
             clearTimeout(timeout);
             unsubProgress();
             unsubReady();
-            reject(new Error(evt.message ?? 'xAI API generation failed'));
+            reject(new Error(evt.message ?? 'Grok 영상 생성 실패'));
           }
           const msg =
             evt.message ??
-            (evt.phase === 'generating' ? 'Grok AI 영상 생성 중...' : (evt.phase ?? ''));
+            (evt.phase === 'generating' ? 'Grok 영상 생성 중...' : (evt.phase ?? ''));
           updateStep(sceneIdx, { message: msg });
         });
 
         void api.grok
-          .apiGenerate({
-            prompt,
-            imagePath,
-            durationSec: 6,
-            outputDir,
-            aspectRatio: '16:9',
-            resolution: '720p',
+          .bridgeSend({
+            items: [
+              {
+                prompt,
+                imagePath,
+                durationSec: 6,
+                count: 1,
+                outputDir,
+                maxRetries: 2,
+              },
+            ],
           })
           .catch((err: unknown) => {
             clearTimeout(timeout);
@@ -126,15 +130,12 @@ export function AutoPipelineDialog({ scenes, onClose, onComplete }: Props) {
       const baseName = `local_scene${scene.index + 1}_${Date.now()}`;
       const outPath = `/tmp/${baseName}.mp4`;
 
+      // Ken Burns (zoom-pan) effect: creates motion from static image
       const step: Record<string, unknown> = {
-        kind: 'compose',
+        kind: 'kenBurns',
         image: image.path,
+        durationMs: 5000,
       };
-      if (scene.narrationAudio) {
-        step.audio = scene.narrationAudio.path;
-      } else {
-        step.durationMs = 5000;
-      }
 
       const result = await api.video.edit({
         outputPath: outPath,
@@ -216,11 +217,11 @@ export function AutoPipelineDialog({ scenes, onClose, onComplete }: Props) {
 
         console.log(`[Pipeline] Phase 1: scene ${i + 1}, mode=${mode}, image=${image.path}`);
 
-        if (mode === 'api') {
+        if (mode === 'grok') {
           updateStep(i, {
-            message: `[1/3] Grok AI 영상 생성 중... (씬 ${i + 1}/${eligibleScenes.length})`,
+            message: `[1/3] Grok 영상 생성 중... (씬 ${i + 1}/${eligibleScenes.length})`,
           });
-          videoPath = await generateViaApi(subtitleText, image.path, '/tmp/', i);
+          videoPath = await generateViaGrok(subtitleText, image.path, '/tmp/', i);
         } else {
           updateStep(i, {
             message: `[1/3] 이미지 → 영상 변환 중... (씬 ${i + 1}/${eligibleScenes.length})`,
@@ -241,14 +242,11 @@ export function AutoPipelineDialog({ scenes, onClose, onComplete }: Props) {
 
         let clipPath: string;
 
-        if (mode === 'api' && scene.narrationAudio) {
-          // API mode: Grok video + narration audio → compose
+        if (scene.narrationAudio) {
+          // Compose Ken Burns / Grok video with narration audio
           clipPath = await composeWithAudio(videoPath, scene);
-        } else if (mode === 'local') {
-          // Local mode: already composed with audio in Phase 1
-          clipPath = videoPath;
         } else {
-          // API mode without narration: use Grok video directly
+          // No narration: use video directly
           clipPath = videoPath;
         }
 
@@ -292,12 +290,12 @@ export function AutoPipelineDialog({ scenes, onClose, onComplete }: Props) {
     }
 
     setRunning(false);
-  }, [eligibleScenes, updateStep, onComplete, mode, generateViaApi, generateLocal]);
+  }, [eligibleScenes, updateStep, onComplete, mode, generateViaGrok, generateLocal]);
 
   const handleCancel = () => {
     cancelledRef.current = true;
-    if (mode === 'api') {
-      void api.grok.cancel({}).catch(() => {
+    if (mode === 'grok') {
+      void api.grok.bridgeCancel().catch(() => {
         /* cancelled */
       });
     }
@@ -344,21 +342,24 @@ export function AutoPipelineDialog({ scenes, onClose, onComplete }: Props) {
           {!running && pipelinePhase === 'idle' && (
             <div className="flex gap-2" role="radiogroup" aria-label="Generation mode">
               <button
-                onClick={() => setMode('api')}
-                disabled={!hasApiKey}
+                onClick={() => {
+                  setMode('grok');
+                  // Auto-open Grok extension when selecting grok mode
+                  void api.grok.openWithExtension('grok');
+                }}
                 role="radio"
-                aria-checked={mode === 'api'}
+                aria-checked={mode === 'grok'}
                 className={`flex-1 rounded-xl border px-3 py-2 text-left transition ${
-                  mode === 'api'
-                    ? 'border-violet-500/40 bg-violet-500/10'
-                    : 'border-white/8 bg-white/4 hover:border-white/15'
-                } ${!hasApiKey ? 'opacity-40' : ''}`}
+                  mode === 'grok'
+                    ? 'bg-[#FF4FBE]/12 border-[#FF4FBE]/40'
+                    : 'bg-[#9B5BFF]/8 border-[#9B5BFF]/15 hover:border-[#9B5BFF]/20'
+                }`}
               >
-                <p className="flex items-center gap-1 text-xs font-medium text-white/85">
-                  <Zap size={12} /> Grok API (AI 영상)
+                <p className="flex items-center gap-1 text-xs font-medium text-[#f0e8ff]">
+                  <Zap size={12} /> Grok (AI 영상)
                 </p>
-                <p className="text-[10px] text-white/35">
-                  {hasApiKey ? '이미지를 AI 영상으로 변환' : 'Settings에서 API Key 설정 필요'}
+                <p className="text-[10px] text-[#9B5BFF]/40">
+                  {bridgeReady ? 'Chrome 확장 연결됨' : 'Grok Automation 확장 필요'}
                 </p>
               </button>
               <button
@@ -367,42 +368,42 @@ export function AutoPipelineDialog({ scenes, onClose, onComplete }: Props) {
                 aria-checked={mode === 'local'}
                 className={`flex-1 rounded-xl border px-3 py-2 text-left transition ${
                   mode === 'local'
-                    ? 'border-emerald-500/40 bg-emerald-500/10'
-                    : 'border-white/8 bg-white/4 hover:border-white/15'
+                    ? 'border-emerald-500/40 bg-[#00F0FF]/10'
+                    : 'bg-[#9B5BFF]/8 border-[#9B5BFF]/15 hover:border-[#9B5BFF]/20'
                 }`}
               >
-                <p className="flex items-center gap-1 text-xs font-medium text-white/85">
+                <p className="flex items-center gap-1 text-xs font-medium text-[#f0e8ff]">
                   <Film size={12} /> 로컬 (ffmpeg)
                 </p>
-                <p className="text-[10px] text-white/35">이미지 + 나레이션 합성 (무료)</p>
+                <p className="text-[10px] text-[#9B5BFF]/40">이미지 + 나레이션 합성 (무료)</p>
               </button>
             </div>
           )}
 
           {/* Pipeline description */}
-          <div className="rounded-lg border border-white/5 bg-white/[0.02] p-3">
-            <p className="mb-2 text-xs font-medium text-white/60">
+          <div className="rounded-lg border border-[#9B5BFF]/10 bg-white/[0.02] p-3">
+            <p className="mb-2 text-xs font-medium text-[#f0e8ff]/65">
               {eligibleScenes.length}개 씬 파이프라인
             </p>
-            <div className="space-y-1 text-[10px] text-white/35">
+            <div className="space-y-1 text-[10px] text-[#9B5BFF]/40">
               <p
                 className={
                   pipelinePhase === 'generating'
-                    ? 'text-violet-400'
+                    ? 'text-[#9B5BFF]'
                     : pipelinePhase !== 'idle'
-                      ? 'text-emerald-400/60'
+                      ? 'text-[#00F0FF]/60'
                       : ''
                 }
               >
-                1. 이미지 + 자막 → {mode === 'api' ? 'Grok AI 영상 생성' : 'ffmpeg 영상 변환'}{' '}
+                1. 이미지 + 자막 → {mode === 'grok' ? 'Grok AI 영상 생성' : 'ffmpeg 영상 변환'}{' '}
                 (씬별)
               </p>
               <p
                 className={
                   pipelinePhase === 'composing'
-                    ? 'text-violet-400'
+                    ? 'text-[#9B5BFF]'
                     : pipelinePhase === 'merging' || pipelinePhase === 'done'
-                      ? 'text-emerald-400/60'
+                      ? 'text-[#00F0FF]/60'
                       : ''
                 }
               >
@@ -411,9 +412,9 @@ export function AutoPipelineDialog({ scenes, onClose, onComplete }: Props) {
               <p
                 className={
                   pipelinePhase === 'merging'
-                    ? 'text-violet-400'
+                    ? 'text-[#9B5BFF]'
                     : pipelinePhase === 'done'
-                      ? 'text-emerald-400/60'
+                      ? 'text-[#00F0FF]/60'
                       : ''
                 }
               >
@@ -427,8 +428,8 @@ export function AutoPipelineDialog({ scenes, onClose, onComplete }: Props) {
             <div
               className={`rounded-lg px-3 py-2 text-xs font-medium ${
                 pipelinePhase === 'done'
-                  ? 'bg-emerald-500/10 text-emerald-400'
-                  : 'bg-violet-500/10 text-violet-400'
+                  ? 'bg-[#00F0FF]/10 text-[#00F0FF]'
+                  : 'bg-[#FF4FBE]/12 text-[#9B5BFF]'
               }`}
             >
               {pipelinePhase === 'merging' && (
@@ -451,23 +452,25 @@ export function AutoPipelineDialog({ scenes, onClose, onComplete }: Props) {
                       : step?.phase === 'failed'
                         ? 'border-red-500/20 bg-red-500/5'
                         : step?.phase === 'generating' || step?.phase === 'composing'
-                          ? 'border-violet-500/20 bg-violet-500/5'
-                          : 'border-white/5 bg-white/[0.02]'
+                          ? 'bg-[#FF4FBE]/8 border-[#FF4FBE]/20'
+                          : 'border-[#9B5BFF]/10 bg-white/[0.02]'
                   }`}
                 >
-                  <span className="w-6 text-center text-xs font-medium text-white/30">
+                  <span className="w-6 text-center text-xs font-medium text-[#9B5BFF]/35">
                     {scene.index + 1}
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-xs text-white/60">
+                  <span className="min-w-0 flex-1 truncate text-xs text-[#f0e8ff]/65">
                     {scene.scriptKo?.slice(0, 40) ??
                       scene.scriptOriginal?.slice(0, 40) ??
                       `Scene ${scene.index + 1}`}
                   </span>
                   <span className="flex-shrink-0">
-                    {step?.phase === 'done' && <Check size={14} className="text-emerald-400" />}
-                    {step?.phase === 'failed' && <AlertCircle size={14} className="text-red-400" />}
+                    {step?.phase === 'done' && <Check size={14} className="text-[#00F0FF]" />}
+                    {step?.phase === 'failed' && (
+                      <AlertCircle size={14} className="text-[#FF6A3D]" />
+                    )}
                     {(step?.phase === 'generating' || step?.phase === 'composing') && (
-                      <RefreshCw size={14} className="animate-spin text-violet-400" />
+                      <RefreshCw size={14} className="animate-spin text-[#9B5BFF]" />
                     )}
                   </span>
                 </div>
@@ -477,13 +480,13 @@ export function AutoPipelineDialog({ scenes, onClose, onComplete }: Props) {
 
           {/* Progress summary */}
           {steps.length > 0 && (
-            <div className="flex items-center gap-3 text-xs text-white/40">
+            <div className="flex items-center gap-3 text-xs text-[#9B5BFF]/45">
               <span>
                 씬 완료: {totalDone}/{eligibleScenes.length}
               </span>
-              {totalFailed > 0 && <span className="text-red-400">실패: {totalFailed}</span>}
+              {totalFailed > 0 && <span className="text-[#FF6A3D]">실패: {totalFailed}</span>}
               {running && currentStep >= 0 && steps[currentStep]?.message && (
-                <span className="text-violet-400">{steps[currentStep]?.message}</span>
+                <span className="text-[#9B5BFF]">{steps[currentStep]?.message}</span>
               )}
             </div>
           )}
@@ -491,25 +494,25 @@ export function AutoPipelineDialog({ scenes, onClose, onComplete }: Props) {
           {/* Final video result */}
           {finalPath && (
             <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 px-3 py-2">
-              <Check size={14} className="text-emerald-400" />
-              <span className="flex-1 text-xs text-emerald-300">최종 영상 생성 완료</span>
+              <Check size={14} className="text-[#00F0FF]" />
+              <span className="flex-1 text-xs text-[#00F0FF]">최종 영상 생성 완료</span>
               <button
                 onClick={handleOpenFinal}
-                className="gooey-btn-ghost px-2 py-1 text-[10px] text-emerald-400"
+                className="gooey-btn-ghost px-2 py-1 text-[10px] text-[#00F0FF]"
               >
                 Finder에서 보기
               </button>
             </div>
           )}
 
-          {error && <p className="text-xs text-red-400">{error}</p>}
+          {error && <p className="text-xs text-[#FF6A3D]">{error}</p>}
 
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-2">
             {running ? (
               <button
                 onClick={handleCancel}
-                className="gooey-btn-ghost px-4 py-2 text-sm text-red-400"
+                className="gooey-btn-ghost px-4 py-2 text-sm text-[#FF6A3D]"
               >
                 중지
               </button>

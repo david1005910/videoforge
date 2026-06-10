@@ -13,83 +13,58 @@ const TARGETS: Record<string, ExtensionTarget> = {
   grok: {
     name: 'Grok',
     url: 'https://grok.com/imagine',
-    windowTitle: 'Grok',
+    windowTitle: 'grok.com',
     extensionLabel: 'Grok Automation',
   },
   meta: {
     name: 'Meta',
     url: 'https://www.meta.ai/',
-    windowTitle: 'Meta',
+    windowTitle: 'meta.ai',
     extensionLabel: 'Meta Automation',
   },
 };
 
-function buildScript(target: ExtensionTarget): string {
-  return `
--- Phase 1: Open target URL in Chrome
-tell application "Google Chrome"
-  activate
-  if (count of windows) = 0 then
-    make new window
-  end if
-  set URL of active tab of front window to "${target.url}"
-end tell
-
--- Wait for page to fully load and Chrome UI to stabilize
-delay 5
-
--- Phase 2: Find and click extension button
+/**
+ * Click extension button in front window's toolbar.
+ * Shared AppleScript snippet used by both targets.
+ */
+const CLICK_EXTENSION_SNIPPET = (label: string): string => `
 tell application "System Events"
   tell process "Google Chrome"
     set frontmost to true
     delay 1
 
     repeat 4 times
-      -- Find Chrome window with target title
-      set targetWindow to missing value
-      repeat with w in (every window)
-        if name of w contains "${target.windowTitle}" then
-          set targetWindow to w
+      -- Search front window (item 1) for toolbar with extension buttons
+      set wList to every window
+      repeat with w in wList
+        if (count of groups of w) > 0 then
+          set extGroup to missing value
+          try
+            set extGroup to group 2 of toolbar 1 of group 1 of group 1 of group 2 of group 1 of w
+          end try
+          if extGroup is missing value then
+            try
+              set extGroup to group 2 of toolbar 1 of group 1 of group 1 of group 1 of group 1 of w
+            end try
+          end if
+
+          if extGroup is not missing value then
+            set n to count of (every pop up button of extGroup)
+            repeat with i from 1 to n
+              try
+                set btnDesc to description of pop up button i of extGroup
+                if btnDesc contains "${label}" then
+                  click pop up button i of extGroup
+                  return "clicked"
+                end if
+              end try
+            end repeat
+          end if
+          -- Only try the first window with groups (front window)
           exit repeat
         end if
       end repeat
-      if targetWindow is missing value then
-        repeat with w in (every window)
-          if (count of groups of w) > 0 then
-            set targetWindow to w
-            exit repeat
-          end if
-        end repeat
-      end if
-
-      if targetWindow is not missing value then
-        -- Try Path A: side panel open (g1 > g2 > g1 > g1 > toolbar 1 > group 2)
-        set extGroup to missing value
-        try
-          set extGroup to group 2 of toolbar 1 of group 1 of group 1 of group 2 of group 1 of targetWindow
-        end try
-
-        -- Try Path B: side panel closed (g1 > g1 > g1 > g1 > toolbar 1 > group 2)
-        if extGroup is missing value then
-          try
-            set extGroup to group 2 of toolbar 1 of group 1 of group 1 of group 1 of group 1 of targetWindow
-          end try
-        end if
-
-        if extGroup is not missing value then
-          set n to count of (every pop up button of extGroup)
-          repeat with i from 1 to n
-            try
-              set btnDesc to description of pop up button i of extGroup
-              if btnDesc contains "${target.extensionLabel}" then
-                click pop up button i of extGroup
-                return "clicked"
-              end if
-            end try
-          end repeat
-          return "not_found"
-        end if
-      end if
 
       delay 2
     end repeat
@@ -97,6 +72,50 @@ tell application "System Events"
     return "timeout"
   end tell
 end tell
+`;
+
+function buildScript(target: ExtensionTarget): string {
+  // Strategy: Always open the target URL as a tab in an EXISTING window
+  // (not a new window). New Chrome windows show groups=0 in System Events
+  // and their toolbar is inaccessible. Existing windows have groups=1.
+  //
+  // For Grok: find existing grok.com tab or add to front window
+  // For Meta: always add a new tab to front window
+  return `
+tell application "Google Chrome"
+  activate
+
+  set foundTab to false
+  set wCount to count of windows
+
+  -- Search for existing tab with target URL
+  repeat with wIdx from 1 to wCount
+    set w to window wIdx
+    set tCount to count of tabs of w
+    repeat with tIdx from 1 to tCount
+      if URL of tab tIdx of w contains "${target.windowTitle}" then
+        set active tab index of w to tIdx
+        set index of w to 1
+        set foundTab to true
+        exit repeat
+      end if
+    end repeat
+    if foundTab then exit repeat
+  end repeat
+
+  if not foundTab then
+    -- Open as new tab in front window (NOT a new window)
+    if wCount = 0 then
+      make new window
+    end if
+    tell front window to make new tab with properties {URL:"${target.url}"}
+    set active tab index of front window to (count of tabs of front window)
+  end if
+end tell
+
+delay 5
+
+${CLICK_EXTENSION_SNIPPET(target.extensionLabel)}
 `;
 }
 
@@ -121,7 +140,7 @@ export function openWithExtension(target = 'grok'): { ok: boolean; message: stri
   const script = buildScript(config);
 
   try {
-    const child = execFile('osascript', ['-e', script], { timeout: 30000 }, (err, stdout) => {
+    const child = execFile('osascript', ['-e', script], { timeout: 45000 }, (err, stdout) => {
       if (err) {
         logger.warn({ err, target }, 'openWithExtension: AppleScript failed');
         return;

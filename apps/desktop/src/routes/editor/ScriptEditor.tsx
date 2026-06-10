@@ -63,7 +63,7 @@ export function ScriptEditor({
     return (
       <div className="flex flex-1 items-center justify-center">
         <div className="text-center">
-          <Sparkles size={32} className="mx-auto mb-3 text-white/15" />
+          <Sparkles size={32} className="mx-auto mb-3 text-[#9B5BFF]/20" />
           <p className="gooey-text-secondary text-sm">{t('scene.selectOrAdd')}</p>
           <p className="gooey-text-muted mt-1 text-xs">{t('scene.manageHint')}</p>
         </div>
@@ -79,7 +79,7 @@ export function ScriptEditor({
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Scene header */}
       <div className="gooey-header flex items-center gap-3 px-6 py-3">
-        <h2 className="text-sm font-medium text-white/75">
+        <h2 className="text-sm font-medium text-[#f0e8ff]/80">
           {t('scene.header')} #{scene.index + 1}
         </h2>
         <div className="flex gap-1">
@@ -92,13 +92,13 @@ export function ScriptEditor({
             type="button"
             onClick={() => void handleGenerateTts()}
             disabled={ttsGenerating || !(scriptKo.trim() || scriptOriginal.trim())}
-            className="flex items-center gap-1 rounded-xl bg-violet-500/15 px-1.5 py-0.5 text-[10px] text-violet-300 transition hover:bg-violet-500/25 disabled:opacity-40"
+            className="bg-[#FF4FBE]/12 flex items-center gap-1 rounded-xl px-1.5 py-0.5 text-[10px] text-[#9B5BFF] transition hover:bg-[#FF4FBE]/20 disabled:opacity-40"
           >
             <Mic size={10} />
             {ttsGenerating ? t('tts.generating') : t('tts.generate')}
           </button>
         </div>
-        <span className="ml-auto text-xs text-white/25">
+        <span className="ml-auto text-xs text-[#9B5BFF]/30">
           {scriptKo.length.toLocaleString()}
           {t('scene.charCount')}
         </span>

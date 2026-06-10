@@ -178,7 +178,7 @@ export function TtsPage(): JSX.Element {
                 step="0.1"
                 value={speed}
                 onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                className="mt-2 w-full accent-violet-500"
+                className="mt-2 w-full accent-[#FF4FBE]"
               />
             </div>
           </div>
@@ -234,13 +234,13 @@ export function TtsPage(): JSX.Element {
                   {result.durationMs > 0 && (
                     <>
                       <span className="gooey-text-secondary">{t('tts.duration')}:</span>{' '}
-                      <span className="font-mono text-white/90">
+                      <span className="font-mono text-[#f0e8ff]">
                         {formatDuration(result.durationMs)}
                       </span>
                     </>
                   )}
                   {result.cached && (
-                    <span className="ml-2 rounded-full bg-blue-500/15 px-1.5 py-0.5 text-xs text-blue-300">
+                    <span className="bg-[#00F0FF]/12 ml-2 rounded-full px-1.5 py-0.5 text-xs text-[#00F0FF]">
                       {t('tts.cached')}
                     </span>
                   )}

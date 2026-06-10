@@ -116,13 +116,13 @@ export function GrokPage() {
   const phaseColor = (phase: string) => {
     switch (phase) {
       case 'complete':
-        return 'text-emerald-400';
+        return 'text-[#00F0FF]';
       case 'failed':
-        return 'text-red-400';
+        return 'text-[#FF6A3D]';
       case 'generating':
-        return 'text-amber-400';
+        return 'text-[#FF7AD9]';
       default:
-        return 'text-white/40';
+        return 'text-[#9B5BFF]/45';
     }
   };
 
@@ -130,7 +130,7 @@ export function GrokPage() {
     <div className="gooey-page flex h-full flex-col">
       <header className="gooey-header flex items-center gap-4 px-6 py-3">
         <h1 className="gooey-text-primary text-lg font-semibold">Grok Video Generation</h1>
-        <span className={`text-xs ${connected ? 'text-emerald-400' : 'text-white/30'}`}>
+        <span className={`text-xs ${connected ? 'text-[#00F0FF]' : 'text-[#9B5BFF]/35'}`}>
           {connected ? 'Connected' : 'Disconnected'}
         </span>
         <div className="flex-1" />
@@ -186,7 +186,7 @@ export function GrokPage() {
             {queue.map((item) => (
               <div key={item.taskId} className="gooey-card p-4">
                 <div className="flex items-center justify-between">
-                  <p className="truncate text-sm font-medium text-white/85">
+                  <p className="truncate text-sm font-medium text-[#f0e8ff]">
                     {item.prompt || item.taskId}
                   </p>
                   <span className={`text-xs ${phaseColor(item.phase)}`}>{item.phase}</span>
@@ -200,9 +200,9 @@ export function GrokPage() {
                   </div>
                 )}
                 {item.localPath && (
-                  <p className="mt-1 truncate text-xs text-white/30">{item.localPath}</p>
+                  <p className="mt-1 truncate text-xs text-[#9B5BFF]/35">{item.localPath}</p>
                 )}
-                {item.error && <p className="mt-1 text-xs text-red-400">{item.error}</p>}
+                {item.error && <p className="mt-1 text-xs text-[#FF6A3D]">{item.error}</p>}
               </div>
             ))}
           </div>

@@ -259,12 +259,12 @@ export function SettingsPage() {
           <div className="gooey-card mb-4 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-white/85">{t('whisper.binaryStatus')}</p>
+                <p className="text-sm text-[#f0e8ff]">{t('whisper.binaryStatus')}</p>
                 <p className="text-xs">
                   {binaryReady ? (
-                    <span className="text-emerald-400">{t('whisper.binaryReady')}</span>
+                    <span className="text-[#00F0FF]">{t('whisper.binaryReady')}</span>
                   ) : (
-                    <span className="text-amber-400">{t('whisper.binaryNotReady')}</span>
+                    <span className="text-[#FF7AD9]">{t('whisper.binaryNotReady')}</span>
                   )}
                 </p>
               </div>
@@ -290,20 +290,20 @@ export function SettingsPage() {
                   className="gooey-card flex items-center justify-between px-4 py-3"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm text-white/85">
+                    <p className="text-sm text-[#f0e8ff]">
                       {model.label}
                       {model.id === 'ggml-large-v3-turbo-q5_0' && (
-                        <span className="ml-2 rounded-full bg-violet-500/20 px-1.5 py-0.5 text-xs text-violet-300">
+                        <span className="ml-2 rounded-full bg-[#FF4FBE]/15 px-1.5 py-0.5 text-xs text-[#FF7AD9]">
                           {t('whisper.recommended')}
                         </span>
                       )}
                     </p>
-                    <p className="text-xs text-white/35">
+                    <p className="text-xs text-[#9B5BFF]/40">
                       {model.sizeMB}MB ·{' '}
                       {model.downloaded ? (
-                        <span className="text-emerald-400">{t('whisper.downloaded')}</span>
+                        <span className="text-[#00F0FF]">{t('whisper.downloaded')}</span>
                       ) : (
-                        <span className="text-white/25">{t('whisper.notDownloaded')}</span>
+                        <span className="text-[#9B5BFF]/30">{t('whisper.notDownloaded')}</span>
                       )}
                     </p>
                   </div>
@@ -311,7 +311,7 @@ export function SettingsPage() {
                     {model.downloaded ? (
                       <button
                         onClick={() => void handleDeleteModel(model.id)}
-                        className="gooey-btn-secondary px-2 py-1 text-xs hover:border-red-500/30 hover:text-red-400"
+                        className="gooey-btn-secondary px-2 py-1 text-xs hover:border-[#FF6A3D]/30 hover:text-[#FF6A3D]"
                       >
                         {t('whisper.delete')}
                       </button>
@@ -338,8 +338,8 @@ export function SettingsPage() {
           <h2 className="gooey-text-secondary mb-3 text-sm font-medium">Updates</h2>
           <div className="gooey-card flex items-center justify-between p-4">
             <div>
-              <p className="text-sm text-white/85">Auto-check for updates</p>
-              <p className="text-xs text-white/35">
+              <p className="text-sm text-[#f0e8ff]">Auto-check for updates</p>
+              <p className="text-xs text-[#9B5BFF]/40">
                 Automatically check for new versions on startup.
               </p>
             </div>
@@ -369,8 +369,8 @@ export function SettingsPage() {
                 aria-checked={theme === opt}
                 className={`flex-1 rounded-2xl border px-3 py-2 text-center text-sm capitalize transition ${
                   theme === opt
-                    ? 'border-violet-500/40 bg-violet-500/10 text-violet-300 shadow-[0_0_12px_rgba(139,92,246,0.15)]'
-                    : 'border-white/8 bg-white/4 hover:border-white/12 text-white/40'
+                    ? 'border-[#FF4FBE]/40 bg-[#FF4FBE]/10 text-[#FF7AD9] shadow-[0_0_12px_rgba(255,79,190,0.2)]'
+                    : 'bg-[#9B5BFF]/8 border-[#9B5BFF]/15 text-[#9B5BFF]/45 hover:border-[#9B5BFF]/25'
                 }`}
               >
                 {opt}
@@ -394,8 +394,8 @@ export function SettingsPage() {
                     aria-checked={fontScale === scale}
                     className={`flex-1 rounded-2xl border px-3 py-2 text-center text-sm capitalize transition ${
                       fontScale === scale
-                        ? 'border-violet-500/40 bg-violet-500/10 text-violet-300 shadow-[0_0_12px_rgba(139,92,246,0.15)]'
-                        : 'border-white/8 bg-white/4 hover:border-white/12 text-white/40'
+                        ? 'border-[#FF4FBE]/40 bg-[#FF4FBE]/10 text-[#FF7AD9] shadow-[0_0_12px_rgba(255,79,190,0.2)]'
+                        : 'bg-[#9B5BFF]/8 border-[#9B5BFF]/15 text-[#9B5BFF]/45 hover:border-[#9B5BFF]/25'
                     }`}
                   >
                     {scale}

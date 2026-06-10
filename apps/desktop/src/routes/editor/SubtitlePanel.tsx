@@ -107,7 +107,7 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
 
   if (!scene) {
     return (
-      <div className="flex items-center justify-center p-8 text-sm text-white/25">
+      <div className="flex items-center justify-center p-8 text-sm text-[#9B5BFF]/30">
         {t('scene.select')}
       </div>
     );
@@ -171,10 +171,10 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
 
       {/* Word timeline */}
       {words.length > 0 && (
-        <div className="gooey-scrollbar border-white/8 max-h-60 overflow-y-auto rounded-xl border">
+        <div className="gooey-scrollbar max-h-60 overflow-y-auto rounded-xl border border-[#9B5BFF]/15">
           <table className="w-full text-xs">
             <thead className="sticky top-0 bg-[#0f0818]/95 backdrop-blur">
-              <tr className="text-white/35">
+              <tr className="text-[#9B5BFF]/40">
                 <th className="px-2 py-1 text-left">#</th>
                 <th className="px-2 py-1 text-left">{t('subtitle.word')}</th>
                 <th className="px-2 py-1 text-right">{t('subtitle.startMs')}</th>
@@ -185,10 +185,10 @@ export function SubtitlePanel({ scene, projectLanguage, onSubtitleGenerated }: P
               {words.map((w, i) => (
                 <tr
                   key={`${w.scriptIndex}-${i}`}
-                  className="border-white/4 hover:bg-white/3 border-t"
+                  className="hover:bg-[#9B5BFF]/8 border-t border-[#9B5BFF]/10"
                 >
-                  <td className="px-2 py-1 text-white/25">{i + 1}</td>
-                  <td className="px-2 py-1 text-white/70">{w.word}</td>
+                  <td className="px-2 py-1 text-[#9B5BFF]/30">{i + 1}</td>
+                  <td className="px-2 py-1 text-[#f0e8ff]/75">{w.word}</td>
                   <td className="px-2 py-1 text-right">
                     <input
                       type="number"

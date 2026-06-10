@@ -10,8 +10,9 @@
   }
 
   body {
-    background: linear-gradient(135deg, #0f0818 0%, #0d0a1a 30%, #080d1a 60%, #0a0d17 100%);
-    color: #f0f0f5;
+    background: linear-gradient(160deg, #0c0e23 0%, #1a0e2e 40%, #0c0e23 70%, #0e1428 100%);
+    color: #f0e8ff;
+    font-weight: 500;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow: hidden;
@@ -27,253 +28,259 @@
 }
 
 @layer components {
-  /* ============ GOOEY PAGE WRAPPER ============ */
+  /* ============ VAPORWAVE PAGE WRAPPER ============ */
   .gooey-page {
     position: relative;
     overflow: hidden;
   }
+  /* Top-right ambient glow — pink/magenta */
   .gooey-page::before {
     content: '';
     position: absolute;
-    width: 350px;
-    height: 350px;
-    background: radial-gradient(circle, rgba(139, 92, 246, 0.18) 0%, transparent 70%);
-    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-    filter: blur(60px);
-    top: -80px;
-    right: -60px;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(
+      circle,
+      rgba(255, 79, 190, 0.12) 0%,
+      rgba(155, 91, 255, 0.06) 40%,
+      transparent 70%
+    );
+    border-radius: 50%;
+    filter: blur(80px);
+    top: -150px;
+    right: -120px;
     pointer-events: none;
     z-index: 0;
+    animation: vapor-drift 24s ease-in-out infinite alternate;
   }
+  /* Bottom-left ambient glow — cyan/blue */
   .gooey-page::after {
     content: '';
     position: absolute;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(236, 72, 153, 0.14) 0%, transparent 70%);
+    width: 450px;
+    height: 450px;
+    background: radial-gradient(
+      circle,
+      rgba(0, 240, 255, 0.1) 0%,
+      rgba(155, 91, 255, 0.05) 40%,
+      transparent 70%
+    );
     border-radius: 50%;
-    filter: blur(60px);
-    bottom: -60px;
-    left: -40px;
+    filter: blur(80px);
+    bottom: -120px;
+    left: -100px;
     pointer-events: none;
     z-index: 0;
+    animation: vapor-drift 30s ease-in-out infinite alternate-reverse;
   }
   .gooey-page > * {
     position: relative;
     z-index: 1;
   }
 
-  /* ============ GLOSSY PANEL ============ */
-  .gooey-panel {
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.07) 0%,
-      rgba(255, 255, 255, 0.02) 100%
-    );
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 24px;
-    box-shadow:
-      0px 12px 32px rgba(0, 0, 0, 0.2),
-      inset 0px 1px 0px rgba(255, 255, 255, 0.08);
+  @keyframes vapor-drift {
+    0% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(20px, 15px) scale(1.05);
+    }
+    100% {
+      transform: translate(-15px, -10px) scale(0.97);
+    }
   }
 
-  /* ============ GLOSSY CARD ============ */
+  /* ============ PANEL ============ */
+  .gooey-panel {
+    background: linear-gradient(145deg, rgba(26, 14, 46, 0.9) 0%, rgba(12, 14, 35, 0.95) 100%);
+    border: 1px solid rgba(155, 91, 255, 0.15);
+    border-radius: 14px;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  /* ============ CARD ============ */
   .gooey-card {
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.05) 0%,
-      rgba(255, 255, 255, 0.015) 100%
-    );
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 20px;
-    box-shadow:
-      0px 8px 24px rgba(0, 0, 0, 0.15),
-      inset 0px 1px 0px rgba(255, 255, 255, 0.06);
+    background: linear-gradient(145deg, rgba(26, 14, 46, 0.7) 0%, rgba(12, 14, 35, 0.8) 100%);
+    border: 1px solid rgba(155, 91, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.2);
     transition:
       border-color 0.3s ease,
-      box-shadow 0.3s ease;
+      box-shadow 0.3s ease,
+      transform 0.3s ease;
   }
   .gooey-card:hover {
-    border-color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 79, 190, 0.3);
     box-shadow:
-      0px 12px 32px rgba(0, 0, 0, 0.2),
-      inset 0px 1px 0px rgba(255, 255, 255, 0.08);
+      0px 4px 20px rgba(0, 0, 0, 0.25),
+      0px 0px 12px rgba(255, 79, 190, 0.08);
+    transform: translateY(-1px);
   }
 
   /* ============ HEADER BAR ============ */
   .gooey-header {
     background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.05) 0%,
-      rgba(255, 255, 255, 0.015) 100%
+      90deg,
+      rgba(12, 14, 35, 0.95) 0%,
+      rgba(26, 14, 46, 0.9) 50%,
+      rgba(12, 14, 35, 0.95) 100%
     );
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(155, 91, 255, 0.1);
   }
 
   /* ============ SIDEBAR ============ */
   .gooey-sidebar {
-    background: linear-gradient(180deg, rgba(15, 8, 30, 0.95) 0%, rgba(10, 13, 23, 0.98) 100%);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: linear-gradient(180deg, #0c0e23 0%, #110a24 100%);
+    border-right: 1px solid rgba(155, 91, 255, 0.08);
   }
 
   /* ============ INPUTS ============ */
   .gooey-input {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
-    color: #e8e8f0;
+    background: rgba(12, 14, 35, 0.8);
+    border: 1px solid rgba(155, 91, 255, 0.15);
+    border-radius: 10px;
+    color: #f0e8ff;
     transition: all 0.25s ease;
   }
   .gooey-input::placeholder {
-    color: rgba(255, 255, 255, 0.25);
+    color: rgba(240, 232, 255, 0.3);
   }
   .gooey-input:focus {
-    border-color: rgba(139, 92, 246, 0.5);
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+    border-color: rgba(0, 240, 255, 0.5);
+    box-shadow: 0px 0px 12px rgba(0, 240, 255, 0.15);
     outline: none;
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(12, 14, 35, 0.9);
   }
 
   /* ============ BUTTONS ============ */
   .gooey-btn-primary {
-    background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #ec4899 100%);
+    background: linear-gradient(135deg, #ff4fbe 0%, #9b5bff 100%);
     border: none;
-    border-radius: 16px;
+    border-radius: 10px;
     color: white;
-    font-weight: 500;
-    box-shadow: 0px 6px 20px rgba(139, 92, 246, 0.25);
-    text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    box-shadow: 0px 0px 16px rgba(255, 79, 190, 0.3);
     transition: all 0.25s ease;
   }
   .gooey-btn-primary:hover {
-    box-shadow: 0px 8px 28px rgba(139, 92, 246, 0.35);
+    box-shadow: 0px 0px 24px rgba(255, 79, 190, 0.45);
     transform: translateY(-1px);
     filter: brightness(1.1);
   }
+  .gooey-btn-primary:active {
+    transform: translateY(0px);
+    box-shadow: 0px 0px 8px rgba(255, 79, 190, 0.2);
+  }
   .gooey-btn-primary:disabled {
-    opacity: 0.45;
+    opacity: 0.4;
     transform: none;
     box-shadow: none;
     filter: none;
   }
 
   .gooey-btn-secondary {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    color: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(155, 91, 255, 0.08);
+    border: 1px solid rgba(155, 91, 255, 0.18);
+    border-radius: 10px;
+    color: rgba(240, 232, 255, 0.75);
     transition: all 0.25s ease;
   }
   .gooey-btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.18);
-    color: rgba(255, 255, 255, 0.9);
+    background: rgba(155, 91, 255, 0.14);
+    border-color: rgba(155, 91, 255, 0.3);
+    color: #ffffff;
+    box-shadow: 0px 0px 12px rgba(155, 91, 255, 0.12);
   }
   .gooey-btn-secondary:disabled {
-    opacity: 0.45;
+    opacity: 0.4;
   }
 
   .gooey-btn-ghost {
     background: transparent;
     border: none;
-    border-radius: 12px;
-    color: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    color: rgba(240, 232, 255, 0.45);
     transition: all 0.2s ease;
   }
   .gooey-btn-ghost:hover {
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.85);
+    background: rgba(155, 91, 255, 0.08);
+    color: rgba(240, 232, 255, 0.85);
   }
 
   .gooey-btn-danger {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    background: linear-gradient(135deg, #ff6a3d 0%, #ff4fbe 100%);
     border: none;
-    border-radius: 16px;
+    border-radius: 10px;
     color: white;
-    font-weight: 500;
-    box-shadow: 0px 4px 16px rgba(239, 68, 68, 0.25);
+    font-weight: 600;
+    box-shadow: 0px 0px 14px rgba(255, 106, 61, 0.25);
     transition: all 0.25s ease;
   }
   .gooey-btn-danger:hover {
-    box-shadow: 0px 6px 24px rgba(239, 68, 68, 0.35);
+    box-shadow: 0px 0px 20px rgba(255, 106, 61, 0.4);
     filter: brightness(1.1);
   }
 
   /* ============ TAB BUTTONS ============ */
   .gooey-tab {
-    border-radius: 12px;
+    border-radius: 8px;
     padding: 4px 12px;
     font-size: 0.875rem;
     transition: all 0.25s ease;
   }
   .gooey-tab-active {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.4) 0%, rgba(168, 85, 247, 0.3) 100%);
-    color: white;
-    box-shadow: 0px 4px 12px rgba(139, 92, 246, 0.2);
-    text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, rgba(255, 79, 190, 0.2) 0%, rgba(155, 91, 255, 0.15) 100%);
+    color: #ff7ad9;
+    box-shadow: 0px 0px 10px rgba(255, 79, 190, 0.15);
   }
   .gooey-tab-inactive {
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(240, 232, 255, 0.35);
   }
   .gooey-tab-inactive:hover {
-    color: rgba(255, 255, 255, 0.7);
-    background: rgba(255, 255, 255, 0.04);
+    color: rgba(240, 232, 255, 0.65);
+    background: rgba(155, 91, 255, 0.06);
   }
 
   /* ============ TAB CONTAINER ============ */
   .gooey-tab-group {
-    background: rgba(255, 255, 255, 0.04);
-    border-radius: 16px;
+    background: rgba(12, 14, 35, 0.5);
+    border-radius: 12px;
     padding: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(155, 91, 255, 0.08);
   }
 
   /* ============ MODAL ============ */
   .gooey-modal-backdrop {
-    background: rgba(5, 3, 15, 0.7);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(6, 4, 18, 0.8);
   }
   .gooey-modal {
-    background: linear-gradient(135deg, rgba(25, 18, 45, 0.95) 0%, rgba(15, 12, 30, 0.98) 100%);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 28px;
+    background: linear-gradient(160deg, #1a0e2e 0%, #0c0e23 100%);
+    border: 1px solid rgba(155, 91, 255, 0.18);
+    border-radius: 16px;
     box-shadow:
-      0px 24px 64px rgba(0, 0, 0, 0.4),
-      inset 0px 1px 0px rgba(255, 255, 255, 0.1);
+      0px 20px 60px rgba(0, 0, 0, 0.5),
+      0px 0px 20px rgba(155, 91, 255, 0.06);
   }
 
   /* ============ BADGE ============ */
   .gooey-badge {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    background: rgba(155, 91, 255, 0.08);
+    border: 1px solid rgba(155, 91, 255, 0.12);
+    border-radius: 8px;
   }
 
   /* ============ PROGRESS BAR ============ */
   .gooey-progress-track {
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(155, 91, 255, 0.08);
     border-radius: 999px;
     overflow: hidden;
   }
   .gooey-progress-fill {
-    background: linear-gradient(90deg, #8b5cf6 0%, #ec4899 100%);
+    background: linear-gradient(90deg, #ff4fbe 0%, #9b5bff 50%, #00f0ff 100%);
     border-radius: 999px;
     transition: width 0.3s ease;
-    box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
   }
 
   /* ============ TOGGLE SWITCH ============ */
@@ -282,65 +289,72 @@
     transition: all 0.3s ease;
   }
   .gooey-toggle-on {
-    background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
-    box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
+    background: linear-gradient(135deg, #ff4fbe 0%, #9b5bff 100%);
+    box-shadow: 0 0 12px rgba(255, 79, 190, 0.3);
   }
   .gooey-toggle-off {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(155, 91, 255, 0.12);
   }
 
   /* ============ ERROR ============ */
   .gooey-error {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.03) 100%);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    border-radius: 16px;
-    color: #fca5a5;
+    background: rgba(255, 106, 61, 0.08);
+    border: 1px solid rgba(255, 106, 61, 0.2);
+    border-radius: 10px;
+    color: #ffb09c;
   }
 
   /* ============ SCORE CARD ============ */
   .gooey-score {
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.06) 0%,
-      rgba(255, 255, 255, 0.02) 100%
-    );
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 24px;
-    box-shadow: inset 0px 1px 0px rgba(255, 255, 255, 0.06);
+    background: linear-gradient(145deg, rgba(26, 14, 46, 0.7) 0%, rgba(12, 14, 35, 0.8) 100%);
+    border: 1px solid rgba(155, 91, 255, 0.1);
+    border-radius: 14px;
   }
 
   /* ============ TEXT STYLES ============ */
   .gooey-text-primary {
-    color: rgba(255, 255, 255, 0.92);
-    text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+    color: #ffffff;
+    text-shadow: 0px 0px 8px rgba(255, 79, 190, 0.15);
   }
   .gooey-text-secondary {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(240, 232, 255, 0.55);
   }
   .gooey-text-muted {
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(240, 232, 255, 0.3);
   }
 
   /* ============ TIMELINE ============ */
   .gooey-timeline {
-    background: linear-gradient(180deg, rgba(15, 8, 30, 0.95) 0%, rgba(10, 8, 22, 0.98) 100%);
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    background: linear-gradient(180deg, #0c0e23 0%, #0a0b1e 100%);
+    border-top: 1px solid rgba(155, 91, 255, 0.08);
   }
 
   /* ============ SCROLLBAR ============ */
   .gooey-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
   }
   .gooey-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
   .gooey-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(155, 91, 255, 0.15);
     border-radius: 999px;
   }
   .gooey-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.18);
+    background: rgba(155, 91, 255, 0.3);
+  }
+
+  /* ============ ACCENT GLOW (reusable) ============ */
+  .gooey-glow-violet {
+    box-shadow:
+      0 0 16px rgba(155, 91, 255, 0.2),
+      0 0 32px rgba(155, 91, 255, 0.06);
+  }
+  .gooey-glow-pink {
+    box-shadow:
+      0 0 16px rgba(255, 79, 190, 0.2),
+      0 0 32px rgba(255, 79, 190, 0.06);
   }
 }
 

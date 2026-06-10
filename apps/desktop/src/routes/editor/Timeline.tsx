@@ -74,12 +74,12 @@ export function Timeline({ scenes, selectedId, onSelect, onReorder }: Props) {
   return (
     <div className="gooey-timeline flex flex-col">
       {/* Toolbar */}
-      <div className="flex items-center gap-2 border-b border-white/5 px-3 py-1">
-        <span className="text-xs font-semibold uppercase tracking-wider text-white/20">
+      <div className="flex items-center gap-2 border-b border-[#9B5BFF]/10 px-3 py-1">
+        <span className="text-xs font-semibold uppercase tracking-wider text-[#9B5BFF]/25">
           Timeline
         </span>
         <div className="flex-1" />
-        <span className="text-[10px] text-white/25">
+        <span className="text-[10px] text-[#9B5BFF]/30">
           {Math.floor(totalDurationSec / 60)}:{String(totalDurationSec % 60).padStart(2, '0')} (
           {scenes.length} scenes)
         </span>
@@ -91,7 +91,9 @@ export function Timeline({ scenes, selectedId, onSelect, onReorder }: Props) {
         >
           <ZoomOut size={14} />
         </button>
-        <span className="w-8 text-center text-[10px] text-white/30">{Math.round(zoom * 100)}%</span>
+        <span className="w-8 text-center text-[10px] text-[#9B5BFF]/35">
+          {Math.round(zoom * 100)}%
+        </span>
         <button
           onClick={handleZoomIn}
           disabled={zoom >= MAX_ZOOM}
@@ -103,17 +105,19 @@ export function Timeline({ scenes, selectedId, onSelect, onReorder }: Props) {
       </div>
 
       {/* Ruler */}
-      <div className="border-white/4 bg-white/2 relative h-5 border-b" ref={scrollRef}>
+      <div className="bg-[#9B5BFF]/8 relative h-5 border-b border-[#9B5BFF]/10" ref={scrollRef}>
         <div className="flex h-full" style={{ width: `${scenes.length * sceneWidth}px` }}>
           {scenes.map((_, i) => {
             const cumSec = sceneDurations.slice(0, i).reduce((s, d) => s + d, 0);
             return (
               <div
                 key={i}
-                className="relative border-r border-white/5"
+                className="relative border-r border-[#9B5BFF]/10"
                 style={{ width: `${sceneWidth}px` }}
               >
-                <span className="absolute left-1 top-0.5 text-[9px] text-white/20">{cumSec}s</span>
+                <span className="absolute left-1 top-0.5 text-[9px] text-[#9B5BFF]/25">
+                  {cumSec}s
+                </span>
               </div>
             );
           })}
@@ -123,7 +127,7 @@ export function Timeline({ scenes, selectedId, onSelect, onReorder }: Props) {
       {/* Scene blocks */}
       <div className="gooey-scrollbar overflow-x-auto overflow-y-hidden p-2">
         {scenes.length === 0 ? (
-          <p className="py-2 text-center text-[10px] text-white/20">
+          <p className="py-2 text-center text-[10px] text-[#9B5BFF]/25">
             No scenes — add a scene to get started.
           </p>
         ) : (
@@ -144,18 +148,18 @@ export function Timeline({ scenes, selectedId, onSelect, onReorder }: Props) {
                 }}
                 className={`flex shrink-0 cursor-pointer flex-col rounded-xl border px-2 py-1.5 transition ${
                   selectedId === scene.id
-                    ? 'border-violet-500/40 bg-violet-500/10 shadow-[0_0_12px_rgba(139,92,246,0.15)]'
+                    ? 'bg-[#FF4FBE]/12 border-[#FF4FBE]/40 shadow-[0_0_12px_rgba(139,92,246,0.15)]'
                     : dropIdx === idx
                       ? 'border-emerald-500/30 bg-emerald-500/5'
-                      : 'border-white/6 bg-white/3 hover:border-white/12'
+                      : 'border-[#9B5BFF]/12 bg-[#9B5BFF]/8 hover:border-[#9B5BFF]/20'
                 } ${dragIdx === idx ? 'opacity-40' : ''}`}
                 style={{ width: `${sceneWidth - 4}px`, minHeight: '48px' }}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-medium text-white/35">#{idx + 1}</span>
-                  <span className="text-[9px] text-white/20">{sceneDurations[idx]}s</span>
+                  <span className="text-[10px] font-medium text-[#9B5BFF]/40">#{idx + 1}</span>
+                  <span className="text-[9px] text-[#9B5BFF]/25">{sceneDurations[idx]}s</span>
                 </div>
-                <p className="mt-0.5 truncate text-[10px] text-white/40">
+                <p className="mt-0.5 truncate text-[10px] text-[#9B5BFF]/45">
                   {scene.scriptKo ?? scene.scriptOriginal ?? '—'}
                 </p>
                 {/* Asset indicators */}

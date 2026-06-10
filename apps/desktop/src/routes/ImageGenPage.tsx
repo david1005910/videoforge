@@ -119,7 +119,7 @@ export function ImageGenPage() {
           </div>
         </div>
 
-        {error && <p className="mb-4 text-sm text-red-400">{error}</p>}
+        {error && <p className="mb-4 text-sm text-[#FF6A3D]">{error}</p>}
 
         {results.length > 0 && (
           <div>
@@ -129,8 +129,8 @@ export function ImageGenPage() {
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               {results.map((img, i) => (
                 <div key={i} className="gooey-card p-3">
-                  <p className="truncate text-xs text-white/40">{img.path.split('/').pop()}</p>
-                  <p className="text-xs text-white/25">
+                  <p className="truncate text-xs text-[#9B5BFF]/45">{img.path.split('/').pop()}</p>
+                  <p className="text-xs text-[#9B5BFF]/30">
                     {img.width}×{img.height}
                   </p>
                 </div>

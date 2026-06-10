@@ -99,8 +99,8 @@ function FontsPanel() {
         {fonts.map((f) => (
           <div key={f.postscriptName} className="gooey-card flex items-center justify-between p-4">
             <div className="min-w-0">
-              <p className="truncate font-medium text-white/90">{f.family}</p>
-              <p className="text-xs text-white/35">
+              <p className="truncate font-medium text-[#f0e8ff]">{f.family}</p>
+              <p className="text-xs text-[#9B5BFF]/40">
                 {f.source} · {f.scripts.join(', ')}
                 {f.italic ? ' · italic' : ''}
               </p>
@@ -108,7 +108,7 @@ function FontsPanel() {
             {f.source === 'user' && (
               <button
                 onClick={() => handleDelete(f)}
-                className="ml-2 shrink-0 text-xs text-red-400 hover:text-red-300"
+                className="ml-2 shrink-0 text-xs text-[#FF6A3D] hover:text-[#FF6A3D]"
               >
                 {t('assets.delete')}
               </button>
@@ -220,15 +220,15 @@ function SfxPanel() {
           {items.map((item) => (
             <div key={item.id} className="gooey-card flex items-center gap-4 px-4 py-3">
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium text-white/90">{item.name}</p>
-                <p className="text-xs text-white/35">
+                <p className="truncate font-medium text-[#f0e8ff]">{item.name}</p>
+                <p className="text-xs text-[#9B5BFF]/40">
                   {item.category} · {formatDuration(item.durationMs)}
                 </p>
               </div>
               {item.source === 'user' && (
                 <button
                   onClick={() => handleDelete(item)}
-                  className="text-xs text-red-400 hover:text-red-300"
+                  className="text-xs text-[#FF6A3D] hover:text-[#FF6A3D]"
                 >
                   {t('assets.delete')}
                 </button>

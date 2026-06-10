@@ -93,7 +93,9 @@ export function ChatPage() {
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div
               className={`max-w-[80%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm ${
-                msg.role === 'user' ? 'gooey-btn-primary' : 'gooey-card px-4 py-2.5 text-white/80'
+                msg.role === 'user'
+                  ? 'gooey-btn-primary'
+                  : 'gooey-card px-4 py-2.5 text-[#f0e8ff]/85'
               }`}
             >
               {msg.content}
@@ -102,12 +104,12 @@ export function ChatPage() {
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="gooey-card px-4 py-2.5 text-sm text-white/40">Thinking…</div>
+            <div className="gooey-card px-4 py-2.5 text-sm text-[#9B5BFF]/45">Thinking…</div>
           </div>
         )}
       </div>
 
-      <div className="border-white/6 border-t p-4">
+      <div className="border-[#9B5BFF]/12 border-t p-4">
         <div className="flex gap-3">
           <textarea
             value={input}

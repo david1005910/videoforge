@@ -47,16 +47,16 @@ function AssetBadge({
   return (
     <div
       className={`gooey-badge flex flex-1 items-center gap-2 px-3 py-2 ${
-        hasAsset ? 'border-white/10 bg-white/5' : 'border-white/4 bg-white/2'
+        hasAsset ? 'bg-[#9B5BFF]/8 border-[#9B5BFF]/15' : 'bg-[#9B5BFF]/8 border-[#9B5BFF]/10'
       }`}
     >
-      <Icon size={14} className={hasAsset ? 'text-emerald-400' : 'text-white/15'} />
-      <span className="text-xs text-white/50">{label}</span>
+      <Icon size={14} className={hasAsset ? 'text-[#00F0FF]' : 'text-[#9B5BFF]/20'} />
+      <span className="text-xs text-[#9B5BFF]/55">{label}</span>
       {count !== undefined && count > 0 && (
-        <span className="ml-auto font-mono text-xs text-white/35">{count}</span>
+        <span className="ml-auto font-mono text-xs text-[#9B5BFF]/40">{count}</span>
       )}
       {hasAsset && count === undefined && (
-        <span className="ml-auto text-xs text-emerald-500">&#10003;</span>
+        <span className="ml-auto text-xs text-[#00F0FF]">&#10003;</span>
       )}
     </div>
   );
@@ -100,7 +100,7 @@ function ImageThumbnails({ images }: { images: AssetRef[] }) {
   return (
     <>
       <div className="grid grid-cols-2 gap-1">
-        {loading && <p className="col-span-2 text-[10px] text-white/25">Loading...</p>}
+        {loading && <p className="col-span-2 text-[10px] text-[#9B5BFF]/30">Loading...</p>}
         {images.map((img) => {
           const url = blobUrls.get(img.path);
           if (!url) return null;
@@ -109,7 +109,7 @@ function ImageThumbnails({ images }: { images: AssetRef[] }) {
               key={img.path}
               type="button"
               onClick={() => setExpanded(img.path)}
-              className="border-white/8 overflow-hidden rounded-xl border transition hover:border-white/20"
+              className="overflow-hidden rounded-xl border border-[#9B5BFF]/15 transition hover:border-[#9B5BFF]/25"
             >
               <img src={url} alt="" className="h-16 w-full object-cover" />
             </button>
@@ -124,7 +124,7 @@ function ImageThumbnails({ images }: { images: AssetRef[] }) {
           <button
             type="button"
             onClick={() => setExpanded(null)}
-            className="absolute right-4 top-4 rounded-full bg-white/10 p-1.5 text-white/50 hover:text-white"
+            className="bg-[#9B5BFF]/12 absolute right-4 top-4 rounded-full p-1.5 text-[#9B5BFF]/55 hover:text-white"
           >
             <X size={18} />
           </button>
@@ -161,7 +161,7 @@ function GrokImageThumb({ path }: { path: string }) {
       cancelled = true;
     };
   }, [path]);
-  if (!url) return <Image size={12} className="text-white/15" />;
+  if (!url) return <Image size={12} className="text-[#9B5BFF]/20" />;
   return <img src={url} alt="" className="h-full w-full object-cover" />;
 }
 
@@ -249,9 +249,9 @@ function FinalClipPreview({
 
   return (
     <div className="space-y-1.5">
-      {loading && <p className="text-[10px] text-white/25">{t('common.loading')}...</p>}
+      {loading && <p className="text-[10px] text-[#9B5BFF]/30">{t('common.loading')}...</p>}
       {blobUrl && (
-        <div className="overflow-hidden rounded-lg border border-white/10 bg-black">
+        <div className="overflow-hidden rounded-lg border border-[#9B5BFF]/15 bg-black">
           <video
             ref={videoRef}
             src={blobUrl}
@@ -266,7 +266,7 @@ function FinalClipPreview({
           {/* Progress bar */}
           <div className="px-2 py-1">
             <div
-              className="h-1 w-full cursor-pointer rounded-full bg-white/10"
+              className="bg-[#9B5BFF]/12 h-1 w-full cursor-pointer rounded-full"
               onClick={(e) => {
                 const v = videoRef.current;
                 if (!v || !duration) return;
@@ -276,11 +276,11 @@ function FinalClipPreview({
               }}
             >
               <div
-                className="h-full rounded-full bg-violet-500 transition-[width]"
+                className="h-full rounded-full bg-[#FF4FBE] transition-[width]"
                 style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
               />
             </div>
-            <div className="mt-0.5 flex items-center justify-between text-[9px] text-white/30">
+            <div className="mt-0.5 flex items-center justify-between text-[9px] text-[#9B5BFF]/35">
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>
@@ -288,7 +288,7 @@ function FinalClipPreview({
         </div>
       )}
       {/* File name */}
-      <p className="truncate text-[9px] text-white/25" title={clipPath}>
+      <p className="truncate text-[9px] text-[#9B5BFF]/30" title={clipPath}>
         {fileName}
       </p>
       {/* Action buttons */}
@@ -607,7 +607,7 @@ export function Inspector({
 
   if (!scene) {
     return (
-      <div className="gooey-sidebar border-white/6 flex h-full w-96 items-center justify-center border-l">
+      <div className="gooey-sidebar border-[#9B5BFF]/12 flex h-full w-96 items-center justify-center border-l">
         <p className="gooey-text-muted text-xs">{t('scene.select')}</p>
       </div>
     );
@@ -615,7 +615,7 @@ export function Inspector({
 
   return (
     <div
-      className={`gooey-sidebar border-white/6 flex h-full w-96 flex-col border-l ${isDragOver ? 'ring-2 ring-inset ring-violet-500/30' : ''}`}
+      className={`gooey-sidebar border-[#9B5BFF]/12 flex h-full w-96 flex-col border-l ${isDragOver ? 'ring-2 ring-inset ring-[#FF4FBE]/30' : ''}`}
       onDragOver={(e) => {
         e.preventDefault();
         setDragOver(true);
@@ -624,11 +624,11 @@ export function Inspector({
       onDrop={handleDrop}
     >
       {/* Header */}
-      <div className="border-white/6 border-b px-4 py-2">
-        <span className="text-xs font-semibold uppercase tracking-wider text-white/30">
+      <div className="border-[#9B5BFF]/12 border-b px-4 py-2">
+        <span className="text-xs font-semibold uppercase tracking-wider text-[#9B5BFF]/35">
           {t('inspector.title')}
         </span>
-        <p className="mt-0.5 text-sm text-white/70">
+        <p className="mt-0.5 text-sm text-[#f0e8ff]/75">
           {t('scene.header')} #{scene.index + 1}
         </p>
       </div>
@@ -636,7 +636,7 @@ export function Inspector({
       <div className="gooey-scrollbar flex-1 overflow-y-auto p-4">
         {/* Asset status */}
         <div className="space-y-2">
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/20">
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#9B5BFF]/25">
             {t('inspector.assets')}
           </h3>
           {/* Images */}
@@ -714,7 +714,7 @@ export function Inspector({
                 onFinish={() => setPlaying(false)}
               />
             )}
-            {audioError && <p className="text-[10px] text-red-400">{audioError}</p>}
+            {audioError && <p className="text-[10px] text-[#FF6A3D]">{audioError}</p>}
           </div>
 
           {/* Subtitle */}
@@ -762,7 +762,7 @@ export function Inspector({
                 {subtitleProcessing ? t('subtitle.generating') : t('subtitle.generate')}
               </button>
             </div>
-            {subtitleError && <p className="text-[10px] text-red-400">{subtitleError}</p>}
+            {subtitleError && <p className="text-[10px] text-[#FF6A3D]">{subtitleError}</p>}
           </div>
           {typeof scene.subtitleAss?.meta?.content === 'string' && (
             <SubtitleEditor
@@ -811,14 +811,14 @@ export function Inspector({
                 {composeProcessing ? t('inspector.composing') : t('inspector.compose')}
               </button>
             )}
-            {composeError && <p className="text-[10px] text-red-400">{composeError}</p>}
+            {composeError && <p className="text-[10px] text-[#FF6A3D]">{composeError}</p>}
           </div>
         </div>
 
         {/* Grok Video Generation */}
         {scene.generatedImages.length > 0 && (
           <div className="mt-6 space-y-2">
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/20">
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#9B5BFF]/25">
               {t('inspector.grokGenerate')}
             </h3>
             {/* Image selector */}
@@ -828,10 +828,10 @@ export function Inspector({
                   key={img.path}
                   type="button"
                   onClick={() => setGrokSelectedImage(img.path)}
-                  className={`h-12 w-12 overflow-hidden rounded border transition hover:border-white/30 ${
+                  className={`h-12 w-12 overflow-hidden rounded border transition hover:border-[#9B5BFF]/30 ${
                     (grokSelectedImage ?? scene.generatedImages[0]?.path) === img.path
                       ? 'border-violet-400'
-                      : 'border-white/10'
+                      : 'border-[#9B5BFF]/15'
                   }`}
                   title={img.path.split('/').pop()}
                 >
@@ -856,26 +856,26 @@ export function Inspector({
               {grokSending ? <RefreshCw size={10} className="animate-spin" /> : <Send size={10} />}
               {grokSending ? t('inspector.grokSending') : t('inspector.grokSend')}
             </button>
-            {grokError && <p className="text-[10px] text-red-400">{grokError}</p>}
+            {grokError && <p className="text-[10px] text-[#FF6A3D]">{grokError}</p>}
           </div>
         )}
 
         {/* Prompts */}
         {(scene.prompts.whisk ?? scene.prompts.imagefx ?? scene.prompts.grok) && (
           <div className="mt-6 space-y-2">
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/20">
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#9B5BFF]/25">
               {t('inspector.prompts')}
             </h3>
             {scene.prompts.whisk && (
               <div className="gooey-badge rounded-xl p-2">
-                <span className="text-[10px] uppercase text-white/25">Whisk</span>
-                <p className="mt-0.5 text-xs text-white/45">{scene.prompts.whisk}</p>
+                <span className="text-[10px] uppercase text-[#9B5BFF]/30">Whisk</span>
+                <p className="mt-0.5 text-xs text-[#9B5BFF]/50">{scene.prompts.whisk}</p>
               </div>
             )}
             {scene.prompts.grok && (
               <div className="gooey-badge rounded-xl p-2">
-                <span className="text-[10px] uppercase text-white/25">Grok</span>
-                <p className="mt-0.5 text-xs text-white/45">{scene.prompts.grok}</p>
+                <span className="text-[10px] uppercase text-[#9B5BFF]/30">Grok</span>
+                <p className="mt-0.5 text-xs text-[#9B5BFF]/50">{scene.prompts.grok}</p>
               </div>
             )}
           </div>
@@ -884,10 +884,10 @@ export function Inspector({
         {/* Notes */}
         {scene.notes && (
           <div className="mt-6">
-            <h3 className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-white/20">
+            <h3 className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[#9B5BFF]/25">
               <FileText size={12} /> {t('inspector.notes')}
             </h3>
-            <p className="text-xs text-white/45">{scene.notes}</p>
+            <p className="text-xs text-[#9B5BFF]/50">{scene.notes}</p>
           </div>
         )}
       </div>
@@ -1001,44 +1001,49 @@ function SubtitleEditor({
   };
 
   return (
-    <div className="border-white/8 mt-1 rounded-lg border bg-white/[0.02]">
+    <div className="mt-1 rounded-lg border border-[#9B5BFF]/15 bg-white/[0.02]">
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-center justify-between px-2 py-1.5 text-[10px] text-white/50 hover:text-white/70"
+        className="flex w-full items-center justify-between px-2 py-1.5 text-[10px] text-[#9B5BFF]/55 hover:text-[#f0e8ff]/75"
       >
         <span>자막 · 이미지 편집 ({parsed.lines.length}줄)</span>
         <span>{expanded ? '▲' : '▼'}</span>
       </button>
 
       {expanded && (
-        <div className="border-white/8 border-t px-2 pb-2">
+        <div className="border-t border-[#9B5BFF]/15 px-2 pb-2">
           <div className="gooey-scrollbar max-h-[70vh] overflow-y-auto">
             {parsed.lines.map((line, i) => {
               const assignedImg = imageAssignments[i];
               const assignedUrl = assignedImg ? imgUrls.get(assignedImg) : undefined;
 
               return (
-                <div key={i} className="mt-2 rounded-lg border border-white/5 bg-white/[0.02] p-2">
+                <div
+                  key={i}
+                  className="mt-2 rounded-lg border border-[#9B5BFF]/10 bg-white/[0.02] p-2"
+                >
                   <div className="flex gap-2">
                     {/* Image area */}
                     <button
                       type="button"
                       onClick={() => setPickerLine(pickerLine === i ? null : i)}
-                      className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded border border-white/10 bg-black/30 transition hover:border-white/25"
+                      className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded border border-[#9B5BFF]/15 bg-black/30 transition hover:border-[#9B5BFF]/25"
                       title="이미지 할당"
                     >
                       {assignedUrl ? (
                         <img src={assignedUrl} alt="" className="h-full w-full object-cover" />
                       ) : (
-                        <Image size={14} className="text-white/15" />
+                        <Image size={14} className="text-[#9B5BFF]/20" />
                       )}
                     </button>
 
                     {/* Text + timecode area */}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
-                        <span className="w-5 text-[10px] font-medium text-white/25">{i + 1}</span>
+                        <span className="w-5 text-[10px] font-medium text-[#9B5BFF]/30">
+                          {i + 1}
+                        </span>
                         <input
                           type="text"
                           value={line.start}
@@ -1046,7 +1051,7 @@ function SubtitleEditor({
                           className="gooey-input w-[80px] px-1.5 py-1 text-[11px]"
                           title="시작"
                         />
-                        <span className="text-[10px] text-white/25">→</span>
+                        <span className="text-[10px] text-[#9B5BFF]/30">→</span>
                         <input
                           type="text"
                           value={line.end}
@@ -1057,7 +1062,7 @@ function SubtitleEditor({
                         <button
                           type="button"
                           onClick={() => deleteLine(i)}
-                          className="ml-auto text-white/25 hover:text-red-400"
+                          className="ml-auto text-[#9B5BFF]/30 hover:text-[#FF6A3D]"
                           title="삭제"
                         >
                           <X size={12} />
@@ -1074,8 +1079,8 @@ function SubtitleEditor({
 
                   {/* Image picker */}
                   {pickerLine === i && images.length > 0 && (
-                    <div className="border-white/8 mt-1.5 rounded border bg-black/20 p-1">
-                      <p className="mb-1 text-[8px] text-white/30">이미지 선택:</p>
+                    <div className="mt-1.5 rounded border border-[#9B5BFF]/15 bg-black/20 p-1">
+                      <p className="mb-1 text-[8px] text-[#9B5BFF]/35">이미지 선택:</p>
                       <div className="flex flex-wrap gap-1">
                         {assignedImg && (
                           <button
@@ -1084,7 +1089,7 @@ function SubtitleEditor({
                               onAssignImage(i, null);
                               setPickerLine(null);
                             }}
-                            className="flex h-14 w-14 items-center justify-center rounded border border-white/10 bg-black/30 text-[8px] text-white/30 hover:border-red-400/50 hover:text-red-400"
+                            className="flex h-14 w-14 items-center justify-center rounded border border-[#9B5BFF]/15 bg-black/30 text-[8px] text-[#9B5BFF]/35 hover:border-red-400/50 hover:text-[#FF6A3D]"
                             title="할당 해제"
                           >
                             <X size={12} />
@@ -1102,8 +1107,8 @@ function SubtitleEditor({
                                 onAssignImage(i, img.path);
                                 setPickerLine(null);
                               }}
-                              className={`h-14 w-14 overflow-hidden rounded border transition hover:border-white/30 ${
-                                isActive ? 'border-purple-400' : 'border-white/10'
+                              className={`h-14 w-14 overflow-hidden rounded border transition hover:border-[#9B5BFF]/30 ${
+                                isActive ? 'border-purple-400' : 'border-[#9B5BFF]/15'
                               }`}
                             >
                               <img src={url} alt="" className="h-full w-full object-cover" />

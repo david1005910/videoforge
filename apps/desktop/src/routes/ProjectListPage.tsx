@@ -135,8 +135,8 @@ export function ProjectListPage(): JSX.Element {
     <div className="gooey-page flex h-full flex-col">
       {/* Titlebar */}
       <div className="titlebar-drag gooey-header flex h-10 items-center justify-between px-4">
-        <span className="text-xs text-white/30" />
-        <span className="text-xs text-white/30">{t('app.name')}</span>
+        <span className="text-xs text-[#9B5BFF]/40" />
+        <span className="text-xs text-[#9B5BFF]/40">{t('app.name')}</span>
       </div>
 
       <main className="gooey-scrollbar flex-1 overflow-auto p-8">
@@ -184,7 +184,10 @@ export function ProjectListPage(): JSX.Element {
 
           {/* Search */}
           <div className="relative mb-6">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9B5BFF]/50"
+            />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -218,8 +221,8 @@ export function ProjectListPage(): JSX.Element {
                         className="gooey-card shrink-0 px-4 py-3 text-left"
                         style={{ minWidth: '180px', maxWidth: '220px' }}
                       >
-                        <p className="truncate text-sm font-medium text-white/85">{p.title}</p>
-                        <p className="mt-1 text-[10px] text-white/30">
+                        <p className="truncate text-sm font-medium text-[#f0e8ff]">{p.title}</p>
+                        <p className="mt-1 text-[10px] text-[#9B5BFF]/40">
                           {p.sceneCount} {t('projects.scenes')} · {formatDate(p.updatedAt)}
                         </p>
                       </button>
@@ -234,9 +237,9 @@ export function ProjectListPage(): JSX.Element {
             <div className="gooey-text-muted py-20 text-center text-sm">{t('common.loading')}</div>
           ) : projectList.length === 0 ? (
             <div className="py-20 text-center">
-              <FolderOpen size={48} className="mx-auto mb-4 text-white/20" />
-              <p className="text-white/50">{t('projects.empty')}</p>
-              <p className="mt-1 text-sm text-white/25">{t('projects.empty.description')}</p>
+              <FolderOpen size={48} className="mx-auto mb-4 text-[#9B5BFF]/25" />
+              <p className="text-[#FF7AD9]/60">{t('projects.empty')}</p>
+              <p className="mt-1 text-sm text-[#9B5BFF]/30">{t('projects.empty.description')}</p>
             </div>
           ) : (
             <div className="grid gap-3">
@@ -247,8 +250,8 @@ export function ProjectListPage(): JSX.Element {
                     onClick={() => handleOpen(p.id)}
                     className="flex-1 text-left"
                   >
-                    <h3 className="font-medium text-white/90">{p.title}</h3>
-                    <div className="mt-1 flex items-center gap-4 text-xs text-white/35">
+                    <h3 className="font-medium text-[#f0e8ff]">{p.title}</h3>
+                    <div className="mt-1 flex items-center gap-4 text-xs text-[#9B5BFF]/45">
                       <span className="flex items-center gap-1">
                         <Film size={12} />
                         {p.sceneCount} {t('projects.scenes')}
@@ -270,7 +273,7 @@ export function ProjectListPage(): JSX.Element {
                     <button
                       type="button"
                       onClick={() => setDeleteConfirmId(p.id)}
-                      className="titlebar-no-drag rounded-xl p-2 text-white/30 transition hover:bg-red-500/10 hover:text-red-400"
+                      className="titlebar-no-drag rounded-xl p-2 text-[#9B5BFF]/35 transition hover:bg-[#FF6A3D]/10 hover:text-[#FF6A3D]"
                       title={t('projects.delete')}
                     >
                       <Trash2 size={16} />
@@ -291,8 +294,8 @@ export function ProjectListPage(): JSX.Element {
       {deleteConfirmId && (
         <div className="gooey-modal-backdrop fixed inset-0 z-50 flex items-center justify-center">
           <div className="gooey-modal w-full max-w-xs p-5">
-            <h3 className="text-sm font-semibold text-white/95">{t('projects.delete.confirm')}</h3>
-            <p className="mt-1 text-xs text-white/40">{t('projects.delete.description')}</p>
+            <h3 className="text-sm font-semibold text-[#f0e8ff]">{t('projects.delete.confirm')}</h3>
+            <p className="mt-1 text-xs text-[#9B5BFF]/45">{t('projects.delete.description')}</p>
             <div className="mt-4 flex justify-end gap-2">
               <button
                 onClick={() => setDeleteConfirmId(null)}

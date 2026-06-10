@@ -39,8 +39,8 @@ export const KenBurnsStep = z.object({
   kind: z.literal('kenBurns'),
   image: FilePath,
   durationMs: z.number().int().positive(),
-  from: z.object({ x: z.number(), y: z.number(), w: z.number(), h: z.number() }),
-  to: z.object({ x: z.number(), y: z.number(), w: z.number(), h: z.number() }),
+  from: z.object({ x: z.number(), y: z.number(), w: z.number(), h: z.number() }).optional(),
+  to: z.object({ x: z.number(), y: z.number(), w: z.number(), h: z.number() }).optional(),
 });
 
 export const EffectStep = z.object({

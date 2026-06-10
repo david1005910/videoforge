@@ -68,10 +68,10 @@ export function SceneList({
   }, []);
 
   return (
-    <div className="gooey-sidebar border-white/6 flex h-full w-60 flex-col border-r">
+    <div className="gooey-sidebar border-[#9B5BFF]/12 flex h-full w-60 flex-col border-r">
       {/* Header */}
-      <div className="border-white/6 flex items-center justify-between border-b px-3 py-2">
-        <span className="text-xs font-semibold uppercase tracking-wider text-white/35">
+      <div className="border-[#9B5BFF]/12 flex items-center justify-between border-b px-3 py-2">
+        <span className="text-xs font-semibold uppercase tracking-wider text-[#9B5BFF]/40">
           {t('scene.scenes')} ({scenes.length})
         </span>
         <button
@@ -87,10 +87,10 @@ export function SceneList({
       {/* Scene list */}
       <div className="gooey-scrollbar flex-1 overflow-y-auto">
         {scenes.length === 0 ? (
-          <div className="px-3 py-8 text-center text-xs text-white/25">
+          <div className="px-3 py-8 text-center text-xs text-[#9B5BFF]/30">
             {t('scene.empty')}
             <br />
-            <button type="button" onClick={onAdd} className="mt-2 text-violet-400 hover:underline">
+            <button type="button" onClick={onAdd} className="mt-2 text-[#9B5BFF] hover:underline">
               {t('scene.addFirst')}
             </button>
           </div>
@@ -105,33 +105,33 @@ export function SceneList({
               onDrop={() => handleDrop(idx)}
               onDragEnd={handleDragEnd}
               onClick={() => onSelect(scene.id)}
-              className={`border-white/4 group flex w-full items-start gap-2 border-b px-3 py-2.5 text-left transition ${
+              className={`group flex w-full items-start gap-2 border-b border-[#9B5BFF]/10 px-3 py-2.5 text-left transition ${
                 selectedId === scene.id
-                  ? 'border-l-2 border-l-violet-500 bg-violet-500/10'
+                  ? 'bg-[#FF4FBE]/12 border-l-2 border-l-violet-500'
                   : dropIdx === idx
                     ? 'border-emerald-500/30 bg-emerald-500/5'
-                    : 'hover:bg-white/4'
+                    : 'hover:bg-[#9B5BFF]/8'
               } ${dragIdx === idx ? 'opacity-40' : ''}`}
             >
-              <GripVertical size={12} className="mt-1 shrink-0 cursor-grab text-white/20" />
+              <GripVertical size={12} className="mt-1 shrink-0 cursor-grab text-[#9B5BFF]/25" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1">
-                  <span className="text-xs font-medium text-white/50">#{scene.index + 1}</span>
+                  <span className="text-xs font-medium text-[#9B5BFF]/55">#{scene.index + 1}</span>
                   {estimateDuration(scene) && (
-                    <span className="flex items-center gap-0.5 text-[10px] text-white/25">
+                    <span className="flex items-center gap-0.5 text-[10px] text-[#9B5BFF]/30">
                       <Clock size={8} />
                       {estimateDuration(scene)}
                     </span>
                   )}
                   <div className="flex gap-0.5">
                     {scene.generatedImages.length > 0 && (
-                      <Image size={10} className="text-emerald-500/70" />
+                      <Image size={10} className="text-[#00F0FF]/70" />
                     )}
                     {scene.narrationAudio && <Volume2 size={10} className="text-blue-400/70" />}
-                    {scene.subtitleAss && <Subtitles size={10} className="text-amber-400/70" />}
+                    {scene.subtitleAss && <Subtitles size={10} className="text-[#FF7AD9]/70" />}
                   </div>
                 </div>
-                <p className="mt-0.5 truncate text-xs text-white/35">
+                <p className="mt-0.5 truncate text-xs text-[#9B5BFF]/40">
                   {scene.scriptKo ?? scene.scriptOriginal ?? t('scene.noScript')}
                 </p>
               </div>
@@ -142,7 +142,7 @@ export function SceneList({
                     e.stopPropagation();
                     onDuplicate(scene.id);
                   }}
-                  className="rounded-lg p-0.5 text-white/20 hover:text-white/70"
+                  className="rounded-lg p-0.5 text-[#9B5BFF]/25 hover:text-[#f0e8ff]/75"
                   title={t('scene.duplicate')}
                 >
                   <Copy size={12} />
@@ -153,7 +153,7 @@ export function SceneList({
                     e.stopPropagation();
                     onDelete(scene.id);
                   }}
-                  className="rounded-lg p-0.5 text-white/20 hover:text-red-400"
+                  className="rounded-lg p-0.5 text-[#9B5BFF]/25 hover:text-[#FF6A3D]"
                   title={t('scene.delete')}
                 >
                   <Trash2 size={12} />

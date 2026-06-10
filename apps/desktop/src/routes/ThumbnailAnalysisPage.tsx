@@ -43,10 +43,10 @@ export function ThumbnailAnalysisPage() {
   };
 
   const scoreColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-400';
-    if (score >= 60) return 'text-amber-400';
-    if (score >= 40) return 'text-orange-400';
-    return 'text-red-400';
+    if (score >= 80) return 'text-[#00F0FF]';
+    if (score >= 60) return 'text-[#FF7AD9]';
+    if (score >= 40) return 'text-[#FF6A3D]';
+    return 'text-[#FF6A3D]';
   };
 
   return (
@@ -106,7 +106,7 @@ export function ThumbnailAnalysisPage() {
             </button>
           </section>
 
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-[#FF6A3D]">{error}</p>}
 
           {/* Results */}
           {result && (
@@ -125,11 +125,11 @@ export function ThumbnailAnalysisPage() {
               {/* Strengths */}
               {result.strengths.length > 0 && (
                 <div className="gooey-card p-4">
-                  <h3 className="mb-2 text-sm font-medium text-emerald-400">Strengths</h3>
+                  <h3 className="mb-2 text-sm font-medium text-[#00F0FF]">Strengths</h3>
                   <ul className="space-y-1">
                     {result.strengths.map((s, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-white/70">
-                        <span className="mt-0.5 text-emerald-500">+</span>
+                      <li key={i} className="flex items-start gap-2 text-sm text-[#f0e8ff]/75">
+                        <span className="mt-0.5 text-[#00F0FF]">+</span>
                         {s}
                       </li>
                     ))}
@@ -140,11 +140,11 @@ export function ThumbnailAnalysisPage() {
               {/* Weaknesses */}
               {result.weaknesses.length > 0 && (
                 <div className="gooey-card p-4">
-                  <h3 className="mb-2 text-sm font-medium text-red-400">Weaknesses</h3>
+                  <h3 className="mb-2 text-sm font-medium text-[#FF6A3D]">Weaknesses</h3>
                   <ul className="space-y-1">
                     {result.weaknesses.map((w, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-white/70">
-                        <span className="mt-0.5 text-red-500">-</span>
+                      <li key={i} className="flex items-start gap-2 text-sm text-[#f0e8ff]/75">
+                        <span className="mt-0.5 text-[#FF6A3D]">-</span>
                         {w}
                       </li>
                     ))}
@@ -155,11 +155,11 @@ export function ThumbnailAnalysisPage() {
               {/* Suggestions */}
               {result.suggestions.length > 0 && (
                 <div className="gooey-card p-4">
-                  <h3 className="mb-2 text-sm font-medium text-violet-400">Suggestions</h3>
+                  <h3 className="mb-2 text-sm font-medium text-[#9B5BFF]">Suggestions</h3>
                   <ul className="space-y-1">
                     {result.suggestions.map((s, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-white/70">
-                        <span className="mt-0.5 text-violet-500">&bull;</span>
+                      <li key={i} className="flex items-start gap-2 text-sm text-[#f0e8ff]/75">
+                        <span className="mt-0.5 text-[#9B5BFF]">&bull;</span>
                         {s}
                       </li>
                     ))}

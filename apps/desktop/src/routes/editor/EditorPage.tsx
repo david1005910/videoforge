@@ -483,16 +483,16 @@ export function EditorPage(): JSX.Element {
           </button>
         )}
         {saveStatus !== 'idle' && (
-          <span className="flex items-center gap-1 text-[10px] text-white/30">
+          <span className="flex items-center gap-1 text-[10px] text-[#9B5BFF]/35">
             {saveStatus === 'saving' && 'Saving…'}
             {saveStatus === 'saved' && (
               <>
-                <Check size={10} className="text-emerald-400" /> Saved
+                <Check size={10} className="text-[#00F0FF]" /> Saved
               </>
             )}
           </span>
         )}
-        <span className="ml-auto text-[10px] text-white/25">
+        <span className="ml-auto text-[10px] text-[#9B5BFF]/30">
           {currentProject.scenes.length} {t('projects.scenes')}
         </span>
         <button
@@ -603,8 +603,8 @@ export function EditorPage(): JSX.Element {
       {deleteConfirmId && (
         <div className="gooey-modal-backdrop fixed inset-0 z-50 flex items-center justify-center">
           <div className="gooey-modal w-full max-w-xs p-5">
-            <h3 className="text-sm font-semibold text-white/95">{t('projects.delete.confirm')}</h3>
-            <p className="mt-1 text-xs text-white/40">
+            <h3 className="text-sm font-semibold text-[#f0e8ff]">{t('projects.delete.confirm')}</h3>
+            <p className="mt-1 text-xs text-[#9B5BFF]/45">
               {t('scene.header')} #
               {(currentProject.scenes.find((s) => s.id === deleteConfirmId)?.index ?? 0) + 1}
             </p>
@@ -634,7 +634,7 @@ export function EditorPage(): JSX.Element {
         >
           <div className="gooey-modal w-full max-w-sm p-6" onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white/95">Keyboard Shortcuts</h2>
+              <h2 className="text-sm font-semibold text-[#f0e8ff]">Keyboard Shortcuts</h2>
               <button onClick={() => setShowShortcuts(false)} className="gooey-btn-ghost p-1">
                 <X size={16} />
               </button>
@@ -651,8 +651,8 @@ export function EditorPage(): JSX.Element {
                 ['Esc', 'Close overlay'],
               ].map(([key, desc]) => (
                 <div key={key} className="flex items-center justify-between">
-                  <span className="text-white/50">{desc}</span>
-                  <kbd className="rounded-lg border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-white/70">
+                  <span className="text-[#9B5BFF]/55">{desc}</span>
+                  <kbd className="bg-[#9B5BFF]/8 rounded-lg border border-[#9B5BFF]/15 px-1.5 py-0.5 font-mono text-[10px] text-[#f0e8ff]/75">
                     {key}
                   </kbd>
                 </div>

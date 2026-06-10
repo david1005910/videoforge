@@ -79,7 +79,7 @@ export function OnboardingPage() {
                 Stored securely in macOS Keychain via safeStorage.
               </p>
             </div>
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            {error && <p className="text-sm text-[#FF6A3D]">{error}</p>}
             <div className="flex justify-between pt-2">
               <button onClick={() => setStep('done')} className="gooey-btn-ghost px-4 py-2 text-sm">
                 Skip
@@ -114,8 +114,8 @@ export function OnboardingPage() {
               key={s}
               className={`h-1.5 w-8 rounded-full transition-all ${
                 s === step
-                  ? 'bg-gradient-to-r from-violet-500 to-pink-500 shadow-[0_0_8px_rgba(139,92,246,0.4)]'
-                  : 'bg-white/10'
+                  ? 'bg-gradient-to-r from-[#FF4FBE] to-[#00F0FF] shadow-[0_0_8px_rgba(255,79,190,0.4)]'
+                  : 'bg-[#9B5BFF]/12'
               }`}
             />
           ))}

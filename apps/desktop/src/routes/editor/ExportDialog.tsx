@@ -210,12 +210,12 @@ export function ExportDialog({ projectTitle, scenes, onClose, onScenesUpdated }:
 
         <div className="space-y-4">
           {/* Source info */}
-          <div className="text-xs text-white/40">
+          <div className="text-xs text-[#9B5BFF]/45">
             {totalExportable > 0 ? (
               <>
                 <p>{totalExportable}개 씬 → 1개 영상으로 내보내기</p>
                 {needCompose.length > 0 && (
-                  <p className="mt-1 text-amber-400/80">
+                  <p className="mt-1 text-[#FF7AD9]/80">
                     {needCompose.length}개 씬은 이미지에서 자동 영상 변환됩니다.
                   </p>
                 )}
@@ -240,7 +240,9 @@ export function ExportDialog({ projectTitle, scenes, onClose, onScenesUpdated }:
                 className="gooey-input flex-1 px-3 py-2 text-sm"
                 disabled={exporting}
               />
-              <span className="text-xs text-white/30">{codec === 'prores' ? '.mov' : '.mp4'}</span>
+              <span className="text-xs text-[#9B5BFF]/35">
+                {codec === 'prores' ? '.mov' : '.mp4'}
+              </span>
             </div>
           </div>
 
@@ -275,12 +277,12 @@ export function ExportDialog({ projectTitle, scenes, onClose, onScenesUpdated }:
                   onClick={() => setCodec(c.value)}
                   className={`flex-1 rounded-2xl border px-3 py-2 text-left transition ${
                     codec === c.value
-                      ? 'border-violet-500/40 bg-violet-500/10 shadow-[0_0_12px_rgba(139,92,246,0.15)]'
-                      : 'border-white/8 bg-white/4 hover:border-white/15'
+                      ? 'bg-[#FF4FBE]/12 border-[#FF4FBE]/40 shadow-[0_0_12px_rgba(139,92,246,0.15)]'
+                      : 'bg-[#9B5BFF]/8 border-[#9B5BFF]/15 hover:border-[#9B5BFF]/20'
                   }`}
                 >
-                  <p className="text-sm font-medium text-white/85">{c.label}</p>
-                  <p className="text-xs text-white/35">{c.desc}</p>
+                  <p className="text-sm font-medium text-[#f0e8ff]">{c.label}</p>
+                  <p className="text-xs text-[#9B5BFF]/40">{c.desc}</p>
                 </button>
               ))}
             </div>
@@ -314,7 +316,7 @@ export function ExportDialog({ projectTitle, scenes, onClose, onScenesUpdated }:
             </div>
           )}
 
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-[#FF6A3D]">{error}</p>}
 
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-2">
