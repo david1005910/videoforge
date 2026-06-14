@@ -6,22 +6,21 @@ import {
   Film,
   FileText,
   Play,
-  Pause,
   Square,
   Upload,
   Plus,
   RefreshCw,
-  X,
   Send,
-  FolderOpen,
-  Save,
-  Download,
 } from 'lucide-react';
 import { useT } from '../../i18n';
 import { api } from '../../lib/api';
 import { Waveform } from '../../components/Waveform';
 import { buildAss, DEFAULT_STYLE } from '@videoforge/shared';
-import type { Scene, AssetRef, PipelineStep } from '@videoforge/shared';
+import type { Scene, PipelineStep } from '@videoforge/shared';
+import { AssetBadge } from './AssetBadge';
+import { ImageThumbnails, GrokImageThumb } from './ImageThumbnails';
+import { FinalClipPreview } from './FinalClipPreview';
+import { SubtitleEditor } from './SubtitleEditor';
 
 interface Props {
   scene: Scene | null;
@@ -31,309 +30,6 @@ interface Props {
   onDropClips?: (sceneId: string, paths: string[]) => void;
   onSubtitleGenerated?: (sceneId: string, assContent: string) => void;
   onFinalClipGenerated?: (sceneId: string, clipPath: string) => void;
-}
-
-function AssetBadge({
-  label,
-  icon: Icon,
-  hasAsset,
-  count,
-}: {
-  label: string;
-  icon: typeof Image;
-  hasAsset: boolean;
-  count?: number;
-}) {
-  return (
-    <div
-      className={`gooey-badge flex flex-1 items-center gap-2 px-3 py-2 ${
-        hasAsset ? 'bg-[#9B5BFF]/8 border-[#9B5BFF]/15' : 'bg-[#9B5BFF]/8 border-[#9B5BFF]/10'
-      }`}
-    >
-      <Icon size={14} className={hasAsset ? 'text-[#00F0FF]' : 'text-[#9B5BFF]/20'} />
-      <span className="text-xs text-[#9B5BFF]/55">{label}</span>
-      {count !== undefined && count > 0 && (
-        <span className="ml-auto font-mono text-xs text-[#9B5BFF]/40">{count}</span>
-      )}
-      {hasAsset && count === undefined && (
-        <span className="ml-auto text-xs text-[#00F0FF]">&#10003;</span>
-      )}
-    </div>
-  );
-}
-
-function ImageThumbnails({ images }: { images: AssetRef[] }) {
-  const [blobUrls, setBlobUrls] = useState<Map<string, string>>(new Map());
-  const [loading, setLoading] = useState(false);
-  const [expanded, setExpanded] = useState<string | null>(null);
-
-  const loadImages = useCallback(async () => {
-    if (images.length === 0) return;
-    setLoading(true);
-    const urls = new Map<string, string>();
-    for (const img of images) {
-      try {
-        const { base64Data, mimeType } = await api.file.readBase64(img.path);
-        const binary = atob(base64Data);
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-        const blob = new Blob([bytes], { type: mimeType });
-        urls.set(img.path, URL.createObjectURL(blob));
-      } catch {
-        // skip failed images
-      }
-    }
-    setBlobUrls(urls);
-    setLoading(false);
-  }, [images]);
-
-  useEffect(() => {
-    void loadImages();
-    return () => {
-      blobUrls.forEach((url) => URL.revokeObjectURL(url));
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadImages]);
-
-  if (images.length === 0) return null;
-
-  return (
-    <>
-      <div className="grid grid-cols-2 gap-1">
-        {loading && <p className="col-span-2 text-[10px] text-[#9B5BFF]/30">Loading...</p>}
-        {images.map((img) => {
-          const url = blobUrls.get(img.path);
-          if (!url) return null;
-          return (
-            <button
-              key={img.path}
-              type="button"
-              onClick={() => setExpanded(img.path)}
-              className="overflow-hidden rounded-xl border border-[#9B5BFF]/15 transition hover:border-[#9B5BFF]/25"
-            >
-              <img src={url} alt="" className="h-16 w-full object-cover" />
-            </button>
-          );
-        })}
-      </div>
-      {expanded && blobUrls.get(expanded) && (
-        <div
-          className="gooey-modal-backdrop fixed inset-0 z-50 flex items-center justify-center"
-          onClick={() => setExpanded(null)}
-        >
-          <button
-            type="button"
-            onClick={() => setExpanded(null)}
-            className="bg-[#9B5BFF]/12 absolute right-4 top-4 rounded-full p-1.5 text-[#9B5BFF]/55 hover:text-white"
-          >
-            <X size={18} />
-          </button>
-          <img
-            src={blobUrls.get(expanded)}
-            alt=""
-            className="max-h-[80vh] max-w-[80vw] rounded-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
-    </>
-  );
-}
-
-function GrokImageThumb({ path }: { path: string }) {
-  const [url, setUrl] = useState<string | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      try {
-        const { base64Data, mimeType } = await api.file.readBase64(path);
-        const binary = atob(base64Data);
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-        const blob = new Blob([bytes], { type: mimeType });
-        if (!cancelled) setUrl(URL.createObjectURL(blob));
-      } catch {
-        /* skip */
-      }
-    };
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [path]);
-  if (!url) return <Image size={12} className="text-[#9B5BFF]/20" />;
-  return <img src={url} alt="" className="h-full w-full object-cover" />;
-}
-
-function FinalClipPreview({
-  clipPath,
-  onRecompose,
-  recomposing,
-}: {
-  clipPath: string;
-  onRecompose: () => void;
-  recomposing: boolean;
-}) {
-  const t = useT();
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [blobUrl, setBlobUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [playing, setPlaying] = useState(false);
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      setLoading(true);
-      try {
-        const { base64Data, mimeType } = await api.file.readBase64(clipPath);
-        const binary = atob(base64Data);
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-        const blob = new Blob([bytes], { type: mimeType || 'video/mp4' });
-        if (!cancelled) setBlobUrl(URL.createObjectURL(blob));
-      } catch {
-        /* skip */
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-    void load();
-    return () => {
-      cancelled = true;
-      setBlobUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
-        return null;
-      });
-    };
-  }, [clipPath]);
-
-  const togglePlay = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    if (v.paused) {
-      void v.play();
-      setPlaying(true);
-    } else {
-      v.pause();
-      setPlaying(false);
-    }
-  };
-
-  const handleReveal = () => {
-    const folder = clipPath.replace(/[^/]+$/, '');
-    void api.shell.openExternal(`file://${folder}`);
-  };
-
-  const handleSaveAs = async () => {
-    try {
-      const result = await api.video.saveTo(clipPath);
-      if (result.savedPath) {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
-      }
-    } catch {
-      /* user cancelled or error */
-    }
-  };
-
-  const formatTime = (s: number) => {
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    return `${m}:${sec.toString().padStart(2, '0')}`;
-  };
-
-  const fileName = clipPath.split('/').pop() ?? '';
-
-  return (
-    <div className="space-y-1.5">
-      {loading && <p className="text-[10px] text-[#9B5BFF]/30">{t('common.loading')}...</p>}
-      {blobUrl && (
-        <div className="overflow-hidden rounded-lg border border-[#9B5BFF]/15 bg-black">
-          <video
-            ref={videoRef}
-            src={blobUrl}
-            className="w-full cursor-pointer"
-            onClick={togglePlay}
-            onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
-            onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
-            onEnded={() => setPlaying(false)}
-            onPause={() => setPlaying(false)}
-            onPlay={() => setPlaying(true)}
-          />
-          {/* Progress bar */}
-          <div className="px-2 py-1">
-            <div
-              className="bg-[#9B5BFF]/12 h-1 w-full cursor-pointer rounded-full"
-              onClick={(e) => {
-                const v = videoRef.current;
-                if (!v || !duration) return;
-                const rect = e.currentTarget.getBoundingClientRect();
-                const ratio = (e.clientX - rect.left) / rect.width;
-                v.currentTime = ratio * duration;
-              }}
-            >
-              <div
-                className="h-full rounded-full bg-[#FF4FBE] transition-[width]"
-                style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
-              />
-            </div>
-            <div className="mt-0.5 flex items-center justify-between text-[9px] text-[#9B5BFF]/35">
-              <span>{formatTime(currentTime)}</span>
-              <span>{formatTime(duration)}</span>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* File name */}
-      <p className="truncate text-[9px] text-[#9B5BFF]/30" title={clipPath}>
-        {fileName}
-      </p>
-      {/* Action buttons */}
-      <div className="flex gap-1">
-        {blobUrl && (
-          <button
-            type="button"
-            onClick={togglePlay}
-            className="gooey-btn-secondary flex flex-1 items-center justify-center gap-1 px-2 py-1 text-[10px]"
-          >
-            {playing ? <Pause size={10} /> : <Play size={10} />}
-            {playing ? t('inspector.clipPause') : t('inspector.clipPlay')}
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={handleReveal}
-          className="gooey-btn-secondary flex flex-1 items-center justify-center gap-1 px-2 py-1 text-[10px]"
-          title={clipPath}
-        >
-          <FolderOpen size={10} />
-          {t('inspector.clipReveal')}
-        </button>
-      </div>
-      <div className="flex gap-1">
-        <button
-          type="button"
-          onClick={() => void handleSaveAs()}
-          className="gooey-btn-secondary flex flex-1 items-center justify-center gap-1 px-2 py-1 text-[10px]"
-        >
-          {saved ? <Download size={10} /> : <Save size={10} />}
-          {saved ? t('inspector.clipSaved') : t('inspector.clipSaveAs')}
-        </button>
-        <button
-          type="button"
-          onClick={onRecompose}
-          disabled={recomposing}
-          className="gooey-btn-secondary flex flex-1 items-center justify-center gap-1 px-2 py-1 text-[10px]"
-        >
-          <RefreshCw size={10} className={recomposing ? 'animate-spin' : ''} />
-          {t('inspector.clipRecompose')}
-        </button>
-      </div>
-    </div>
-  );
 }
 
 export function Inspector({
@@ -374,7 +70,6 @@ export function Inspector({
     setGrokError('');
     try {
       const outputDir = imagePath.replace(/[^/]+$/, '');
-      // Try bridge first, fall back to direct Puppeteer mode
       const bridgeOk = await api.grok
         .bridgeStatus()
         .then((s) => s.available && s.connectedTabs > 0)
@@ -394,7 +89,6 @@ export function Inspector({
           ],
         });
       } else {
-        // Direct Puppeteer mode
         await api.grok.generate({
           prompt: grokPrompt.trim(),
           imagePath,
@@ -821,7 +515,6 @@ export function Inspector({
             <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#9B5BFF]/25">
               {t('inspector.grokGenerate')}
             </h3>
-            {/* Image selector */}
             <div className="flex gap-1">
               {scene.generatedImages.map((img) => (
                 <button
@@ -839,7 +532,6 @@ export function Inspector({
                 </button>
               ))}
             </div>
-            {/* Prompt + Send */}
             <textarea
               value={grokPrompt}
               onChange={(e) => setGrokPrompt(e.target.value)}
@@ -891,248 +583,6 @@ export function Inspector({
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-/** Parsed ASS dialogue line */
-interface DialogueLine {
-  start: string;
-  end: string;
-  text: string;
-  raw: string;
-}
-
-function parseAssDialogues(ass: string): { header: string; lines: DialogueLine[] } {
-  const allLines = ass.split('\n');
-  const headerLines: string[] = [];
-  const dialogues: DialogueLine[] = [];
-
-  for (const line of allLines) {
-    if (line.startsWith('Dialogue:')) {
-      const parts = line.split(',');
-      if (parts.length >= 10) {
-        dialogues.push({
-          start: parts[1]?.trim() ?? '',
-          end: parts[2]?.trim() ?? '',
-          text: parts.slice(9).join(','),
-          raw: line,
-        });
-      }
-    } else {
-      headerLines.push(line);
-    }
-  }
-
-  return { header: headerLines.join('\n'), lines: dialogues };
-}
-
-function rebuildAss(header: string, lines: DialogueLine[]): string {
-  const events = lines.map((l) => `Dialogue: 0,${l.start},${l.end},Default,,0,0,0,,${l.text}`);
-  return header + '\n' + events.join('\n') + '\n';
-}
-
-function SubtitleEditor({
-  assContent,
-  images,
-  imageAssignments,
-  onSave,
-  onAssignImage,
-}: {
-  assContent: string;
-  images: AssetRef[];
-  imageAssignments: Record<number, string>;
-  onSave: (updated: string) => void;
-  onAssignImage: (lineIdx: number, imagePath: string | null) => void;
-}): JSX.Element {
-  const [expanded, setExpanded] = useState(false);
-  const [parsed, setParsed] = useState(() => parseAssDialogues(assContent));
-  const [dirty, setDirty] = useState(false);
-  const [imgUrls, setImgUrls] = useState<Map<string, string>>(new Map());
-  const [pickerLine, setPickerLine] = useState<number | null>(null);
-
-  useEffect(() => {
-    setParsed(parseAssDialogues(assContent));
-    setDirty(false);
-  }, [assContent]);
-
-  // Load image blob URLs
-  useEffect(() => {
-    if (images.length === 0) return;
-    let cancelled = false;
-    const load = async () => {
-      const urls = new Map<string, string>();
-      for (const img of images) {
-        try {
-          const { base64Data, mimeType } = await api.file.readBase64(img.path);
-          const binary = atob(base64Data);
-          const bytes = new Uint8Array(binary.length);
-          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-          const blob = new Blob([bytes], { type: mimeType });
-          urls.set(img.path, URL.createObjectURL(blob));
-        } catch {
-          /* skip */
-        }
-      }
-      if (!cancelled) setImgUrls(urls);
-    };
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [images]);
-
-  const updateLine = (idx: number, field: keyof DialogueLine, value: string) => {
-    setParsed((p) => ({
-      ...p,
-      lines: p.lines.map((l, i) => (i === idx ? { ...l, [field]: value } : l)),
-    }));
-    setDirty(true);
-  };
-
-  const deleteLine = (idx: number) => {
-    setParsed((p) => ({ ...p, lines: p.lines.filter((_, i) => i !== idx) }));
-    setDirty(true);
-  };
-
-  const handleSave = () => {
-    onSave(rebuildAss(parsed.header, parsed.lines));
-    setDirty(false);
-  };
-
-  return (
-    <div className="mt-1 rounded-lg border border-[#9B5BFF]/15 bg-white/[0.02]">
-      <button
-        type="button"
-        onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-center justify-between px-2 py-1.5 text-[10px] text-[#9B5BFF]/55 hover:text-[#f0e8ff]/75"
-      >
-        <span>자막 · 이미지 편집 ({parsed.lines.length}줄)</span>
-        <span>{expanded ? '▲' : '▼'}</span>
-      </button>
-
-      {expanded && (
-        <div className="border-t border-[#9B5BFF]/15 px-2 pb-2">
-          <div className="gooey-scrollbar max-h-[70vh] overflow-y-auto">
-            {parsed.lines.map((line, i) => {
-              const assignedImg = imageAssignments[i];
-              const assignedUrl = assignedImg ? imgUrls.get(assignedImg) : undefined;
-
-              return (
-                <div
-                  key={i}
-                  className="mt-2 rounded-lg border border-[#9B5BFF]/10 bg-white/[0.02] p-2"
-                >
-                  <div className="flex gap-2">
-                    {/* Image area */}
-                    <button
-                      type="button"
-                      onClick={() => setPickerLine(pickerLine === i ? null : i)}
-                      className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded border border-[#9B5BFF]/15 bg-black/30 transition hover:border-[#9B5BFF]/25"
-                      title="이미지 할당"
-                    >
-                      {assignedUrl ? (
-                        <img src={assignedUrl} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        <Image size={14} className="text-[#9B5BFF]/20" />
-                      )}
-                    </button>
-
-                    {/* Text + timecode area */}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-5 text-[10px] font-medium text-[#9B5BFF]/30">
-                          {i + 1}
-                        </span>
-                        <input
-                          type="text"
-                          value={line.start}
-                          onChange={(e) => updateLine(i, 'start', e.target.value)}
-                          className="gooey-input w-[80px] px-1.5 py-1 text-[11px]"
-                          title="시작"
-                        />
-                        <span className="text-[10px] text-[#9B5BFF]/30">→</span>
-                        <input
-                          type="text"
-                          value={line.end}
-                          onChange={(e) => updateLine(i, 'end', e.target.value)}
-                          className="gooey-input w-[80px] px-1.5 py-1 text-[11px]"
-                          title="끝"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => deleteLine(i)}
-                          className="ml-auto text-[#9B5BFF]/30 hover:text-[#FF6A3D]"
-                          title="삭제"
-                        >
-                          <X size={12} />
-                        </button>
-                      </div>
-                      <input
-                        type="text"
-                        value={line.text}
-                        onChange={(e) => updateLine(i, 'text', e.target.value)}
-                        className="gooey-input mt-1.5 w-full px-1.5 py-1 text-[12px]"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Image picker */}
-                  {pickerLine === i && images.length > 0 && (
-                    <div className="mt-1.5 rounded border border-[#9B5BFF]/15 bg-black/20 p-1">
-                      <p className="mb-1 text-[8px] text-[#9B5BFF]/35">이미지 선택:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {assignedImg && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              onAssignImage(i, null);
-                              setPickerLine(null);
-                            }}
-                            className="flex h-14 w-14 items-center justify-center rounded border border-[#9B5BFF]/15 bg-black/30 text-[8px] text-[#9B5BFF]/35 hover:border-red-400/50 hover:text-[#FF6A3D]"
-                            title="할당 해제"
-                          >
-                            <X size={12} />
-                          </button>
-                        )}
-                        {images.map((img) => {
-                          const url = imgUrls.get(img.path);
-                          if (!url) return null;
-                          const isActive = assignedImg === img.path;
-                          return (
-                            <button
-                              key={img.path}
-                              type="button"
-                              onClick={() => {
-                                onAssignImage(i, img.path);
-                                setPickerLine(null);
-                              }}
-                              className={`h-14 w-14 overflow-hidden rounded border transition hover:border-[#9B5BFF]/30 ${
-                                isActive ? 'border-purple-400' : 'border-[#9B5BFF]/15'
-                              }`}
-                            >
-                              <img src={url} alt="" className="h-full w-full object-cover" />
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          {dirty && (
-            <button
-              type="button"
-              onClick={handleSave}
-              className="gooey-btn-primary mt-2 w-full px-2 py-1 text-[10px]"
-            >
-              자막 저장
-            </button>
-          )}
-        </div>
-      )}
     </div>
   );
 }

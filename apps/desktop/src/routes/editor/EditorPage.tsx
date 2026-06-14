@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, Check, Keyboard, X } from 'lucide-react';
-import { ulid } from 'ulid';
 import { api } from '../../lib/api';
 import { useProjectStore } from '../../stores/project-store';
 import { useT } from '../../i18n';
@@ -11,13 +10,14 @@ import { Inspector } from './Inspector';
 import { Timeline } from './Timeline';
 import { ExportDialog } from './ExportDialog';
 import { AutoPipelineDialog } from './AutoPipelineDialog';
-import type { Project, Scene } from '@videoforge/shared';
+import { useSceneHandlers } from './useSceneHandlers';
+import type { Project } from '@videoforge/shared';
 
 export function EditorPage(): JSX.Element {
   const t = useT();
   const navigate = useNavigate();
   const { projectId } = useParams({ from: '/editor/$projectId' });
-  const { currentProject, setCurrentProject, pushProject, undo, redo } = useProjectStore();
+  const { currentProject, setCurrentProject, pushProject } = useProjectStore();
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
   const [showExport, setShowExport] = useState(false);
   const [showAutoPipeline, setShowAutoPipeline] = useState(false);
@@ -34,9 +34,8 @@ export function EditorPage(): JSX.Element {
       try {
         const project = await api.project.load(projectId);
         if (!cancelled) {
-          const p = project;
-          setCurrentProject(p);
-          const first = p.scenes[0];
+          setCurrentProject(project);
+          const first = project.scenes[0];
           if (first) setSelectedSceneId(first.id);
         }
       } catch (err) {
@@ -53,294 +52,29 @@ export function EditorPage(): JSX.Element {
   const selectedScene = currentProject?.scenes.find((s) => s.id === selectedSceneId) ?? null;
 
   const saveProject = useCallback(
-    async (updated: Project) => {
+    (updated: Project) => {
       pushProject(updated);
       setSaveStatus('saving');
-      try {
-        await api.project.save({ project: updated, asNewProject: false });
-        setSaveStatus('saved');
-        setTimeout(() => setSaveStatus('idle'), 1500);
-      } catch (err) {
-        console.error('Auto-save failed:', err);
-        setSaveStatus('idle');
-      }
+      void api.project
+        .save({ project: updated, asNewProject: false })
+        .then(() => {
+          setSaveStatus('saved');
+          setTimeout(() => setSaveStatus('idle'), 1500);
+        })
+        .catch((err) => {
+          console.error('Auto-save failed:', err);
+          setSaveStatus('idle');
+        });
     },
     [pushProject],
   );
 
-  const handleAddScene = useCallback(() => {
-    if (!currentProject) return;
-    const newScene: Scene = {
-      id: ulid(),
-      index: currentProject.scenes.length,
-      prompts: {},
-      generatedImages: [],
-      generatedClips: [],
-    };
-    const updated: Project = {
-      ...currentProject,
-      scenes: [...currentProject.scenes, newScene],
-      updatedAt: new Date().toISOString(),
-    };
-    setSelectedSceneId(newScene.id);
-    void saveProject(updated);
-  }, [currentProject, saveProject]);
-
-  const handleDuplicateScene = useCallback(
-    (id: string) => {
-      if (!currentProject) return;
-      const source = currentProject.scenes.find((s) => s.id === id);
-      if (!source) return;
-      const duplicated: Scene = {
-        ...source,
-        id: ulid(),
-        index: source.index + 1,
-      };
-      const scenes = [...currentProject.scenes];
-      scenes.splice(source.index + 1, 0, duplicated);
-      const reindexed = scenes.map((s, i) => ({ ...s, index: i }));
-      const updated: Project = {
-        ...currentProject,
-        scenes: reindexed,
-        updatedAt: new Date().toISOString(),
-      };
-      setSelectedSceneId(duplicated.id);
-      void saveProject(updated);
-    },
-    [currentProject, saveProject],
-  );
-
-  const handleDeleteScene = useCallback(
-    (id: string) => {
-      if (!currentProject) return;
-      const filtered = currentProject.scenes
-        .filter((s) => s.id !== id)
-        .map((s, i) => ({ ...s, index: i }));
-      const updated: Project = {
-        ...currentProject,
-        scenes: filtered,
-        updatedAt: new Date().toISOString(),
-      };
-      if (selectedSceneId === id) {
-        setSelectedSceneId(filtered[0]?.id ?? null);
-      }
-      setDeleteConfirmId(null);
-      void saveProject(updated);
-    },
-    [currentProject, selectedSceneId, saveProject],
-  );
-
-  const handleRequestDelete = useCallback((id: string) => {
-    setDeleteConfirmId(id);
-  }, []);
-
-  const handleReorder = useCallback(
-    (fromIdx: number, toIdx: number) => {
-      if (!currentProject) return;
-      const scenes = [...currentProject.scenes];
-      const moved = scenes.splice(fromIdx, 1)[0];
-      if (!moved) return;
-      scenes.splice(toIdx, 0, moved);
-      const reindexed = scenes.map((s, i) => ({ ...s, index: i }));
-      const updated: Project = {
-        ...currentProject,
-        scenes: reindexed,
-        updatedAt: new Date().toISOString(),
-      };
-      void saveProject(updated);
-    },
-    [currentProject, saveProject],
-  );
-
-  const handleScriptChange = useCallback(
-    (sceneId: string, field: 'scriptKo' | 'scriptOriginal', value: string) => {
-      if (!currentProject) return;
-      const scenes = currentProject.scenes.map((s) =>
-        s.id === sceneId ? { ...s, [field]: value } : s,
-      );
-      const updated: Project = {
-        ...currentProject,
-        scenes,
-        updatedAt: new Date().toISOString(),
-      };
-      void saveProject(updated);
-    },
-    [currentProject, saveProject],
-  );
-
-  const handleNotesChange = useCallback(
-    (sceneId: string, value: string) => {
-      if (!currentProject) return;
-      const scenes = currentProject.scenes.map((s) =>
-        s.id === sceneId ? { ...s, notes: value } : s,
-      );
-      const updated: Project = {
-        ...currentProject,
-        scenes,
-        updatedAt: new Date().toISOString(),
-      };
-      void saveProject(updated);
-    },
-    [currentProject, saveProject],
-  );
-
-  const handleLoadNarration = useCallback(
-    (sceneId: string, filePath: string) => {
-      if (!currentProject) return;
-      const scenes = currentProject.scenes.map((s) =>
-        s.id === sceneId
-          ? {
-              ...s,
-              narrationAudio: {
-                kind: 'audio' as const,
-                path: filePath,
-                sha1: '0000000000000000000000000000000000000000',
-              },
-            }
-          : s,
-      );
-      const updated: Project = {
-        ...currentProject,
-        scenes,
-        updatedAt: new Date().toISOString(),
-      };
-      void saveProject(updated);
-    },
-    [currentProject, saveProject],
-  );
-
-  const handleDropImages = useCallback(
-    (sceneId: string, paths: string[]) => {
-      if (!currentProject) return;
-      const scenes = currentProject.scenes.map((s) =>
-        s.id === sceneId
-          ? {
-              ...s,
-              generatedImages: [
-                ...s.generatedImages,
-                ...paths.map((p) => ({
-                  kind: 'image' as const,
-                  path: p,
-                  sha1: '0000000000000000000000000000000000000000',
-                })),
-              ],
-            }
-          : s,
-      );
-      const updated: Project = {
-        ...currentProject,
-        scenes,
-        updatedAt: new Date().toISOString(),
-      };
-      void saveProject(updated);
-    },
-    [currentProject, saveProject],
-  );
-
-  const handleSubtitleGenerated = useCallback(
-    (sceneId: string, assContent: string) => {
-      if (!currentProject) return;
-      const scenes = currentProject.scenes.map((s) =>
-        s.id === sceneId
-          ? {
-              ...s,
-              subtitleAss: {
-                kind: 'ass' as const,
-                path: `assets/subs/${sceneId}.ass`,
-                sha1: '0000000000000000000000000000000000000000',
-                meta: { content: assContent },
-              },
-            }
-          : s,
-      );
-      const updated: Project = {
-        ...currentProject,
-        scenes,
-        updatedAt: new Date().toISOString(),
-      };
-      void saveProject(updated);
-    },
-    [currentProject, saveProject],
-  );
-
-  const handleDropClips = useCallback(
-    (sceneId: string, paths: string[]) => {
-      if (!currentProject) return;
-      const scenes = currentProject.scenes.map((s) =>
-        s.id === sceneId
-          ? {
-              ...s,
-              generatedClips: [
-                ...s.generatedClips,
-                ...paths.map((p) => ({
-                  kind: 'video' as const,
-                  path: p,
-                  sha1: '0000000000000000000000000000000000000000',
-                })),
-              ],
-            }
-          : s,
-      );
-      const updated: Project = {
-        ...currentProject,
-        scenes,
-        updatedAt: new Date().toISOString(),
-      };
-      void saveProject(updated);
-    },
-    [currentProject, saveProject],
-  );
-
-  const handleFinalClipGenerated = useCallback(
-    (sceneId: string, clipPath: string) => {
-      if (!currentProject) return;
-      const scenes = currentProject.scenes.map((s) =>
-        s.id === sceneId
-          ? {
-              ...s,
-              finalClip: {
-                kind: 'video' as const,
-                path: clipPath,
-                sha1: '0000000000000000000000000000000000000000',
-              },
-            }
-          : s,
-      );
-      const updated: Project = {
-        ...currentProject,
-        scenes,
-        updatedAt: new Date().toISOString(),
-      };
-      void saveProject(updated);
-    },
-    [currentProject, saveProject],
-  );
-
-  const handleAutoPipelineComplete = useCallback(
-    (sceneClips: { sceneId: string; clipPath: string }[], _finalVideoPath?: string) => {
-      if (!currentProject) return;
-      const scenes = currentProject.scenes.map((s) => {
-        const match = sceneClips.find((c) => c.sceneId === s.id);
-        if (match) {
-          return {
-            ...s,
-            finalClip: {
-              kind: 'video' as const,
-              path: match.clipPath,
-              sha1: '0000000000000000000000000000000000000000',
-            },
-          };
-        }
-        return s;
-      });
-      const updated: Project = {
-        ...currentProject,
-        scenes,
-        updatedAt: new Date().toISOString(),
-      };
-      void saveProject(updated);
-    },
-    [currentProject, saveProject],
+  const handlers = useSceneHandlers(
+    currentProject,
+    saveProject,
+    selectedSceneId,
+    setSelectedSceneId,
+    setDeleteConfirmId,
   );
 
   const handleTitleEdit = useCallback(() => {
@@ -361,34 +95,22 @@ export function EditorPage(): JSX.Element {
       updatedAt: new Date().toISOString(),
     };
     setEditingTitle(false);
-    void saveProject(updated);
+    saveProject(updated);
   }, [currentProject, titleDraft, saveProject]);
 
-  const handleUndo = useCallback(() => {
-    undo();
-    const proj = useProjectStore.getState().currentProject;
-    if (proj) void api.project.save({ project: proj, asNewProject: false });
-  }, [undo]);
-
-  const handleRedo = useCallback(() => {
-    redo();
-    const proj = useProjectStore.getState().currentProject;
-    if (proj) void api.project.save({ project: proj, asNewProject: false });
-  }, [redo]);
-
+  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'z' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
         e.preventDefault();
-        handleUndo();
+        handlers.handleUndo();
         return;
       }
       if (e.key === 'z' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
         e.preventDefault();
-        handleRedo();
+        handlers.handleRedo();
         return;
       }
-
       if (e.key === '/' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setShowShortcuts((v) => !v);
@@ -415,26 +137,18 @@ export function EditorPage(): JSX.Element {
         if (currentIdx < scenes.length - 1) setSelectedSceneId(scenes[currentIdx + 1]!.id);
       } else if (e.key === 'n' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        handleAddScene();
+        handlers.handleAddScene();
       } else if (e.key === 'd' && (e.metaKey || e.ctrlKey) && selectedSceneId) {
         e.preventDefault();
-        handleDuplicateScene(selectedSceneId);
+        handlers.handleDuplicateScene(selectedSceneId);
       } else if (e.key === 'Backspace' && (e.metaKey || e.ctrlKey) && selectedSceneId) {
         e.preventDefault();
-        handleRequestDelete(selectedSceneId);
+        handlers.handleRequestDelete(selectedSceneId);
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [
-    currentProject,
-    selectedSceneId,
-    handleAddScene,
-    handleDuplicateScene,
-    handleRequestDelete,
-    handleUndo,
-    handleRedo,
-  ]);
+  }, [currentProject, selectedSceneId, handlers]);
 
   const handleBack = () => {
     setCurrentProject(null);
@@ -549,57 +263,53 @@ export function EditorPage(): JSX.Element {
           scenes={currentProject.scenes}
           selectedId={selectedSceneId}
           onSelect={setSelectedSceneId}
-          onAdd={handleAddScene}
-          onDelete={handleRequestDelete}
-          onDuplicate={handleDuplicateScene}
-          onReorder={handleReorder}
+          onAdd={handlers.handleAddScene}
+          onDelete={handlers.handleRequestDelete}
+          onDuplicate={handlers.handleDuplicateScene}
+          onReorder={handlers.handleReorder}
         />
         <ScriptEditor
           scene={selectedScene}
           projectLanguage={currentProject.language}
-          onScriptChange={handleScriptChange}
-          onNotesChange={handleNotesChange}
-          onLoadNarration={handleLoadNarration}
+          onScriptChange={handlers.handleScriptChange}
+          onNotesChange={handlers.handleNotesChange}
+          onLoadNarration={handlers.handleLoadNarration}
         />
         <Inspector
           scene={selectedScene}
           projectLanguage={currentProject.language}
-          onLoadNarration={handleLoadNarration}
-          onDropImages={handleDropImages}
-          onDropClips={handleDropClips}
-          onSubtitleGenerated={handleSubtitleGenerated}
-          onFinalClipGenerated={handleFinalClipGenerated}
+          onLoadNarration={handlers.handleLoadNarration}
+          onDropImages={handlers.handleDropImages}
+          onDropClips={handlers.handleDropClips}
+          onSubtitleGenerated={handlers.handleSubtitleGenerated}
+          onFinalClipGenerated={handlers.handleFinalClipGenerated}
         />
       </main>
 
-      {/* Timeline */}
       <Timeline
         scenes={currentProject.scenes}
         selectedId={selectedSceneId}
         onSelect={setSelectedSceneId}
-        onReorder={handleReorder}
+        onReorder={handlers.handleReorder}
       />
 
-      {/* Auto Pipeline Dialog */}
       {showAutoPipeline && (
         <AutoPipelineDialog
           scenes={currentProject.scenes}
           onClose={() => setShowAutoPipeline(false)}
-          onComplete={handleAutoPipelineComplete}
+          onComplete={handlers.handleAutoPipelineComplete}
         />
       )}
 
-      {/* Export Dialog */}
       {showExport && (
         <ExportDialog
           projectTitle={currentProject.title}
           scenes={currentProject.scenes}
           onClose={() => setShowExport(false)}
-          onScenesUpdated={handleAutoPipelineComplete}
+          onScenesUpdated={handlers.handleAutoPipelineComplete}
         />
       )}
 
-      {/* Delete confirmation */}
       {deleteConfirmId && (
         <div className="gooey-modal-backdrop fixed inset-0 z-50 flex items-center justify-center">
           <div className="gooey-modal w-full max-w-xs p-5">
@@ -616,7 +326,7 @@ export function EditorPage(): JSX.Element {
                 {t('common.cancel')}
               </button>
               <button
-                onClick={() => handleDeleteScene(deleteConfirmId)}
+                onClick={() => handlers.handleDeleteScene(deleteConfirmId)}
                 className="gooey-btn-danger px-3 py-1.5 text-xs"
               >
                 {t('scene.delete')}
@@ -626,7 +336,6 @@ export function EditorPage(): JSX.Element {
         </div>
       )}
 
-      {/* Keyboard shortcuts overlay */}
       {showShortcuts && (
         <div
           className="gooey-modal-backdrop fixed inset-0 z-50 flex items-center justify-center"
